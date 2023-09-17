@@ -65,9 +65,16 @@ project develops, we will add the ability to define additional fields for each
 reporting dimension value so that the indexes can be more finely tuned around
 business needs.
 
-Bagger makes no demands on the inbound data other than the fact that partition
-dimension fields and timestamp field MUST be present and that they must be 
-text fields.
+Bagger also REQUIRES that the messages are:
+  - Valid UTF-8
+  - Do not contain the Unicode escape of \u0000 (string terminator)
+  - Do not contain the Unicode escapes for endianness marking (\uFFFE, \uFEFFF)
+  - Valid JSON
+
+Bagger currently does not make any other demands on the message formats.
+
+However, duplicate keys in messages ARE collapsed due to limitations in
+PostgreSQL's JSONB type.
 
 ## Schaufelrad Requirements
 
