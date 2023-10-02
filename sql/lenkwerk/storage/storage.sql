@@ -72,24 +72,38 @@ $$ This contains an array of instance ids where the same table is stored.
 It will be an array of the length defined by the replication factor.  In the
 first version, that is limited to 2.$$;
 
+CREATE TABLE storage.dimensions (
+   id serial NOT NULL UNIQUE, 
+   ordinality NOT NULL UNIQUE DEFERRABLE INITIALLY DEFERRED,
+   default_val varchar not null,
+   fieldname varchar not null PRIMARY KEY
+);
+
+
+COMMENT ON TABLE storage.domensions IS
+$$ This contains the partitions by which data is partitioned. Default values 
+can be set using the default_val field though this is not yet supported.$$;
+
+
 create table storage.indexes (
    id serial not null unique, 
-   min_generation int references storage.servermaps(generation),
    index_name varchar(16) default 'bagger_idx',
    ordinal int,
    expression varchar not null,
-   primary key (min_generation, index_name, ordinal)
+   primary key (index_name, ordinal)
 );
 
 comment on table storage.indexes is
 $$ This table includes index definition information for bagger nodes.
 
-Some care needs to be paid as ot the nature of the contents of this table
+Some care needs to be paid as to the nature of the contents of this table
 because while naive SQL injection is not possile at index creation time,
 indexes can perform arbitrary code at insert or update time.
 
 For this reason registering indexes is a privileged operation.
 $$;
+
+
 
 comment on column storage.indexes.expression is
 $$This column has an important security consideration because improper
