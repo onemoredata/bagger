@@ -5,10 +5,10 @@ DROP FUNCTION IF EXISTS storage.register_pg_instance
 
 CREATE FUNCTION storage.register_pg_instance
 (in_host text, in_port int, in_username text)
-RETURNS storage.pg_instance LANGUAGE SQL AS
+RETURNS storage.postgres_instance LANGUAGE SQL AS
 $$
-INSERT INTO storage.pg_instance (host, port, username)
-     VALUES (in_host, in_port in_username)
+INSERT INTO storage.postgres_instance (host, port, username)
+     VALUES (in_host, in_port, in_username)
 RETURNING *;
 $$;
 
@@ -29,10 +29,10 @@ DROP FUNCTION IF EXISTS storage.set_pg_instance_status
 (in_id int, in_status int);
 
 CREATE FUNCTION STORAGE.set_pg_instance_status
-(in_id int, in_status int)
-returns storage.pg_instance AS
+(in_id int, in_status int) 
+returns storage.postgres_instance LANGUAGE SQL AS
 $$
-UPDATE storage.pg_instance
+UPDATE storage.postgres_instance
    SET status = in_status
  WHERE id = in_id
 RETURNING *;
@@ -43,15 +43,19 @@ COMMENT ON FUNCTION storage.set_pg_instance_status
 $$ This function sets the status of a pg_instance to the value set, returning
 a complete database row for the instance as stored if successful.$$;
 
+DROP FUNCTION IF EXISTS storage.get_pg_instance_by_id(in_id int);
 CREATE FUNCTION storage.get_pg_instance_by_id(in_id int)
-RETURNS storage pg_instance LANGUAGE SQL AS
+RETURNS storage.postgres_instance LANGUAGE SQL AS
 $$
-SELECT * FROM pg_instance where id = in_id;
+SELECT * FROM storage.postgres_instance where id = in_id;
 $$;
+
+DROP FUNCTION IF EXISTS storage.get_pg_instance_by_host_and_port
+(in_host text, in_port int);
 
 CREATE FUNCTION storage.get_pg_instance_by_host_and_port
 (in_host text, in_port int)
-returns pg_instance as
+returns storage.postgres_instance LANGUAGE SQL as
 $$
-select pg_instance where host = in_host and port = in_port
+select * from storage.postgres_instance where host = in_host and port = in_port
 $$;

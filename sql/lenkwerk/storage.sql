@@ -47,13 +47,13 @@ we can determine which servers are supposed to receive writes together.$$;
 
 create table storage.partitions (
      id bigserial not null unique,
-     primary_instance_id int references(postgres_instance.id),
+     primary_instance_id int references storage.postgres_instance (id),
      generation int not null,
      copies int[] not null,
      schema text,
      name text,
      timerange tsrange not null,
-     primary key(primary_instance_id, schema, name);
+     primary key(primary_instance_id, schema, name)
 );
 
 comment on table storage.partitions is
@@ -74,7 +74,7 @@ first version, that is limited to 2.$$;
 
 create table storage.indexes (
    id serial not null unique, 
-   min_generation int references servermaps(generation),
+   min_generation int references storage.servermaps(generation),
    index_name varchar(16) default 'bagger_idx',
    ordinal int,
    expression varchar not null,
