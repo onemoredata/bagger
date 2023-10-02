@@ -42,3 +42,16 @@ COMMENT ON FUNCTION storage.set_pg_instance_status
 (in_id int, in_status int) IS
 $$ This function sets the status of a pg_instance to the value set, returning
 a complete database row for the instance as stored if successful.$$;
+
+CREATE FUNCTION storage.get_pg_instance_by_id(in_id int)
+RETURNS storage pg_instance LANGUAGE SQL AS
+$$
+SELECT * FROM pg_instance where id = in_id;
+$$;
+
+CREATE FUNCTION storage.get_pg_instance_by_host_and_port
+(in_host text, in_port int)
+returns pg_instance as
+$$
+select pg_instance where host = in_host and port = in_port
+$$;
