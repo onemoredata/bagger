@@ -111,7 +111,7 @@ has can_read => (is => 'ro', isa => 'Bool', lazy => 1, builder => '_can_read');
 
 sub _can_read { 
     my ($self) = @_;
-    return 1 if $self->status & F_READ ;
+    return bool($self->status & F_READ);
 }
 
 =head2 can_write
@@ -126,7 +126,7 @@ has can_write => (is => 'ro', isa => 'Bool', lazy => 1,
 
 sub _can_write { 
     my ($self)  = @_;
-    return 1 if $self->status & F_WRITE;
+    return bool($self->status & F_WRITE);
 }
 
 =head1 METHODS

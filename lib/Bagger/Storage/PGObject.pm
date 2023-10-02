@@ -64,6 +64,21 @@ sub _get_dbh() {
 
 sub _new_dbh() { die 'TODO' };
 
+=head1 Utility Functions
+
+=head2 bool(val)
+
+Returns 1 if true and 0 if false.
+
+Useful if a value needs to fit into a Bool Moose type.
+
+=cut
+
+sub bool {
+    my ($val) = @_;
+    return $val ? 1 : 0;
+}
+
 =head1 MORE INFORMATION
 
 For more information see CPAN docs for the following modules:
