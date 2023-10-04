@@ -60,10 +60,10 @@ can be set using the default_val field though this is not yet supported.$$;
 
 create table storage.indexes (
    id serial not null unique, 
-   index_name varchar(16) default 'bagger_idx',
-   ordinal int,
+   indexname varchar(16) default 'bagger_idx',
+   ordinality int,
    expression varchar not null,
-   primary key (index_name, ordinal) DEFERRABLE INITIALLY DEFERRED
+   primary key (indexname, ordinality) DEFERRABLE INITIALLY DEFERRED
 );
 
 comment on table storage.indexes is

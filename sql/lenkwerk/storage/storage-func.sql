@@ -142,11 +142,38 @@ $$;
 -----------------------
 -- Indexes
 -----------------------
+
+DROP FUNCTION IF EXISTS storage.insert_index_field(varchar, int, varchar);
+CREATE FUNCTION storage.insert_index_field
+(in_indexname varchar, in_ordinality int, in_expression varchar)
+RETURNS storage.indexes LANGUAGE SQL BEGIN ATOMIC
+UPDATE storage.indexes
+   SET ordinality = ordinality + 1
+ WHERE indexname = in_indexname and ordinality >= in_ordinality;
+
+INSERT INTO storage.indexes
+       (indexname, ordinality, expression)
+VALUES (in_indexname, in_ordinality, in_expression)
+RETURNING *;
+END;
+--
+DROP FUNCTION IF EXISTS storage.append_index_field(varchar, varchar);
+CREATE FUNCTION storage.append_index_field(in_indexname varchar, in_expression varchar)
+RETURNS storage.indexes LANGUAGE SQL BEGIN ATOMIC
+INSERT INTO storage.indexes
+       (indexname, expression, ordinality)
+SELECT in_indexname, in_expression, max(ordinality) + 1
+  FROM storage.indexes WHERE indexname = in_indexname
+RETURNING *;
+END;
+--
+DROP FUNCTION IF EXISTS storage.get_index_fields(varchar);
+CREATE FUNCTION storage.get_index_fields(in_indexname varchar)
+RETURNS SETOF storage.indexes LANGUAGE SQL BEGIN ATOMIC
+select * from storage.indexes WHERE indexname = in_indexname;
+END;
+--
 /*
-CREATE FUNCTION storage.insert_index_field(...);
---
-CREATE FUNCTION storage.append_index_field(...);
---
 CREATE FUNCTION storage.create_index_statement(...);
 */
 
