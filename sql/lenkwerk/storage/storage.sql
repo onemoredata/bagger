@@ -45,38 +45,11 @@ comment on table storage.servermaps is
 $$ The servermaps table stores the server maps by generation so that
 we can determine which servers are supposed to receive writes together.$$;
 
-create table storage.partitions (
-     id bigserial not null unique,
-     primary_instance_id int references storage.postgres_instance (id),
-     generation int not null,
-     copies int[] not null,
-     schema text,
-     name text,
-     timerange tsrange not null,
-     primary key(primary_instance_id, schema, name)
-);
-
-comment on table storage.partitions is
-$$ This table tracks (for the current version) the tables that have been
-created on the various backends and the timeframes they are valid for.
-$$;
-
-comment on column storage.partitions.primary_instance_id is
-$$ This is the instance where the bagger responsible created the partition.
-Copies are all co-equal but this is expected to be local on the system. and
-therefore the preferred copy for reading.
-$$;
-
-comment on column storage.partitions.copies is
-$$ This contains an array of instance ids where the same table is stored.
-It will be an array of the length defined by the replication factor.  In the
-first version, that is limited to 2.$$;
-
 CREATE TABLE storage.dimensions (
    id serial NOT NULL UNIQUE, 
-   ordinality NOT NULL UNIQUE DEFERRABLE INITIALLY DEFERRED,
+   ordinality INT NOT NULL UNIQUE DEFERRABLE INITIALLY DEFERRED,
    default_val varchar not null,
-   fieldname varchar not null PRIMARY KEY
+   fieldname varchar PRIMARY KEY
 );
 
 
@@ -90,7 +63,7 @@ create table storage.indexes (
    index_name varchar(16) default 'bagger_idx',
    ordinal int,
    expression varchar not null,
-   primary key (index_name, ordinal)
+   primary key (index_name, ordinal) DEFERRABLE INITIALLY DEFERRED
 );
 
 comment on table storage.indexes is
