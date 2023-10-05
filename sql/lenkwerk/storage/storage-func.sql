@@ -143,34 +143,34 @@ $$;
 -- Indexes
 -----------------------
 
-DROP FUNCTION IF EXISTS storage.insert_index_field(varchar, int, varchar);
+DROP FUNCTION IF EXISTS storage.insert_index_field(int, int, varchar);
 CREATE FUNCTION storage.insert_index_field
-(in_indexname varchar, in_ordinality int, in_expression varchar)
-RETURNS storage.indexes LANGUAGE SQL BEGIN ATOMIC
-UPDATE storage.indexes
+(in_index_id int, in_ordinality int, in_expression varchar)
+RETURNS storage.index_fields LANGUAGE SQL BEGIN ATOMIC
+UPDATE storage.index_fields
    SET ordinality = ordinality + 1
- WHERE indexname = in_indexname and ordinality >= in_ordinality;
+ WHERE index_id = in_index_id and ordinality >= in_ordinality;
 
-INSERT INTO storage.indexes
-       (indexname, ordinality, expression)
-VALUES (in_indexname, in_ordinality, in_expression)
+INSERT INTO storage.index_fields
+       (index_id, ordinality, expression)
+VALUES (in_index_id, in_ordinality, in_expression)
 RETURNING *;
 END;
 --
-DROP FUNCTION IF EXISTS storage.append_index_field(varchar, varchar);
-CREATE FUNCTION storage.append_index_field(in_indexname varchar, in_expression varchar)
-RETURNS storage.indexes LANGUAGE SQL BEGIN ATOMIC
-INSERT INTO storage.indexes
-       (indexname, expression, ordinality)
-SELECT in_indexname, in_expression, max(ordinality) + 1
-  FROM storage.indexes WHERE indexname = in_indexname
+DROP FUNCTION IF EXISTS storage.append_index_field(int, varchar);
+CREATE FUNCTION storage.append_index_field(in_index_id int, in_expression varchar)
+RETURNS storage.index_fields LANGUAGE SQL BEGIN ATOMIC
+INSERT INTO storage.index_fields
+       (index_id, expression, ordinality)
+SELECT in_index_id, in_expression, max(ordinality) + 1
+  FROM storage.index_fields WHERE index_id = in_index_id
 RETURNING *;
 END;
 --
-DROP FUNCTION IF EXISTS storage.get_index_fields(varchar);
-CREATE FUNCTION storage.get_index_fields(in_indexname varchar)
-RETURNS SETOF storage.indexes LANGUAGE SQL BEGIN ATOMIC
-select * from storage.indexes WHERE indexname = in_indexname;
+DROP FUNCTION IF EXISTS storage.get_index_fields(int);
+CREATE FUNCTION storage.get_index_fields(in_index_id int)
+RETURNS SETOF storage.index_fields LANGUAGE SQL BEGIN ATOMIC
+select * from storage.index_fields WHERE index_id = in_index_id;
 END;
 --
 /*

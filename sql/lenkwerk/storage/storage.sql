@@ -53,7 +53,7 @@ CREATE TABLE storage.dimensions (
 );
 
 
-COMMENT ON TABLE storage.domensions IS
+COMMENT ON TABLE storage.dimensions IS
 $$ This contains the partitions by which data is partitioned. Default values 
 can be set using the default_val field though this is not yet supported.$$;
 
@@ -61,13 +61,28 @@ can be set using the default_val field though this is not yet supported.$$;
 create table storage.indexes (
    id serial not null unique, 
    indexname varchar(16) default 'bagger_idx',
-   ordinality int,
-   expression varchar not null,
-   primary key (indexname, ordinality) DEFERRABLE INITIALLY DEFERRED
+   access_method varchar 
+           check (access_method in ('gin', 'gist', 'btree', 'hash')),
+   primary key (indexname)
 );
 
 comment on table storage.indexes is
 $$ This table includes index definition information for bagger nodes.
+
+This allows us to specify GIN, GIST, btree, and hash indexes.$$;
+
+--
+
+CREATE TABLE storage.index_fields (
+   id serial not null unique,
+   index_id int not null references storage.indexes (id),
+   ordinality int,
+   expression varchar not null,
+   primary key (index_id, ordinality) DEFERRABLE INITIALLY DEFERRED
+);
+
+COMMENT ON TABLE storage.index_fields IS
+$$Stores the index fields or expressions.
 
 Some care needs to be paid as to the nature of the contents of this table
 because while naive SQL injection is not possile at index creation time,
@@ -78,7 +93,7 @@ $$;
 
 
 
-comment on column storage.indexes.expression is
+comment on column storage.index_fields.expression is
 $$This column has an important security consideration because improper
 management of indexes could allow attackers to run arbitrary code during
 index update.  The actual CREATE INDEX statement is not vulnerable to
