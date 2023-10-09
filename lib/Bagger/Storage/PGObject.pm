@@ -40,6 +40,9 @@ use strict;
 use warnings;
 use namespace::autoclean;
 use PGObject;
+use DBI;
+use Bagger::Storage::LenkwerkSetup;
+
 with 'PGObject::Simple::Role';
 
 # schema where functions are found.
@@ -56,14 +59,24 @@ module.
 
 {
 my $dbh;
-sub _get_dbh() { 
-   return $dbh if $dbh;  return _new_dbh(); 
+sub _get_dbh() {
+   return $dbh if $dbh; # retrieve singleton if available
+   return _new_dbh(); 
+}
+
+
+sub _new_dbh() {
+   $dbh = DBI->connect(
+           "DBI:Pg:" .
+	   "database=" . Bagger::Storage::LenkwerkSetup->lenkwerkdb .
+	   ";host="    . Bagger::Storage::LenkwerkSetup->dbhost .
+	   ";port="    . Bagger::Storage::LenkwerkSetup->dbport, 
+	    Bagger::Storage::LenkwerkSetup->dbuser,
+	    Bagger::Storage::LenkwerkSetup->dbpass);
+   return $dbh;
 }
 
 }
-
-sub _new_dbh() { die 'TODO' };
-
 =head1 Utility Functions
 
 =head2 bool(val)

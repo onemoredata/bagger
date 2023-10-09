@@ -191,10 +191,6 @@ sub set_status {
 
 =head1 SEE ALSO
 
-=head1 COPYING
-
-TODO
-
 =cut
 
 1;
