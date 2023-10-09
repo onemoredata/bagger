@@ -173,10 +173,40 @@ RETURNS SETOF storage.index_fields LANGUAGE SQL BEGIN ATOMIC
 select * from storage.index_fields WHERE index_id = in_index_id;
 END;
 --
-/*
-CREATE FUNCTION storage.create_index_statement(...);
-*/
+DROP FUNCTION IF EXISTS storage.get_index(text);
+CREATE FUNCTION storage.get_index(in_indexname text)
+RETURNS storage.indexes LANGUAGE SQL BEGIN ATOMIC
+SELECT * FROM storage.indexes WHERE indexname = in_indexname;
+END;
+--
+DROP FUNCTION IF EXISTS storage.save_index(text, text);
+CREATE FUNCTION storage.save_index(in_indexname text, in_access_method text)
+RETURNS storage.indexes LANGUAGE SQL BEGIN ATOMIC
+INSERT INTO storage.indexes (indexname, access_method)
+VALUES (in_indexname, in_access_method)
+ON CONFLICT(indexname)
+DO UPDATE SET access_method = in_access_method
+RETURNING *;
+END;
+
+/* get_index_statement will be done on storage nodes */
 
 -----------------------
 -- Config
 -----------------------
+DROP FUNCTION IF EXISTS storage.get_config(text);
+CREATE FUNCTION storage.get_config(in_key text)
+RETURNS storage.config LANGUAGE SQL BEGIN ATOMIC
+SELECT * FROM storage.config where key = in_key;
+END;
+--
+DROP FUNCTION IF EXISTS storage.save_config(text, json);
+CREATE FUNCTION storage.save_config(in_key text, in_value json)
+RETURNS storage.config LANGUAGE SQL BEGIN ATOMIC
+INSERT INTO storage.config (key, value)
+VALUES (in_key, in_value)
+ON CONFLICT (key)
+DO update set value = in_value
+RETURNING *;
+END;
+---
