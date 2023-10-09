@@ -72,7 +72,8 @@ sub _new_dbh() {
 	   ";host="    . Bagger::Storage::LenkwerkSetup->dbhost .
 	   ";port="    . Bagger::Storage::LenkwerkSetup->dbport, 
 	    Bagger::Storage::LenkwerkSetup->dbuser,
-	    Bagger::Storage::LenkwerkSetup->dbpass);
+	    Bagger::Storage::LenkwerkSetup->dbpass,
+	    {AutoCommit => 0 });
    return $dbh;
 }
 
