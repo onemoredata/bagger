@@ -188,6 +188,17 @@ sub set_status {
     return __PACKAGE__->new($result);
 }
 
+=head2 list()
+
+This returns a list of instances, set up as objects from the database.
+
+=cut
+
+sub list {
+    my ($self) = @_;
+    my @results = $self->call_dbmethod(funcname => 'list_pg_instances');
+    return map { __PACKAGE__->new($_) } @results;
+}
 
 =head1 SEE ALSO
 

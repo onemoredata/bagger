@@ -69,6 +69,14 @@ returns storage.postgres_instance LANGUAGE SQL BEGIN ATOMIC
 select * from storage.postgres_instance where host = in_host and port = in_port;
 END;
 
+----
+
+DROP FUNCTION IF EXISTS storage.list_pg_instances();
+
+CREATE FUNCTION storage.list_pg_instances()
+RETURNS SETOF storage.postgres_instance LANGUAGE SQL BEGIN ATOMIC
+SELECT * FROM storage.postgres_instance;
+END;
 
 -----------------
 -- Dimensions
