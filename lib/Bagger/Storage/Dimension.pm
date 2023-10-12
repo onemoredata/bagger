@@ -80,7 +80,9 @@ dbmethod list => (funcname => 'get_dimensions', returns_objects => 1);
 =head2 append()
 
 Appends the new dimension onto the list at the last ordinality and returns
-the new item as saved
+the new item as saved.
+
+Note that the database will refuse to append the same fieldname more than once.
 
 =cut
 
