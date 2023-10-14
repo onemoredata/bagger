@@ -8,6 +8,7 @@ package Bagger::Storage::LenkwerkSetup;
 
 use strict;
 use warnings;
+our $VERSION = '0.0.1';
 
 =head1 SYNOPSIS
 
