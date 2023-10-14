@@ -45,6 +45,8 @@ use Bagger::Storage::LenkwerkSetup;
 
 with 'PGObject::Simple::Role';
 
+our $VERSION = '0.0.1';
+
 # schema where functions are found.
 sub _get_schema() { 'storage' }
 

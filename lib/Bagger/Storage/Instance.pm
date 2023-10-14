@@ -29,6 +29,7 @@ use namespace::autoclean;
 with 'Bagger::Storage::PGObject';
 use PGObject::Util::DBMethod;
 
+our $VERSION = '0.0.1';
 
 =head1 STATUS_CONSTANTS
 
