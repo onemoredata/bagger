@@ -187,11 +187,11 @@ RETURNS storage.indexes LANGUAGE SQL BEGIN ATOMIC
 SELECT * FROM storage.indexes WHERE indexname = in_indexname;
 END;
 --
-DROP FUNCTION IF EXISTS storage.save_index(text, text);
-CREATE FUNCTION storage.save_index(in_indexname text, in_access_method text)
+DROP FUNCTION IF EXISTS storage.save_index(text, text, text);
+CREATE FUNCTION storage.save_index(in_indexname text, in_access_method text, in_tablespc text)
 RETURNS storage.indexes LANGUAGE SQL BEGIN ATOMIC
-INSERT INTO storage.indexes (indexname, access_method)
-VALUES (in_indexname, in_access_method)
+INSERT INTO storage.indexes (indexname, access_method, tablespc)
+VALUES (in_indexname, in_access_method, tablespc)
 ON CONFLICT(indexname)
 DO UPDATE SET access_method = in_access_method
 RETURNING *;
