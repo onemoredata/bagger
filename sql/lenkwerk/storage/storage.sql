@@ -61,8 +61,8 @@ can be set using the default_val field though this is not yet supported.$$;
 create table storage.indexes (
    id serial not null unique, 
    indexname varchar(16) default 'bagger_idx',
-   access_method varchar 
-           check (access_method in ('gin', 'gist', 'btree', 'hash')),
+   access_method varchar not null,
+   tablespc varchar default 'default',
    primary key (indexname)
 );
 
