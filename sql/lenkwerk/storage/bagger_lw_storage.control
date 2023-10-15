@@ -1,2 +1,4 @@
-comment = "The Bagger Lenkwerk Storage Schema"
+comment = 'The Bagger Lenkwerk Storage Schema'
+default_version = '0.0.1'
+relocatable = false
 

@@ -9,6 +9,7 @@ package Bagger::Storage::LenkwerkSetup;
 use strict;
 use warnings;
 use URI::Escape;
+use Carp 'croak';
 our $VERSION = '0.0.1';
 
 =head1 SYNOPSIS
@@ -86,6 +87,7 @@ sub dbport { $dbport };
 
 sub set_dbport {
     my ($self, $port) = @_;
+    croak 'Port must be an integer' if $port =~ /\D/;
     $dbport = $port if defined $port;
 }
 
@@ -191,14 +193,77 @@ sub dbi_str { "DBI:Pg:" .
 
 sub dsn_uri {
     my $dsn = 'postgresql://';
-    $dsn .= join ':', (uri_escape_utf8($dbuser // ''), 
+    $dsn .= join ':', (uri_escape_utf8($dbuser // ''),
                        uri_escape_utf8($dbpass // ''));
     $dsn .= '@';
-    $dsn .= join ':', (uri_escape_utf8($dbhost // ''), 
+    $dsn .= join ':', (uri_escape_utf8($dbhost // ''),
                        uri_escape_utf8($dbport // ''));
     $dsn .= '/';
     $dsn .= uri_escape_utf8($lenkwerkdb);
     return $dsn;
+}
+
+
+# use for programs that don't support dns's
+sub _cli_args {
+    return (
+        ($dbuser ? ('-U', "$dbuser") : ()),
+        ($dbhost ? ('-h', "$dbhost") : ()),
+        ($dbport ? ('-p', $dbport) : ()),
+    );
+}
+
+=head1 DATABASE SETUP ROUTINES
+
+=head2 createdb
+
+  This function creates a database and returns 1 if successful and 0 if not.
+
+  It thrown an exception if the database name has not been specified.
+
+=cut
+
+sub createdb {
+    croak 'No database set' unless $lenkwerkdb;
+    local $! ; # mask last system error
+
+    # If we are told to use a password, then we will
+    # mask the environment variable in this routine.
+    #
+    # This is safer than alternatives.
+
+    local $ENV{PGPASSWORD} = $dbpass if defined $dbpass;
+    my $failure = system('createdb', _cli_args, $lenkwerkdb);
+    warn 'Database creation failed' if $failure;
+    return not $failure;
+}
+
+
+=head2 load
+
+  Loads the database with the extensions for the various schemas required.
+
+  Returns 1 if successful, 0 if not.
+
+  Throws an exception if the database name is not specified.
+
+=cut
+
+my %exts = (
+     bagger_lw_storage => '0.0.1',
+);
+sub load {
+    croak 'No database set' unless $lenkwerkdb;
+    my $success = 1;
+    for my $ext (keys %exts) {
+        local $! = undef; # mask last system error
+	my $failure = system('psql', dsn_uri, '-c', 
+	   "create extension ${ext} version '$exts{$ext}'"
+	);
+	warn "Error loading extension $ext" if $failure;
+        return 0 if $failure;
+    }
+    return $success;
 }
 
 1;
