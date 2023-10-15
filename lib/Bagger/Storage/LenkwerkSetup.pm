@@ -8,6 +8,7 @@ package Bagger::Storage::LenkwerkSetup;
 
 use strict;
 use warnings;
+use URI::Escape;
 our $VERSION = '0.0.1';
 
 =head1 SYNOPSIS
@@ -40,6 +41,9 @@ our $VERSION = '0.0.1';
 
    If setters are called without a defined argument, they do nothing.  There
    is no provision to unset a config variable.
+
+   All configuration parameters should be in ASCII or UTF-8 (which is an ASCII
+   superset.
 
 =head1 Config Accessors
 
@@ -110,7 +114,8 @@ sub set_lenkwerkdb {
 
 =head2 dbuser
 
-   Username for database connection to Lenkwerk db
+   Username for database connection to Lenkwerk db.  Initially this is
+   undefined, and will default (via libpq) to the OS user the script runs as.
 
 =over
 
@@ -136,7 +141,8 @@ sub set_dbuser {
    Password for database connection to Lenkwerk db
 
    Note if this is only run from a couple of locations, the password could be
-   set in the .pgpass file instead.
+   set in the .pgpass file instead.  PGPASSWORD can also be used to pass in the
+   password.  See libpq documentation for details.
 
 =over
 
@@ -175,6 +181,26 @@ sub dbi_str { "DBI:Pg:" .
                        _dbi_str_keyval($dbport, 'port'),
 	 )
 }
+
+=item dsn_uri
+
+   Returns a well-formed URI from config input.  All items are properly
+   escaped.
+
+=cut
+
+sub dsn_uri {
+    my $dsn = 'postgresql://';
+    $dsn .= join ':', (uri_escape_utf8($dbuser // ''), 
+                       uri_escape_utf8($dbpass // ''));
+    $dsn .= '@';
+    $dsn .= join ':', (uri_escape_utf8($dbhost // ''), 
+                       uri_escape_utf8($dbport // ''));
+    $dsn .= '/';
+    $dsn .= uri_escape_utf8($lenkwerkdb);
+    return $dsn;
+}
+
 1;
 
 # vim:ts=4:sw=4:expandtab
