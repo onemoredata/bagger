@@ -2,7 +2,9 @@ use Test2::V0 -target => { pkg => 'Bagger::Storage::LenkwerkSetup' };
 use strict;
 use warnings;
 
-plan 18;
+plan 19;
+
+ok(dies { pkg()->set_dbport('fun') }, 'dies on non-int port setting');
 
 is(pkg()->dsn_uri, 'postgresql://:@:5432/lenkwerk', 'Default dsn uri correct');
 
