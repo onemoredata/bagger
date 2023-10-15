@@ -148,6 +148,7 @@ read-only.  What is read-only is the reference assignment.
 
 sub _get_fields { 
     my $self = shift;
+    return [] unless $self->id;
     return [Bagger::Storage::Index::Field->list($self->id)];
 }
 
@@ -156,6 +157,7 @@ has fields => (
               isa     => 'ArrayRef[Bagger::Index::Fields]',
 	      lazy    => 1,
               builder => '_get_fields',
+	      required => 0,
 );
 
 
@@ -201,12 +203,15 @@ sub save {
 
 =head2 int next_ordinal
 
-Returns the next available field for index fields.
+Returns the next available field for index fields.  Note that ordinals are
+0-based, and so this can also be used for a correct check for whether fields
+have already been added.
 
 =cut
 
 sub next_ordinal {
     my ($self) = @_;
+    return 0 unless defined $self->fields and @{$self->fields};
     my ($max_ordinal) = 
 		   sort { $b->ordinality <=> $a->ordinality }
 		   @{$self->fields};
@@ -226,6 +231,7 @@ sub create_statement {
     my ($self, $schema_name, $table_name) = @_;
     croak 'Must supply a schema_name to create_statement' unless $schema_name;
     croak 'Must supply a table_name to create_statement' unless $table_name;
+    croak "Index must have fields added first" unless $self->next_ordinal;
     
     my $idx_name    = $self->_dbh->quote_identifier(
                       $table_name . '_' . $self->indexname);
@@ -237,8 +243,10 @@ sub create_statement {
 		   sort { $a->ordinality <=> $b->ordinality }
 		   @{$self->fields};
 
-    return "CREATE INDEX $idx_name ON $schema_name.$table_name ".
+    my $stmt =  "CREATE INDEX $idx_name ON $schema_name.$table_name ".
            "($field_str) using " . $self->access_method;
+    $stmt .= " TABLESPACE " .
+	   $self->_dbh->quote_identifier($self->tablespc) if $self->tablespc;
 	  
 }
 

@@ -2,6 +2,10 @@
 
    Bagger::Storage::Index::Field - Index Field Handling for Bagger
 
+=cut
+
+package Bagger::Storage::Index::Field;
+
 =head1 SYNOPSIS
 
    $field = Bagger::Storage::Index::Field->new(
@@ -115,7 +119,7 @@ sub extract_from_json_object{
 
 =head2 json_field
 
-Returns an expressoin as extraction of the named field from the JSON field
+Returns an expression as extraction of the named field from the JSON field
 used in the top-level of the json object stored by Bagger.
 
 =cut
