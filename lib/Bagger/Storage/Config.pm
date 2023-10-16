@@ -16,12 +16,15 @@ package Bagger::Storage::Config;
 
 =cut
 
-use PGObject::Type::JSON;
 use strict;
 use warnings;
+use Carp 'croak';
 use Moose;
 use PGObject::Util::DBMethod;
+use PGObject::Type::JSON;
 use namespace::autoclean;
+use Scalar::Util 'reftype';
+use Moose::Util::TypeConstraints;
 with 'Bagger::Storage::PGObject';
 PGObject::Type::JSON->register; # become the codec for Perl <-> json
                                 # but not jsonb by default
@@ -59,12 +62,32 @@ has key => (is => 'ro', isa => 'Str', required => 1);
 
 =item value -- Arbitrary scalar, hashref, or arrayref.  Required
 
+=item value_string -- For scalars, handle as string rather json conversion ref
+ 
+  use this one if you expect a string or number back.
+
 =cut
 
-# TODO move to a more rigid subtype for deep checking
+subtype 'PGObject::Type::JSON'
+  => as 'PGObject::Type::JSON';
+
+coerce 'PGObject::Type::JSON'
+  => from 'Str | Ref'
+  =>  via { croak if (defined reftype($_)) and (reftype($_) =~ /CODE|SCALAR/);
+           return PGObject::Type::JSON->new($_) };
+
+
 has value => (is      => 'ro', 
-             isa      => 'Str | ArrayRef | HashRef',
-             required => 1);
+             isa      => 'PGObject::Type::JSON',
+             required => 1,
+	     coerce   => 1,
+             );
+sub value_string {
+    my $self = shift;
+    croak 'Expected a SCALAR config variable' 
+                              unless $self->value->reftype eq 'SCALAR';
+    return ${$self->value};
+}
 
 
 =head1 METHODS
@@ -78,7 +101,7 @@ has value => (is      => 'ro',
 sub get {
     my $self = shift;
     my $key = (shift // $self);
-    my ($config) = $self->call_procedure(funcname => 'get_setting',
+    my ($config) = $self->call_procedure(funcname => 'get_config',
                           args => [$key]);
     return __PACKAGE__->new($config);
 }

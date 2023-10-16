@@ -155,6 +155,24 @@ sub set_dbpass {
     $dbpass = $passwd if defined $passwd;
 }
 
+=head2 dbi_str
+
+ Gets the dbi connectin string for the database connection based on current settings.
+
+=cut
+
+sub _dbi_str_comp {
+    my ($value, $key) = @_;
+    return () unless $value;
+    return "$key=$value";
+}
+
+sub dbi_str { "DBI:Pg:" . 
+             join(';', _dbi_str_comp($lenkwerkdb, 'database'),
+                       _dbi_str_comp($dbhost, 'host'),
+                       _dbi_str_comp($dbport, 'port'),
+	 )
+}
 1;
 
 # vim:ts=4:sw=4:expandtab
