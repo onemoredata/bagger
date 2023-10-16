@@ -37,7 +37,7 @@ ok($aref_cfg->save, 'Can save arrayref config');
 ok($href_cfg->save, 'Can save href config');
 ok($struct_cfg->save, 'Can save struct config');
 
-is(pkg()->get($scal_cfg->key)->value, $initial_str, 'Initial string returned');
+is(pkg()->get($scal_cfg->key)->value_string, $initial_str, 'Initial string returned');
 is(pkg()->get($aref_cfg->key)->value, $initial_array, 'Initial aref returned');
 is(pkg()->get($href_cfg->key)->value, $initial_href, 'Initial href returned');
 is(pkg()->get($struct_cfg->key)->value, $initial_struct, 'Struct round trip');
