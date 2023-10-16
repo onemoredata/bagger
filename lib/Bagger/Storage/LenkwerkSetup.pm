@@ -156,3 +156,5 @@ sub set_dbpass {
 }
 
 1;
+
+# vim:ts=4:sw=4:expandtab

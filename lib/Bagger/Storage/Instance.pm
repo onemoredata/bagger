@@ -77,7 +77,7 @@ has host => (is => 'ro', isa => 'Str', required => 1);
 
 =head2 port
 
-An integer representation of the database port. Required.  By default set to 
+An integer representation of the database port. Required.  By default set to
 5432.
 
 =cut
@@ -110,22 +110,22 @@ the status.
 
 has can_read => (is => 'ro', isa => 'Bool', lazy => 1, builder => '_can_read');
 
-sub _can_read { 
+sub _can_read {
     my ($self) = @_;
     return bool($self->status & F_READ);
 }
 
 =head2 can_write
 
-This indicates whether the node can ingest data.  This is generated from 
+This indicates whether the node can ingest data.  This is generated from
 status.
 
 =cut
 
-has can_write => (is => 'ro', isa => 'Bool', lazy => 1, 
+has can_write => (is => 'ro', isa => 'Bool', lazy => 1,
                   builder => '_can_write');
 
-sub _can_write { 
+sub _can_write {
     my ($self)  = @_;
     return bool($self->status & F_WRITE);
 }
@@ -134,7 +134,7 @@ sub _can_write {
 
 =head2 register
 
-This saves the object in the database and returns a new object with status and 
+This saves the object in the database and returns a new object with status and
 id set by the database.  Use as follows:
 
    $instance = $instance->register();
@@ -171,7 +171,7 @@ sub get_by_info {
     my ($self, $host, $port) = @_;
     my ($result) = __PACKAGE__->call_procedure(
                      funcname => 'get_pg_instance_by_host_and_port',
-		     args     => [$host, $port]
+                     args     => [$host, $port]
     );
     return __PACKAGE__->new($result);
 }
@@ -184,7 +184,7 @@ This sets the instance status and returns a new object.
 
 sub set_status {
     my ($self, $status) = @_;
-    my ($result) = $self->call_dbmethod(funcname => 'set_pg_instance_status', 
+    my ($result) = $self->call_dbmethod(funcname => 'set_pg_instance_status',
             args => {status => $status});
     return __PACKAGE__->new($result);
 }
@@ -206,3 +206,5 @@ sub list {
 =cut
 
 1;
+
+# vim:ts=4:sw=4:expandtab
