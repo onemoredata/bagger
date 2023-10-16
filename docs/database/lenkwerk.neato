@@ -1,0 +1,21 @@
+digraph g {
+node [ fontsize = "10", shape = record ];
+edge [];
+
+"storage.config" [shape = record, label = "{<col0> \N| id:  serial\lkey:  text\lvalue:  json\l}" ];
+
+"storage.dimensions" [shape = record, label = "{<col0> \N| id:  serial\lordinality:  integer\ldefault_val:  character varying\lfieldname:  character varying\l}" ];
+
+"storage.index_fields" [shape = record, label = "{<col0> \N| id:  serial\lindex_id:  integer\lordinality:  integer\lexpression:  character varying\l}" ];
+
+"storage.indexes" [shape = record, label = "{<col0> \N| id:  serial\lindexname:  character varying(16)\laccess_method:  character varying\l}" ];
+
+"storage.postgres_instance" [shape = record, label = "{<col0> \N| id:  serial\lhost:  character varying\lport:  integer\lusername:  character varying\lstatus:  smallint\l}" ];
+
+"storage.servermaps" [shape = record, label = "{<col0> \N| generation:  serial\lserver_map:  json\l}" ];
+
+
+"storage.index_fields" -> "storage.indexes" [label="index_fields_index_id_fkey"];
+}
+
+

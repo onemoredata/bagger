@@ -1,0 +1,29 @@
+digraph g {
+graph [
+rankdir = "LR",
+concentrate = true,
+ratio = auto
+];
+node [
+fontsize = "10",
+shape = record
+];
+edge [
+];
+
+"storage.config" [shape = plaintext, label = < <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"> <TR ><TD PORT="ltcol0"> </TD> <TD bgcolor="grey90" border="1" COLSPAN="4"> \N </TD> <TD PORT="rtcol0"></TD></TR>  <TR><TD PORT="ltcol1" ></TD><TD align="left" > id </TD><TD align="left" > serial </TD><TD align="left" >  </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol1"> </TD></TR> <TR><TD PORT="ltcol2" ></TD><TD align="left" > key </TD><TD align="left" > text </TD><TD align="left" > PK </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol2"> </TD></TR> <TR><TD PORT="ltcol3" ></TD><TD align="left" > value </TD><TD align="left" > json </TD><TD align="left" >  </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol3"> </TD></TR> </TABLE>> ];
+
+"storage.dimensions" [shape = plaintext, label = < <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"> <TR ><TD PORT="ltcol0"> </TD> <TD bgcolor="grey90" border="1" COLSPAN="4"> \N </TD> <TD PORT="rtcol0"></TD></TR>  <TR><TD PORT="ltcol1" ></TD><TD align="left" > id </TD><TD align="left" > serial </TD><TD align="left" >  </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol1"> </TD></TR> <TR><TD PORT="ltcol2" ></TD><TD align="left" > ordinality </TD><TD align="left" > integer </TD><TD align="left" >  </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol2"> </TD></TR> <TR><TD PORT="ltcol3" ></TD><TD align="left" > default_val </TD><TD align="left" > character varying </TD><TD align="left" >  </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol3"> </TD></TR> <TR><TD PORT="ltcol4" ></TD><TD align="left" > fieldname </TD><TD align="left" > character varying </TD><TD align="left" > PK </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol4"> </TD></TR> </TABLE>> ];
+
+"storage.index_fields" [shape = plaintext, label = < <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"> <TR ><TD PORT="ltcol0"> </TD> <TD bgcolor="grey90" border="1" COLSPAN="4"> \N </TD> <TD PORT="rtcol0"></TD></TR>  <TR><TD PORT="ltcol1" ></TD><TD align="left" > id </TD><TD align="left" > serial </TD><TD align="left" >  </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol1"> </TD></TR> <TR><TD PORT="ltcol2" ></TD><TD align="left" > index_id </TD><TD align="left" > integer </TD><TD align="left" > PK </TD><TD align="left" > FK </TD><TD align="left" PORT="rtcol2"> </TD></TR> <TR><TD PORT="ltcol3" ></TD><TD align="left" > ordinality </TD><TD align="left" > integer </TD><TD align="left" > PK </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol3"> </TD></TR> <TR><TD PORT="ltcol4" ></TD><TD align="left" > expression </TD><TD align="left" > character varying </TD><TD align="left" >  </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol4"> </TD></TR> </TABLE>> ];
+
+"storage.indexes" [shape = plaintext, label = < <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"> <TR ><TD PORT="ltcol0"> </TD> <TD bgcolor="grey90" border="1" COLSPAN="4"> \N </TD> <TD PORT="rtcol0"></TD></TR>  <TR><TD PORT="ltcol1" ></TD><TD align="left" > id </TD><TD align="left" > serial </TD><TD align="left" >  </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol1"> </TD></TR> <TR><TD PORT="ltcol2" ></TD><TD align="left" > indexname </TD><TD align="left" > character varying(16) </TD><TD align="left" > PK </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol2"> </TD></TR> <TR><TD PORT="ltcol3" ></TD><TD align="left" > access_method </TD><TD align="left" > character varying </TD><TD align="left" >  </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol3"> </TD></TR> </TABLE>> ];
+
+"storage.postgres_instance" [shape = plaintext, label = < <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"> <TR ><TD PORT="ltcol0"> </TD> <TD bgcolor="grey90" border="1" COLSPAN="4"> \N </TD> <TD PORT="rtcol0"></TD></TR>  <TR><TD PORT="ltcol1" ></TD><TD align="left" > id </TD><TD align="left" > serial </TD><TD align="left" >  </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol1"> </TD></TR> <TR><TD PORT="ltcol2" ></TD><TD align="left" > host </TD><TD align="left" > character varying </TD><TD align="left" > PK </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol2"> </TD></TR> <TR><TD PORT="ltcol3" ></TD><TD align="left" > port </TD><TD align="left" > integer </TD><TD align="left" > PK </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol3"> </TD></TR> <TR><TD PORT="ltcol4" ></TD><TD align="left" > username </TD><TD align="left" > character varying </TD><TD align="left" >  </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol4"> </TD></TR> <TR><TD PORT="ltcol5" ></TD><TD align="left" > status </TD><TD align="left" > smallint </TD><TD align="left" >  </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol5"> </TD></TR> </TABLE>> ];
+
+"storage.servermaps" [shape = plaintext, label = < <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"> <TR ><TD PORT="ltcol0"> </TD> <TD bgcolor="grey90" border="1" COLSPAN="4"> \N </TD> <TD PORT="rtcol0"></TD></TR>  <TR><TD PORT="ltcol1" ></TD><TD align="left" > generation </TD><TD align="left" > serial </TD><TD align="left" > PK </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol1"> </TD></TR> <TR><TD PORT="ltcol2" ></TD><TD align="left" > server_map </TD><TD align="left" > json </TD><TD align="left" >  </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol2"> </TD></TR> </TABLE>> ];
+
+
+
+"storage.index_fields":rtcol2 -> "storage.indexes":ltcol1 [label="index_fields_index_id_fkey"];
+}
