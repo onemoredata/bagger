@@ -66,16 +66,23 @@ sub _get_dbh() {
    return _new_dbh();
 }
 
+sub _dbi_str_comp {
+    my ($value, $key) = @_;
+    return '' unless $value;
+    return "$key=$value";
+}
 
 sub _new_dbh() {
    $dbh = DBI->connect(
-           "DBI:Pg:" .
-           "database=" . Bagger::Storage::LenkwerkSetup->lenkwerkdb .
-           ";host="    . Bagger::Storage::LenkwerkSetup->dbhost .
-           ";port="    . Bagger::Storage::LenkwerkSetup->dbport,
-           Bagger::Storage::LenkwerkSetup->dbuser,
-           Bagger::Storage::LenkwerkSetup->dbpass,
-           {AutoCommit => 0 });
+         "DBI:Pg:" .
+         (join(';',
+	 _dbi_str_comp(Bagger::Storage::LenkwerkSetup->lenkwerkdb, 'database'),
+	 _dbi_str_comp(Bagger::Storage::LenkwerkSetup->dbhost, 'host'),
+	 _dbi_str_comp(Bagger::Storage::LenkwerkSetup->dbport, 'port'),
+	 )),
+	    Bagger::Storage::LenkwerkSetup->dbuser,
+	    Bagger::Storage::LenkwerkSetup->dbpass,
+	    {AutoCommit => 0 });
    return $dbh;
 }
 
