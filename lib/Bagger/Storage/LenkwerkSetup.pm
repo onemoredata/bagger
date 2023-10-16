@@ -144,6 +144,8 @@ sub set_dbuser {
 
 =item set_dbpass($password) -- set db password
 
+=back
+
 =cut
 
 my $dbpass;
