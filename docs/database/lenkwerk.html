@@ -1,0 +1,1141 @@
+<!-- $Header: /cvsroot/autodoc/autodoc/html.tmpl,v 1.4 2006/05/16 19:01:27 rbt Exp $ -->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+<head>
+  <title>Index for lenkwerk</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <style type="text/css">
+  BODY {
+    color:	#000000;
+    background-color: #FFFFFF;
+    font-family: Helvetica, sans-serif;
+  }
+  
+  P {
+    margin-top: 5px;
+    margin-bottom: 5px;
+  }
+  
+  P.w3ref {
+    font-size: 8pt;
+    font-style: italic;
+    text-align: right;
+  }
+  
+  P.detail {
+    font-size: 10pt;
+  }
+  
+  .error {
+    color: #FFFFFF;
+    background-color: #FF0000;
+  }
+  
+  H1, H2, H3, H4, H5, H6 {
+  }
+  
+  OL {
+    list-style-type: upper-alpha;
+  }
+  
+  UL.topic {
+    list-style-type: upper-alpha;
+  }
+  
+  LI.topic {
+    font-weight : bold;
+  }
+  
+  HR {
+    color: #00FF00;
+    background-color: #808080;
+  }
+  
+  TABLE {
+    border-width: medium;
+    padding: 3px;
+    background-color: #000000;
+    width: 90%;
+  }
+  
+  CAPTION {
+    text-transform: capitalize;
+    font-weight : bold;
+    font-size: 14pt;
+  }
+  
+  TH {
+    color: #FFFFFF;
+    background-color: #000000;
+    text-align: left;
+  }
+  
+  TR {
+    color: #000000;
+    background-color: #000000;
+    vertical-align: top;
+  }
+  
+  TR.tr0 {
+    background-color: #F0F0F0;
+  }
+  
+  TR.tr1 {
+    background-color: #D8D8D8;
+  }
+  
+  TD {
+    font-size: 12pt;
+  }
+  
+  TD.col0 {
+    font-weight : bold;
+    width: 20%;
+  }
+  
+  TD.col1 {
+    font-style: italic;
+    width: 15%;
+  }
+  
+  TD.col2 {
+    font-size: 12px;
+  }
+  </style>
+  <link rel="stylesheet" type="text/css" media="all" href="all.css">
+  <link rel="stylesheet" type="text/css" media="screen" href="screen.css">
+  <link rel="stylesheet" type="text/css" media="print" href="print.css">
+  <meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+</head>
+<body>
+
+<!-- Primary Index -->
+<p><br><br>Dumped on 2023-10-16</p>
+<h1><a name="index">Index of database - lenkwerk</a></h1>
+<ul>
+  
+  <li><a name="public.schema">public</a></li><ul>
+    
+    
+  </ul>
+  
+  <li><a name="storage.schema">storage</a></li><ul>
+    <li><a href="#storage.table.config">config</a></li><li><a href="#storage.table.dimensions">dimensions</a></li><li><a href="#storage.table.index-fields">index_fields</a></li><li><a href="#storage.table.indexes">indexes</a></li><li><a href="#storage.table.postgres-instance">postgres_instance</a></li><li><a href="#storage.table.servermaps">servermaps</a></li>
+    <li><a href="#storage.function.append-dimension-in-fieldname-character-varying-in-default-val-character-varying">append_dimension(in_fieldname character varying, in_default_val character varying)</a></li><li><a href="#storage.function.append-index-field-in-index-id-integer-in-expression-character-varying">append_index_field(in_index_id integer, in_expression character varying)</a></li><li><a href="#storage.function.get-config-in-key-text">get_config(in_key text)</a></li><li><a href="#storage.function.get-dimensions">get_dimensions()</a></li><li><a href="#storage.function.get-index-in-indexname-text">get_index(in_indexname text)</a></li><li><a href="#storage.function.get-index-fields-in-index-id-integer">get_index_fields(in_index_id integer)</a></li><li><a href="#storage.function.get-pg-instance-by-host-and-port-in-host-text-in-port-integer">get_pg_instance_by_host_and_port(in_host text, in_port integer)</a></li><li><a href="#storage.function.get-pg-instance-by-id-in-id-integer">get_pg_instance_by_id(in_id integer)</a></li><li><a href="#storage.function.insert-dimension-in-ordinality-integer-in-fieldname-character-varying-in-default-val-character-varying">insert_dimension(in_ordinality integer, in_fieldname character varying, in_default_val character varying)</a></li><li><a href="#storage.function.insert-index-field-in-index-id-integer-in-ordinality-integer-in-expression-character-varying">insert_index_field(in_index_id integer, in_ordinality integer, in_expression character varying)</a></li><li><a href="#storage.function.list-pg-instances">list_pg_instances()</a></li><li><a href="#storage.function.register-pg-instance-in-host-text-in-port-integer-in-username-text">register_pg_instance(in_host text, in_port integer, in_username text)</a></li><li><a href="#storage.function.save-config-in-key-text-in-value-json">save_config(in_key text, in_value json)</a></li><li><a href="#storage.function.save-index-in-indexname-text-in-access-method-text">save_index(in_indexname text, in_access_method text)</a></li><li><a href="#storage.function.set-pg-instance-status-in-id-integer-in-status-integer">set_pg_instance_status(in_id integer, in_status integer)</a></li>
+  </ul>
+  
+</ul>
+
+<!-- Schema Creation -->
+<!-- publicpublic -->
+
+
+<hr>
+<h1>Schema public</h1>
+
+<p class="schema_comment">standard public schema</p>
+
+
+
+
+
+<!-- We've gone through the table structure, now lets take a look at user functions -->
+
+
+<!-- storagestorage -->
+
+
+<hr>
+<h1>Schema storage</h1>
+
+
+
+
+<hr>
+<h2>Table:
+  
+  <a href="#storage.schema">storage</a>.<a name="storage.table.config">config</a>
+</h2>
+
+<p class="table_comment"> This table stores configuration for the storage nodes.
+</p>
+
+
+
+<table class="schema" width="100%" cellspacing="0" cellpadding="3">
+  <caption>storage.config Structure</caption>
+  <tr>
+    <th>F-Key</th>
+    <th>Name</th>
+    <th>Type</th>
+    <th>Description</th>
+  </tr>
+  
+  <tr class="tr0">
+    <td>
+      
+      
+      
+    </td>
+    <td>id</td>
+    <td>serial</td>
+    <td>
+      <i>
+        
+        
+        
+        
+        UNIQUE
+        
+        
+        
+        NOT NULL
+        
+      </i>
+      
+    </td>
+  </tr>
+  
+  <tr class="tr1">
+    <td>
+      
+      
+      
+    </td>
+    <td>key</td>
+    <td>text</td>
+    <td>
+      <i>
+        
+        PRIMARY KEY
+        
+        
+        
+        
+        
+        
+        
+      </i>
+      
+    </td>
+  </tr>
+  
+  <tr class="tr0">
+    <td>
+      
+    </td>
+    <td>value</td>
+    <td>json</td>
+    <td>
+      <i>
+        
+        
+        NOT NULL
+        
+      </i>
+      <br><br> JSON is selected here because it is richer than plain text and serialization
+libraries are available in all major languages.
+    </td>
+  </tr>
+  
+</table>
+
+<!-- Inherits -->
+
+
+
+
+
+
+<!-- Constraint List -->
+
+
+<!-- Foreign Key Discovery -->
+
+<ul class="indexes">
+<!-- Indexes -->
+
+</ul>
+<!-- View Definition -->
+
+
+<!-- List off permissions -->
+
+
+<p>
+  <a href="#index">Index</a> -
+  <a href="#storage.schema">Schema storage</a>
+</p>
+
+<hr>
+<h2>Table:
+  
+  <a href="#storage.schema">storage</a>.<a name="storage.table.dimensions">dimensions</a>
+</h2>
+
+<p class="table_comment"> This contains the partitions by which data is partitioned. Default values
+can be set using the default_val field though this is not yet supported.</p>
+
+
+
+<table class="schema" width="100%" cellspacing="0" cellpadding="3">
+  <caption>storage.dimensions Structure</caption>
+  <tr>
+    <th>F-Key</th>
+    <th>Name</th>
+    <th>Type</th>
+    <th>Description</th>
+  </tr>
+  
+  <tr class="tr0">
+    <td>
+      
+      
+      
+    </td>
+    <td>id</td>
+    <td>serial</td>
+    <td>
+      <i>
+        
+        
+        
+        
+        UNIQUE
+        
+        
+        
+        NOT NULL
+        
+      </i>
+      
+    </td>
+  </tr>
+  
+  <tr class="tr1">
+    <td>
+      
+      
+      
+    </td>
+    <td>ordinality</td>
+    <td>integer</td>
+    <td>
+      <i>
+        
+        
+        
+        
+        UNIQUE
+        
+        
+        
+        NOT NULL
+        
+      </i>
+      
+    </td>
+  </tr>
+  
+  <tr class="tr0">
+    <td>
+      
+    </td>
+    <td>default_val</td>
+    <td>character varying</td>
+    <td>
+      <i>
+        
+        
+        NOT NULL
+        
+      </i>
+      
+    </td>
+  </tr>
+  
+  <tr class="tr1">
+    <td>
+      
+      
+      
+    </td>
+    <td>fieldname</td>
+    <td>character varying</td>
+    <td>
+      <i>
+        
+        PRIMARY KEY
+        
+        
+        
+        
+        
+        
+        
+      </i>
+      
+    </td>
+  </tr>
+  
+</table>
+
+<!-- Inherits -->
+
+
+
+
+
+
+<!-- Constraint List -->
+
+
+<!-- Foreign Key Discovery -->
+
+<ul class="indexes">
+<!-- Indexes -->
+
+</ul>
+<!-- View Definition -->
+
+
+<!-- List off permissions -->
+
+
+<p>
+  <a href="#index">Index</a> -
+  <a href="#storage.schema">Schema storage</a>
+</p>
+
+<hr>
+<h2>Table:
+  
+  <a href="#storage.schema">storage</a>.<a name="storage.table.index-fields">index_fields</a>
+</h2>
+
+<p class="table_comment">Stores the index fields or expressions.
+
+Some care needs to be paid as to the nature of the contents of this table
+because while naive SQL injection is not possile at index creation time,
+indexes can perform arbitrary code at insert or update time.
+
+For this reason registering indexes is a privileged operation.
+</p>
+
+
+
+<table class="schema" width="100%" cellspacing="0" cellpadding="3">
+  <caption>storage.index_fields Structure</caption>
+  <tr>
+    <th>F-Key</th>
+    <th>Name</th>
+    <th>Type</th>
+    <th>Description</th>
+  </tr>
+  
+  <tr class="tr0">
+    <td>
+      
+      
+      
+    </td>
+    <td>id</td>
+    <td>serial</td>
+    <td>
+      <i>
+        
+        
+        
+        
+        UNIQUE
+        
+        
+        
+        NOT NULL
+        
+      </i>
+      
+    </td>
+  </tr>
+  
+  <tr class="tr1">
+    <td>
+      
+      
+      <a href="#storage.table.indexes">storage.indexes.id</a>
+      
+      
+      
+      
+    </td>
+    <td>index_id</td>
+    <td>integer</td>
+    <td>
+      <i>
+        
+        
+        
+        
+        
+        PRIMARY KEY
+        
+        
+        
+        
+        
+        
+        
+      </i>
+      
+    </td>
+  </tr>
+  
+  <tr class="tr0">
+    <td>
+      
+      
+      
+    </td>
+    <td>ordinality</td>
+    <td>integer</td>
+    <td>
+      <i>
+        
+        PRIMARY KEY
+        
+        
+        
+        
+        
+        
+        
+      </i>
+      
+    </td>
+  </tr>
+  
+  <tr class="tr1">
+    <td>
+      
+    </td>
+    <td>expression</td>
+    <td>character varying</td>
+    <td>
+      <i>
+        
+        
+        NOT NULL
+        
+      </i>
+      <br><br>This column has an important security consideration because improper
+management of indexes could allow attackers to run arbitrary code during
+index update.  The actual CREATE INDEX statement is not vulnerable to
+SQL injection attacks itself, but expressions can include function calls
+to any function marked immutable.  This means that a clever attacker could
+create a function with destructive intent, mark it as immutable and then
+call it from a function.
+
+This problem is not actually related to storing the index expressions in
+the database.  The problem can happen anywhere these expressions are stored
+and therefore it is important to have careful controls on that process.
+
+RECOMMENDATION:  update this table from an infrastructure-as-code framework
+only and implement checks to ensure the two are in sync.
+    </td>
+  </tr>
+  
+</table>
+
+<!-- Inherits -->
+
+
+
+
+
+
+<!-- Constraint List -->
+
+
+<!-- Foreign Key Discovery -->
+
+<ul class="indexes">
+<!-- Indexes -->
+
+</ul>
+<!-- View Definition -->
+
+
+<!-- List off permissions -->
+
+
+<p>
+  <a href="#index">Index</a> -
+  <a href="#storage.schema">Schema storage</a>
+</p>
+
+<hr>
+<h2>Table:
+  
+  <a href="#storage.schema">storage</a>.<a name="storage.table.indexes">indexes</a>
+</h2>
+
+<p class="table_comment"> This table includes index definition information for bagger nodes.
+
+This allows us to specify GIN, GIST, btree, and hash indexes.</p>
+
+
+
+<table class="schema" width="100%" cellspacing="0" cellpadding="3">
+  <caption>storage.indexes Structure</caption>
+  <tr>
+    <th>F-Key</th>
+    <th>Name</th>
+    <th>Type</th>
+    <th>Description</th>
+  </tr>
+  
+  <tr class="tr0">
+    <td>
+      
+      
+      
+    </td>
+    <td>id</td>
+    <td>serial</td>
+    <td>
+      <i>
+        
+        
+        
+        
+        UNIQUE
+        
+        
+        
+        NOT NULL
+        
+      </i>
+      
+    </td>
+  </tr>
+  
+  <tr class="tr1">
+    <td>
+      
+      
+      
+    </td>
+    <td>indexname</td>
+    <td>character varying(16)</td>
+    <td>
+      <i>
+        
+        PRIMARY KEY
+        
+        
+        
+        
+        
+        
+        DEFAULT &#39;bagger_idx&#39;::character varying
+      </i>
+      
+    </td>
+  </tr>
+  
+  <tr class="tr0">
+    <td>
+      
+    </td>
+    <td>access_method</td>
+    <td>character varying</td>
+    <td>
+      <i>
+        
+        
+        NOT NULL
+        
+      </i>
+      
+    </td>
+  </tr>
+  
+</table>
+
+<!-- Inherits -->
+
+
+
+
+
+
+<!-- Constraint List -->
+
+
+<!-- Foreign Key Discovery -->
+
+<div class="fk_schemas">
+  <p>Tables referencing this one via Foreign Key Constraints:</p>
+  
+  <ul>
+    <li><a href="#storage.table.index-fields">storage.index_fields</a></li>
+  </ul>
+  
+</div>
+
+<ul class="indexes">
+<!-- Indexes -->
+
+</ul>
+<!-- View Definition -->
+
+
+<!-- List off permissions -->
+
+
+<p>
+  <a href="#index">Index</a> -
+  <a href="#storage.schema">Schema storage</a>
+</p>
+
+<hr>
+<h2>Table:
+  
+  <a href="#storage.schema">storage</a>.<a name="storage.table.postgres-instance">postgres_instance</a>
+</h2>
+
+<p class="table_comment">The postgres_instance table provides enough information for Bagger components 
+to connect to the relevant database instances.  Note that authentication is NOT
+in scope and must be set separately.  We recommend certificate authentication
+or gssapi.  As a fallback, the .pgpass can be used though rotating passwords is
+not easy.
+
+DO NOT STORE PASSWORDS IN PLAIN TEXT IN THE DATABASE</p>
+
+
+
+<table class="schema" width="100%" cellspacing="0" cellpadding="3">
+  <caption>storage.postgres_instance Structure</caption>
+  <tr>
+    <th>F-Key</th>
+    <th>Name</th>
+    <th>Type</th>
+    <th>Description</th>
+  </tr>
+  
+  <tr class="tr0">
+    <td>
+      
+      
+      
+    </td>
+    <td>id</td>
+    <td>serial</td>
+    <td>
+      <i>
+        
+        
+        
+        
+        UNIQUE
+        
+        
+        
+        NOT NULL
+        
+      </i>
+      
+    </td>
+  </tr>
+  
+  <tr class="tr1">
+    <td>
+      
+      
+      
+    </td>
+    <td>host</td>
+    <td>character varying</td>
+    <td>
+      <i>
+        
+        PRIMARY KEY
+        
+        
+        
+        
+        
+        
+        
+      </i>
+      
+    </td>
+  </tr>
+  
+  <tr class="tr0">
+    <td>
+      
+      
+      
+    </td>
+    <td>port</td>
+    <td>integer</td>
+    <td>
+      <i>
+        
+        PRIMARY KEY
+        
+        
+        
+        
+        
+        
+        
+      </i>
+      
+    </td>
+  </tr>
+  
+  <tr class="tr1">
+    <td>
+      
+    </td>
+    <td>username</td>
+    <td>character varying</td>
+    <td>
+      <i>
+        
+        
+        NOT NULL
+        
+      </i>
+      
+    </td>
+  </tr>
+  
+  <tr class="tr0">
+    <td>
+      
+    </td>
+    <td>status</td>
+    <td>smallint</td>
+    <td>
+      <i>
+        
+        
+        NOT NULL
+        
+      </i>
+      <br><br> The status here is a bit string for various statuses.  
+Currently the bits are: 
+0 - Can read 
+1 - Can write
+
+This leads to the following values:
+0 - Offline
+1 - read-only
+2 - write-only
+3 - Online (can read and write)
+
+New states may be added in the future.
+
+    </td>
+  </tr>
+  
+</table>
+
+<!-- Inherits -->
+
+
+
+
+
+
+<!-- Constraint List -->
+
+<p>&nbsp;</p>
+<table class="constraints" width="100%" cellspacing="0" cellpadding="3">
+  <caption>storage.postgres_instance Constraints</caption>
+  <tr>
+    <th>Name</th>
+    <th>Constraint</th>
+  </tr>
+  
+  <tr class="tr0">
+    <td>postgres_instance_status_check</td>
+    <td>CHECK (((status &gt;= 0) AND (status &lt;= 3)))</td>
+  </tr>
+  
+</table>
+
+
+<!-- Foreign Key Discovery -->
+
+<ul class="indexes">
+<!-- Indexes -->
+
+</ul>
+<!-- View Definition -->
+
+
+<!-- List off permissions -->
+
+
+<p>
+  <a href="#index">Index</a> -
+  <a href="#storage.schema">Schema storage</a>
+</p>
+
+<hr>
+<h2>Table:
+  
+  <a href="#storage.schema">storage</a>.<a name="storage.table.servermaps">servermaps</a>
+</h2>
+
+<p class="table_comment"> The servermaps table stores the server maps by generation so that
+we can determine which servers are supposed to receive writes together.</p>
+
+
+
+<table class="schema" width="100%" cellspacing="0" cellpadding="3">
+  <caption>storage.servermaps Structure</caption>
+  <tr>
+    <th>F-Key</th>
+    <th>Name</th>
+    <th>Type</th>
+    <th>Description</th>
+  </tr>
+  
+  <tr class="tr0">
+    <td>
+      
+      
+      
+    </td>
+    <td>generation</td>
+    <td>serial</td>
+    <td>
+      <i>
+        
+        PRIMARY KEY
+        
+        
+        
+        
+        
+        
+        
+      </i>
+      
+    </td>
+  </tr>
+  
+  <tr class="tr1">
+    <td>
+      
+    </td>
+    <td>server_map</td>
+    <td>json</td>
+    <td>
+      <i>
+        
+        
+        NOT NULL
+        
+      </i>
+      
+    </td>
+  </tr>
+  
+</table>
+
+<!-- Inherits -->
+
+
+
+
+
+
+<!-- Constraint List -->
+
+
+<!-- Foreign Key Discovery -->
+
+<ul class="indexes">
+<!-- Indexes -->
+
+</ul>
+<!-- View Definition -->
+
+
+<!-- List off permissions -->
+
+
+<p>
+  <a href="#index">Index</a> -
+  <a href="#storage.schema">Schema storage</a>
+</p>
+
+
+<!-- We've gone through the table structure, now lets take a look at user functions -->
+
+<hr>
+<h2>Function:
+  <a href="#storage.schema">storage</a>.<a name="storage.function.append-dimension-in-fieldname-character-varying-in-default-val-character-varying">append_dimension(in_fieldname character varying, in_default_val character varying)</a>
+</h2>
+<h3>Returns: dimensions</h3>
+<h3>Language: SQL</h3>
+<p>This function inserts a named dimension at the end of the list.
+
+It returns the row as saved.
+</p>
+<pre></pre>
+
+<hr>
+<h2>Function:
+  <a href="#storage.schema">storage</a>.<a name="storage.function.append-index-field-in-index-id-integer-in-expression-character-varying">append_index_field(in_index_id integer, in_expression character varying)</a>
+</h2>
+<h3>Returns: index_fields</h3>
+<h3>Language: SQL</h3>
+
+<pre></pre>
+
+<hr>
+<h2>Function:
+  <a href="#storage.schema">storage</a>.<a name="storage.function.get-config-in-key-text">get_config(in_key text)</a>
+</h2>
+<h3>Returns: config</h3>
+<h3>Language: SQL</h3>
+
+<pre></pre>
+
+<hr>
+<h2>Function:
+  <a href="#storage.schema">storage</a>.<a name="storage.function.get-dimensions">get_dimensions()</a>
+</h2>
+<h3>Returns: SET OF dimensions</h3>
+<h3>Language: SQL</h3>
+<p> Selects an ordered set of dimensions.  Note that the ordinality is the
+order of evaluation for partitioning and all dimensions are evaluated.</p>
+<pre></pre>
+
+<hr>
+<h2>Function:
+  <a href="#storage.schema">storage</a>.<a name="storage.function.get-index-in-indexname-text">get_index(in_indexname text)</a>
+</h2>
+<h3>Returns: indexes</h3>
+<h3>Language: SQL</h3>
+
+<pre></pre>
+
+<hr>
+<h2>Function:
+  <a href="#storage.schema">storage</a>.<a name="storage.function.get-index-fields-in-index-id-integer">get_index_fields(in_index_id integer)</a>
+</h2>
+<h3>Returns: SET OF index_fields</h3>
+<h3>Language: SQL</h3>
+
+<pre></pre>
+
+<hr>
+<h2>Function:
+  <a href="#storage.schema">storage</a>.<a name="storage.function.get-pg-instance-by-host-and-port-in-host-text-in-port-integer">get_pg_instance_by_host_and_port(in_host text, in_port integer)</a>
+</h2>
+<h3>Returns: postgres_instance</h3>
+<h3>Language: SQL</h3>
+
+<pre></pre>
+
+<hr>
+<h2>Function:
+  <a href="#storage.schema">storage</a>.<a name="storage.function.get-pg-instance-by-id-in-id-integer">get_pg_instance_by_id(in_id integer)</a>
+</h2>
+<h3>Returns: postgres_instance</h3>
+<h3>Language: SQL</h3>
+
+<pre></pre>
+
+<hr>
+<h2>Function:
+  <a href="#storage.schema">storage</a>.<a name="storage.function.insert-dimension-in-ordinality-integer-in-fieldname-character-varying-in-default-val-character-varying">insert_dimension(in_ordinality integer, in_fieldname character varying, in_default_val character varying)</a>
+</h2>
+<h3>Returns: dimensions</h3>
+<h3>Language: SQL</h3>
+<p> This function inserts the dimension at the desired place and returns the row
+as saved in the database.
+
+The ordinality of all dimensions equal to or greater than the requested
+ordinality number are incremented.
+</p>
+<pre></pre>
+
+<hr>
+<h2>Function:
+  <a href="#storage.schema">storage</a>.<a name="storage.function.insert-index-field-in-index-id-integer-in-ordinality-integer-in-expression-character-varying">insert_index_field(in_index_id integer, in_ordinality integer, in_expression character varying)</a>
+</h2>
+<h3>Returns: index_fields</h3>
+<h3>Language: SQL</h3>
+
+<pre></pre>
+
+<hr>
+<h2>Function:
+  <a href="#storage.schema">storage</a>.<a name="storage.function.list-pg-instances">list_pg_instances()</a>
+</h2>
+<h3>Returns: SET OF postgres_instance</h3>
+<h3>Language: SQL</h3>
+
+<pre></pre>
+
+<hr>
+<h2>Function:
+  <a href="#storage.schema">storage</a>.<a name="storage.function.register-pg-instance-in-host-text-in-port-integer-in-username-text">register_pg_instance(in_host text, in_port integer, in_username text)</a>
+</h2>
+<h3>Returns: postgres_instance</h3>
+<h3>Language: SQL</h3>
+<p>This function registers a new Postgres instance as a storage node.
+
+By design the new node is created offline (state 0).  The arguments are:
+
+ - in_host:      The hostname or IP address of the host.
+ - in_port:      The port that this Postgres instance is listening on.
+ - in_username:  The username that Schaufel should connect as.
+
+</p>
+<pre></pre>
+
+<hr>
+<h2>Function:
+  <a href="#storage.schema">storage</a>.<a name="storage.function.save-config-in-key-text-in-value-json">save_config(in_key text, in_value json)</a>
+</h2>
+<h3>Returns: config</h3>
+<h3>Language: SQL</h3>
+
+<pre></pre>
+
+<hr>
+<h2>Function:
+  <a href="#storage.schema">storage</a>.<a name="storage.function.save-index-in-indexname-text-in-access-method-text">save_index(in_indexname text, in_access_method text)</a>
+</h2>
+<h3>Returns: indexes</h3>
+<h3>Language: SQL</h3>
+
+<pre></pre>
+
+<hr>
+<h2>Function:
+  <a href="#storage.schema">storage</a>.<a name="storage.function.set-pg-instance-status-in-id-integer-in-status-integer">set_pg_instance_status(in_id integer, in_status integer)</a>
+</h2>
+<h3>Returns: postgres_instance</h3>
+<h3>Language: SQL</h3>
+<p> This function sets the status of a pg_instance to the value set, returning
+a complete database row for the instance as stored if successful.</p>
+<pre></pre>
+
+
+
+<p class="w3ref">Generated by <a href="http://github.com/cbbrowne/autodoc/">PostgreSQL Autodoc</a></p>
+<p class="w3ref"><a href="http://validator.w3.org/check/referer">W3C HTML 4.01 Strict</a></p>
+</body></html>
