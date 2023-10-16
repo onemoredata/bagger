@@ -7,6 +7,7 @@ WriteMakefile(
     AUTHOR           => 'OneMoreData',
     MIN_PERL_VERSION => '5.14.0', # know it needs at least 5.10
     PREREQ_PM        => { # may add versions later
+                          'Moose'                    => 0,
                           'PGObject'                 => 0,
                           'PGObject::Simple'         => 0,
                           'PGObject::Simple::Role'   => 0,
