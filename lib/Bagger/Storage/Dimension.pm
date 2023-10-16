@@ -9,7 +9,7 @@ package Bagger::Storage::Dimension;
 =head1 SYNOPSIS
 
    my $dimension = Bagger::Storage::Dimension->new(
-           { fieldname   => 'service', 
+           { fieldname   => 'service',
              ordinality  => 1,
              default_val => 'none'
           });
@@ -27,7 +27,7 @@ with 'Bagger::Storage::PGObject';
 
 =head1 DESCRIPTION
 
-Dimensions represent the dimension partitions for Bagger tables.  Each 
+Dimensions represent the dimension partitions for Bagger tables.  Each
 dimension is extracted from the incoming JSON document in order and this
 information is used to write the document to the correct table.  The current
 routines have provisions for default values although it is not clear if these
@@ -89,3 +89,5 @@ Note that the database will refuse to append the same fieldname more than once.
 dbmethod append => (funcname => 'append_dimension', returns_objects => 1);
 
 1;
+
+# vim:ts=4:sw=4:expandtab

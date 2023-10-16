@@ -142,7 +142,7 @@ Returns a list of index fields for the given index id.
 sub list {
     my ($self, $index_id) = @_;
     return map { __PACKAGE__->new($_) }
-          $self->call_procedure(funcname => 'list_index_fields', 
+          $self->call_procedure(funcname => 'list_index_fields',
                                     args => [$index_id]);
 
 }
@@ -152,3 +152,5 @@ sub list {
 =cut
 
 1;
+
+# vim:ts=4:sw=4:expandtab

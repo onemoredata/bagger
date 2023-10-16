@@ -13,7 +13,7 @@ package Bagger::Storage::PGObject;
  sub foo {
     return $self->call_dbmethod(
         funcname => 'foo',
-	args     => { bar => 'baz' }
+        args     => { bar => 'baz' }
     );
  };
 
@@ -63,19 +63,19 @@ module.
 my $dbh;
 sub _get_dbh() {
    return $dbh if $dbh; # retrieve singleton if available
-   return _new_dbh(); 
+   return _new_dbh();
 }
 
 
 sub _new_dbh() {
    $dbh = DBI->connect(
            "DBI:Pg:" .
-	   "database=" . Bagger::Storage::LenkwerkSetup->lenkwerkdb .
-	   ";host="    . Bagger::Storage::LenkwerkSetup->dbhost .
-	   ";port="    . Bagger::Storage::LenkwerkSetup->dbport, 
-	    Bagger::Storage::LenkwerkSetup->dbuser,
-	    Bagger::Storage::LenkwerkSetup->dbpass,
-	    {AutoCommit => 0 });
+           "database=" . Bagger::Storage::LenkwerkSetup->lenkwerkdb .
+           ";host="    . Bagger::Storage::LenkwerkSetup->dbhost .
+           ";port="    . Bagger::Storage::LenkwerkSetup->dbport,
+           Bagger::Storage::LenkwerkSetup->dbuser,
+           Bagger::Storage::LenkwerkSetup->dbpass,
+           {AutoCommit => 0 });
    return $dbh;
 }
 
@@ -112,3 +112,5 @@ For more information see CPAN docs for the following modules:
 =cut
 
 1;
+
+# vim:ts=4:sw=4:expandtab

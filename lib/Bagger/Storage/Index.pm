@@ -92,7 +92,7 @@ sub supported_index_ams { @index_ams };
 sub remove_index_am {
     my $self = shift;
     my $am = lc(shift // $self); # handle :: and -> syntax
-    @index_ams = grep { $_ ne $am } @index_ams; 
+    @index_ams = grep { $_ ne $am } @index_ams;
 }
 
 sub add_index_am {
@@ -146,18 +146,18 @@ read-only.  What is read-only is the reference assignment.
 
 =cut
 
-sub _get_fields { 
+sub _get_fields {
     my $self = shift;
     return [] unless $self->id;
     return [Bagger::Storage::Index::Field->list($self->id)];
 }
 
 has fields => (
-              is      => 'ro', 
+              is      => 'ro',
               isa     => 'ArrayRef[Bagger::Index::Fields]',
-	      lazy    => 1,
+              lazy    => 1,
               builder => '_get_fields',
-	      required => 0,
+              required => 0,
 );
 
 
@@ -165,7 +165,7 @@ has fields => (
 
 =head2 $index = Bagger::Storage::Index->get(index_name) - get by index name
 
-This returns the index from the database.  Note the fields are only lazily 
+This returns the index from the database.  Note the fields are only lazily
 retrieved.
 
 =cut
@@ -212,9 +212,9 @@ have already been added.
 sub next_ordinal {
     my ($self) = @_;
     return 0 unless defined $self->fields and @{$self->fields};
-    my ($max_ordinal) = 
-		   sort { $b->ordinality <=> $a->ordinality }
-		   @{$self->fields};
+    my ($max_ordinal) =
+                  sort { $b->ordinality <=> $a->ordinality }
+                  @{$self->fields};
     return $max_ordinal->ordinality + 1;
 }
 
@@ -232,22 +232,23 @@ sub create_statement {
     croak 'Must supply a schema_name to create_statement' unless $schema_name;
     croak 'Must supply a table_name to create_statement' unless $table_name;
     croak "Index must have fields added first" unless $self->next_ordinal;
-    
+
     my $idx_name    = $self->_dbh->quote_identifier(
                       $table_name . '_' . $self->indexname);
     $schema_name = $self->_dbh->quote_identifier($schema_name);
     $table_name  = $self->_dbh->quote_identifier($table_name);
 
-    my $field_str   = join ',', 
+    my $field_str   = join ',',
                    map { "($_)" } # indexes require this extra paren set
-		   sort { $a->ordinality <=> $b->ordinality }
-		   @{$self->fields};
+                   sort { $a->ordinality <=> $b->ordinality }
+                   @{$self->fields};
 
     my $stmt =  "CREATE INDEX $idx_name ON $schema_name.$table_name ".
            "($field_str) using " . $self->access_method;
     $stmt .= " TABLESPACE " .
-	   $self->_dbh->quote_identifier($self->tablespc) if $self->tablespc;
-	  
+           $self->_dbh->quote_identifier($self->tablespc) if $self->tablespc;
 }
 
 1;
+
+# vim:ts=4:sw=4:expandtab
