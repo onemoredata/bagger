@@ -60,9 +60,12 @@ has id => (is => 'ro', isa => 'Int');
 
 has key => (is => 'ro', isa => 'Str', required => 1);
 
-=item value -- Arbitrary scalar, hashref, or arrayref.  Required
+=item value -- Arbitrary scalar, hashref, or arrayref.  Required.
 
-=item value_string -- For scalars, handle as string rather json conversion ref
+  As an accessor this will return a reference, and if a scalar was provided,
+  it will return a reference to that scalar.
+
+=item value_string -- For scalars, handle as string ref
  
   use this one if you expect a string or number back.
 
@@ -81,12 +84,15 @@ has value => (is      => 'ro',
              isa      => 'PGObject::Type::JSON',
              required => 1,
 	     coerce   => 1,
+	     handles  => {  value_string => 'deref_scalar' },
+	      
              );
-sub value_string {
+
+sub PGObject::Type::JSON::deref_scalar {
     my $self = shift;
     croak 'Expected a SCALAR config variable' 
-                              unless $self->value->reftype eq 'SCALAR';
-    return ${$self->value};
+                              unless $self->reftype eq 'SCALAR';
+    return $$self;
 }
 
 
