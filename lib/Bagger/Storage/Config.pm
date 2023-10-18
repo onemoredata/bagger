@@ -21,7 +21,7 @@ use warnings;
 use Carp 'croak';
 use Moose;
 use PGObject::Util::DBMethod;
-use PGObject::Type::JSON;
+use Bagger::Type::JSON;
 use namespace::autoclean;
 use Scalar::Util 'reftype';
 use Moose::Util::TypeConstraints;
@@ -73,29 +73,21 @@ has key => (is => 'ro', isa => 'Str', required => 1);
 
 =cut
 
-subtype 'PGObject::Type::JSON'
-  => as 'PGObject::Type::JSON';
+subtype 'Bagger::Type::JSON'
+  => as 'Bagger::Type::JSON';
 
-coerce 'PGObject::Type::JSON'
+coerce 'Bagger::Type::JSON'
   => from 'Str | Ref'
-  =>  via { croak if (defined reftype($_)) and (reftype($_) =~ /CODE|SCALAR/);
-           return PGObject::Type::JSON->new($_) };
+  =>  via { Bagger::Type::JSON->new($_) };
 
 
 has value => (is      => 'ro', 
-             isa      => 'PGObject::Type::JSON',
+             isa      => 'Bagger::Type::JSON',
              required => 1,
 	     coerce   => 1,
-	     handles  => {  value_string => 'deref_scalar' },
+	     handles  => {  value_string => 'orig' },
 	      
              );
-
-sub PGObject::Type::JSON::deref_scalar {
-    my $self = shift;
-    croak 'Expected a SCALAR config variable' 
-                              unless $self->reftype eq 'SCALAR';
-    return $$self;
-}
 
 
 =head1 METHODS
