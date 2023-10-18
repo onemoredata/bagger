@@ -161,16 +161,16 @@ sub set_dbpass {
 
 =cut
 
-sub _dbi_str_comp {
+sub _dbi_str_keyval {
     my ($value, $key) = @_;
     return () unless $value;
-    return "$key=$value";
+    return ("$key=$value");
 }
 
 sub dbi_str { "DBI:Pg:" . 
-             join(';', _dbi_str_comp($lenkwerkdb, 'database'),
-                       _dbi_str_comp($dbhost, 'host'),
-                       _dbi_str_comp($dbport, 'port'),
+             join(';', _dbi_str_keyval($lenkwerkdb, 'database'),
+                       _dbi_str_keyval($dbhost, 'host'),
+                       _dbi_str_keyval($dbport, 'port'),
 	 )
 }
 1;
