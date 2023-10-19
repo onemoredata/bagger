@@ -12,7 +12,7 @@ WriteMakefile(
                           'PGObject::Simple'         => 0,
                           'PGObject::Simple::Role'   => 0,
                           'PGObject::Util::DBMethod' => 0,
-                          'PGObject::Type::JSON'     => 2.0.3,
+                          'PGObject::Type::JSON'     => 2.1.1,
                           'URI::Escape'              => 0,
                          },
     TEST_REQUIRES    => {
