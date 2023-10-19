@@ -57,11 +57,6 @@ sub orig {
     return $self;
 }
 
-sub new { # Implementing our extra constructor checks.
-    my ($class, $val) = @_;
-    my $self = $class->SUPER::new($val);
-    bless $self, $class;
-}
 
 1;
 # vim:ts=4:sw=4:expandtab
