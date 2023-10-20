@@ -214,9 +214,45 @@ can be set using the default_val field though this is not yet supported.
 
 
 
-                <database class="constraint">NOT NULL</database>
 
 
+                <literal>DEFAULT &apos;notexist&apos;::character varying</literal>
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+            <varlistentry>
+              <term><database class="field">valid_from</database></term>
+              <listitem><para>
+                <database class="datatype">timestamp without time zone</database>
+
+
+
+
+
+                <literal>DEFAULT &apos;-infinity&apos;::timestamp without time zone</literal>
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+            <varlistentry>
+              <term><database class="field">valid_until</database></term>
+              <listitem><para>
+                <database class="datatype">timestamp without time zone</database>
+
+
+
+
+
+                <literal>DEFAULT &apos;infinity&apos;::timestamp without time zone</literal>
 
 
 
@@ -513,6 +549,26 @@ This allows us to specify GIN, GIST, btree, and hash indexes.
             </listitem>
           </varlistentry>
 
+            <varlistentry>
+              <term><database class="field">tablespc</database></term>
+              <listitem><para>
+                <database class="datatype">character varying</database>
+
+
+
+                <database class="constraint">NOT NULL</database>
+
+
+
+                <literal>DEFAULT &apos;pg_default&apos;::character varying</literal>
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
         </variablelist>
 
 
@@ -799,14 +855,14 @@ we can determine which servers are supposed to receive writes together.
 
 
 
-<!-- Function append_dimension(in_fieldname character varying, in_default_val character varying) -->
-    <section id="storage.function.append-dimension-in-fieldname-character-varying-in-default-val-character-varying"
+<!-- Function append_dimension(in_fieldname character varying, in_default_val character varying, in_valid_from timestamp without time zone, in_valid_until timestamp without time zone) -->
+    <section id="storage.function.append-dimension-in-fieldname-character-varying-in-default-val-character-varying-in-valid-from-timestamp-without-time-zone-in-valid-until-timestamp-without-time-zone"
              xreflabel="()">
-      <title id="storage.function.append-dimension-in-fieldname-character-varying-in-default-val-character-varying-title">
-       append_dimension(in_fieldname character varying, in_default_val character varying)
+      <title id="storage.function.append-dimension-in-fieldname-character-varying-in-default-val-character-varying-in-valid-from-timestamp-without-time-zone-in-valid-until-timestamp-without-time-zone-title">
+       append_dimension(in_fieldname character varying, in_default_val character varying, in_valid_from timestamp without time zone, in_valid_until timestamp without time zone)
       </title>
-      <titleabbrev id="storage.function.append-dimension-in-fieldname-character-varying-in-default-val-character-varying-titleabbrev">
-       append_dimension(in_fieldname character varying, in_default_val character varying)
+      <titleabbrev id="storage.function.append-dimension-in-fieldname-character-varying-in-default-val-character-varying-in-valid-from-timestamp-without-time-zone-in-valid-until-timestamp-without-time-zone-titleabbrev">
+       append_dimension(in_fieldname character varying, in_default_val character varying, in_valid_from timestamp without time zone, in_valid_until timestamp without time zone)
       </titleabbrev>
 
       <para>
@@ -1019,14 +1075,14 @@ order of evaluation for partitioning and all dimensions are evaluated.
       </para>
     </section>
 
-<!-- Function insert_dimension(in_ordinality integer, in_fieldname character varying, in_default_val character varying) -->
-    <section id="storage.function.insert-dimension-in-ordinality-integer-in-fieldname-character-varying-in-default-val-character-varying"
+<!-- Function insert_dimension(in_ordinality integer, in_fieldname character varying, in_default_val character varying, in_valid_from timestamp without time zone, in_valid_until timestamp without time zone) -->
+    <section id="storage.function.insert-dimension-in-ordinality-integer-in-fieldname-character-varying-in-default-val-character-varying-in-valid-from-timestamp-without-time-zone-in-valid-until-timestamp-without-time-zone"
              xreflabel="()">
-      <title id="storage.function.insert-dimension-in-ordinality-integer-in-fieldname-character-varying-in-default-val-character-varying-title">
-       insert_dimension(in_ordinality integer, in_fieldname character varying, in_default_val character varying)
+      <title id="storage.function.insert-dimension-in-ordinality-integer-in-fieldname-character-varying-in-default-val-character-varying-in-valid-from-timestamp-without-time-zone-in-valid-until-timestamp-without-time-zone-title">
+       insert_dimension(in_ordinality integer, in_fieldname character varying, in_default_val character varying, in_valid_from timestamp without time zone, in_valid_until timestamp without time zone)
       </title>
-      <titleabbrev id="storage.function.insert-dimension-in-ordinality-integer-in-fieldname-character-varying-in-default-val-character-varying-titleabbrev">
-       insert_dimension(in_ordinality integer, in_fieldname character varying, in_default_val character varying)
+      <titleabbrev id="storage.function.insert-dimension-in-ordinality-integer-in-fieldname-character-varying-in-default-val-character-varying-in-valid-from-timestamp-without-time-zone-in-valid-until-timestamp-without-time-zone-titleabbrev">
+       insert_dimension(in_ordinality integer, in_fieldname character varying, in_default_val character varying, in_valid_from timestamp without time zone, in_valid_until timestamp without time zone)
       </titleabbrev>
 
       <para>
@@ -1167,14 +1223,14 @@ By design the new node is created offline (state 0).  The arguments are:
       </para>
     </section>
 
-<!-- Function save_index(in_indexname text, in_access_method text) -->
-    <section id="storage.function.save-index-in-indexname-text-in-access-method-text"
+<!-- Function save_index(in_indexname text, in_access_method text, in_tablespc text) -->
+    <section id="storage.function.save-index-in-indexname-text-in-access-method-text-in-tablespc-text"
              xreflabel="()">
-      <title id="storage.function.save-index-in-indexname-text-in-access-method-text-title">
-       save_index(in_indexname text, in_access_method text)
+      <title id="storage.function.save-index-in-indexname-text-in-access-method-text-in-tablespc-text-title">
+       save_index(in_indexname text, in_access_method text, in_tablespc text)
       </title>
-      <titleabbrev id="storage.function.save-index-in-indexname-text-in-access-method-text-titleabbrev">
-       save_index(in_indexname text, in_access_method text)
+      <titleabbrev id="storage.function.save-index-in-indexname-text-in-access-method-text-in-tablespc-text-titleabbrev">
+       save_index(in_indexname text, in_access_method text, in_tablespc text)
       </titleabbrev>
 
       <para>

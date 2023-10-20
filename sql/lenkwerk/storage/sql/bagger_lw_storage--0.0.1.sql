@@ -54,7 +54,9 @@ we can determine which servers are supposed to receive writes together.$$;
 CREATE TABLE storage.dimensions (
    id serial NOT NULL UNIQUE,
    ordinality INT NOT NULL UNIQUE DEFERRABLE INITIALLY DEFERRED,
-   default_val varchar not null,
+   default_val varchar null default 'notexist',
+   valid_from timestamp default '-infinity',
+   valid_until   timestamp default 'infinity', 
    fieldname varchar PRIMARY KEY
 );
 
@@ -226,17 +228,21 @@ order of evaluation for partitioning and all dimensions are evaluated.$$;
 ----
 
 CREATE FUNCTION storage.append_dimension
-(in_fieldname varchar, in_default_val varchar)
+(in_fieldname varchar, in_default_val varchar, 
+ in_valid_from timestamp, in_valid_until timestamp)
 returns storage.dimensions
 language sql BEGIN ATOMIC
 insert into storage.dimensions
-            (ordinality, fieldname, default_val)
-     select max(ordinality) + 1, in_fieldname, in_default_val
+            (ordinality, fieldname, default_val, valid_from, valid_until)
+     select coalesce(max(ordinality) + 1, 0), in_fieldname, 
+            coalesce(in_default_val, 'notexist'),
+            coalesce(in_valid_from, '-infinity'), 
+            coalesce(in_valid_until, 'infinity')
        FROM storage.dimensions
   RETURNING *;
 END; 
 
-COMMENT ON FUNCTION storage.append_dimension(varchar, varchar) IS
+COMMENT ON FUNCTION storage.append_dimension(varchar, varchar, timestamp, timestamp) IS
 $$This function inserts a named dimension at the end of the list.
 
 It returns the row as saved.
@@ -245,7 +251,8 @@ $$;
 -----
 
 CREATE FUNCTION storage.insert_dimension
-(in_ordinality int, in_fieldname varchar, in_default_val varchar)
+(in_ordinality int, in_fieldname varchar, in_default_val varchar,
+ in_valid_from timestamp, in_valid_until timestamp)
 returns storage.dimensions language sql BEGIN ATOMIC
 -- This is why the ordinality unique constraint is 
 -- initially deferred.
@@ -254,13 +261,17 @@ UPDATE storage.dimensions
  WHERE ordinality >= in_ordinality;
 
 INSERT INTO storage.dimensions
-            (ordinality, fieldname, default_val)
-     VALUES (in_ordinality, in_fieldname, in_default_val)
+            (ordinality, fieldname, default_val, valid_from, valid_until)
+     VALUES (in_ordinality, in_fieldname,
+            coalesce(in_default_val, 'notexist'),
+             coalesce(in_valid_from, '-infinity'), 
+             coalesce(in_valid_until, 'infinity'))
   RETURNING *;
 END;
 
 COMMENT ON FUNCTION storage.insert_dimension
-(in_ordinality int, in_fieldname varchar, in_default_val varchar) IS
+(in_ordinality int, in_fieldname varchar, in_default_val varchar,
+timestamp, timestamp) IS
 $$ This function inserts the dimension at the desired place and returns the row
 as saved in the database.
 
@@ -289,7 +300,7 @@ CREATE FUNCTION storage.append_index_field(in_index_id int, in_expression varcha
 RETURNS storage.index_fields LANGUAGE SQL BEGIN ATOMIC
 INSERT INTO storage.index_fields
        (index_id, expression, ordinality)
-SELECT in_index_id, in_expression, max(ordinality) + 1
+SELECT in_index_id, in_expression, coalesce(max(ordinality) + 1, 0)
   FROM storage.index_fields WHERE index_id = in_index_id
 RETURNING *;
 END;
