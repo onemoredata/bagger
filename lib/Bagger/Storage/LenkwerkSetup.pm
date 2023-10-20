@@ -88,6 +88,9 @@ sub dbport { $dbport };
 sub set_dbport {
     my ($self, $port) = @_;
     croak 'Port must be an integer' if $port =~ /\D/;
+    croak "Postgres cannot use privileged port $port" if $port < 1024;
+    croak "Port $port out of range, must be between 1024 and 65535" 
+                                                              if $port > 65535;
     $dbport = $port if defined $port;
 }
 
@@ -184,7 +187,7 @@ sub dbi_str { "DBI:Pg:" .
 	 )
 }
 
-=item dsn_uri
+=head2 dsn_uri
 
    Returns a well-formed URI from config input.  All items are properly
    escaped.
@@ -204,12 +207,13 @@ sub dsn_uri {
 }
 
 
-# use for programs that don't support dns's
+# use for programs that don't support dsn's
 sub _cli_args {
     return (
         ($dbuser ? ('-U', "$dbuser") : ()),
         ($dbhost ? ('-h', "$dbhost") : ()),
         ($dbport ? ('-p', $dbport) : ()),
+        '--no-password',
     );
 }
 
