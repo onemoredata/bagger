@@ -112,7 +112,7 @@
 <body>
 
 <!-- Primary Index -->
-<p><br><br>Dumped on 2023-10-16</p>
+<p><br><br>Dumped on 2023-10-20</p>
 <h1><a name="index">Index of database - lenkwerk</a></h1>
 <ul>
   
@@ -123,7 +123,7 @@
   
   <li><a name="storage.schema">storage</a></li><ul>
     <li><a href="#storage.table.config">config</a></li><li><a href="#storage.table.dimensions">dimensions</a></li><li><a href="#storage.table.index-fields">index_fields</a></li><li><a href="#storage.table.indexes">indexes</a></li><li><a href="#storage.table.postgres-instance">postgres_instance</a></li><li><a href="#storage.table.servermaps">servermaps</a></li>
-    <li><a href="#storage.function.append-dimension-in-fieldname-character-varying-in-default-val-character-varying">append_dimension(in_fieldname character varying, in_default_val character varying)</a></li><li><a href="#storage.function.append-index-field-in-index-id-integer-in-expression-character-varying">append_index_field(in_index_id integer, in_expression character varying)</a></li><li><a href="#storage.function.get-config-in-key-text">get_config(in_key text)</a></li><li><a href="#storage.function.get-dimensions">get_dimensions()</a></li><li><a href="#storage.function.get-index-in-indexname-text">get_index(in_indexname text)</a></li><li><a href="#storage.function.get-index-fields-in-index-id-integer">get_index_fields(in_index_id integer)</a></li><li><a href="#storage.function.get-pg-instance-by-host-and-port-in-host-text-in-port-integer">get_pg_instance_by_host_and_port(in_host text, in_port integer)</a></li><li><a href="#storage.function.get-pg-instance-by-id-in-id-integer">get_pg_instance_by_id(in_id integer)</a></li><li><a href="#storage.function.insert-dimension-in-ordinality-integer-in-fieldname-character-varying-in-default-val-character-varying">insert_dimension(in_ordinality integer, in_fieldname character varying, in_default_val character varying)</a></li><li><a href="#storage.function.insert-index-field-in-index-id-integer-in-ordinality-integer-in-expression-character-varying">insert_index_field(in_index_id integer, in_ordinality integer, in_expression character varying)</a></li><li><a href="#storage.function.list-pg-instances">list_pg_instances()</a></li><li><a href="#storage.function.register-pg-instance-in-host-text-in-port-integer-in-username-text">register_pg_instance(in_host text, in_port integer, in_username text)</a></li><li><a href="#storage.function.save-config-in-key-text-in-value-json">save_config(in_key text, in_value json)</a></li><li><a href="#storage.function.save-index-in-indexname-text-in-access-method-text">save_index(in_indexname text, in_access_method text)</a></li><li><a href="#storage.function.set-pg-instance-status-in-id-integer-in-status-integer">set_pg_instance_status(in_id integer, in_status integer)</a></li>
+    <li><a href="#storage.function.append-dimension-in-fieldname-character-varying-in-default-val-character-varying-in-valid-from-timestamp-without-time-zone-in-valid-until-timestamp-without-time-zone">append_dimension(in_fieldname character varying, in_default_val character varying, in_valid_from timestamp without time zone, in_valid_until timestamp without time zone)</a></li><li><a href="#storage.function.append-index-field-in-index-id-integer-in-expression-character-varying">append_index_field(in_index_id integer, in_expression character varying)</a></li><li><a href="#storage.function.get-config-in-key-text">get_config(in_key text)</a></li><li><a href="#storage.function.get-dimensions">get_dimensions()</a></li><li><a href="#storage.function.get-index-in-indexname-text">get_index(in_indexname text)</a></li><li><a href="#storage.function.get-index-fields-in-index-id-integer">get_index_fields(in_index_id integer)</a></li><li><a href="#storage.function.get-pg-instance-by-host-and-port-in-host-text-in-port-integer">get_pg_instance_by_host_and_port(in_host text, in_port integer)</a></li><li><a href="#storage.function.get-pg-instance-by-id-in-id-integer">get_pg_instance_by_id(in_id integer)</a></li><li><a href="#storage.function.insert-dimension-in-ordinality-integer-in-fieldname-character-varying-in-default-val-character-varying-in-valid-from-timestamp-without-time-zone-in-valid-until-timestamp-without-time-zone">insert_dimension(in_ordinality integer, in_fieldname character varying, in_default_val character varying, in_valid_from timestamp without time zone, in_valid_until timestamp without time zone)</a></li><li><a href="#storage.function.insert-index-field-in-index-id-integer-in-ordinality-integer-in-expression-character-varying">insert_index_field(in_index_id integer, in_ordinality integer, in_expression character varying)</a></li><li><a href="#storage.function.list-pg-instances">list_pg_instances()</a></li><li><a href="#storage.function.register-pg-instance-in-host-text-in-port-integer-in-username-text">register_pg_instance(in_host text, in_port integer, in_username text)</a></li><li><a href="#storage.function.save-config-in-key-text-in-value-json">save_config(in_key text, in_value json)</a></li><li><a href="#storage.function.save-index-in-indexname-text-in-access-method-text-in-tablespc-text">save_index(in_indexname text, in_access_method text, in_tablespc text)</a></li><li><a href="#storage.function.set-pg-instance-status-in-id-integer-in-status-integer">set_pg_instance_status(in_id integer, in_status integer)</a></li>
   </ul>
   
 </ul>
@@ -349,8 +349,42 @@ can be set using the default_val field though this is not yet supported.</p>
       <i>
         
         
-        NOT NULL
         
+        DEFAULT &#39;notexist&#39;::character varying
+      </i>
+      
+    </td>
+  </tr>
+  
+  <tr class="tr1">
+    <td>
+      
+    </td>
+    <td>valid_from</td>
+    <td>timestamp without time zone</td>
+    <td>
+      <i>
+        
+        
+        
+        DEFAULT &#39;-infinity&#39;::timestamp without time zone
+      </i>
+      
+    </td>
+  </tr>
+  
+  <tr class="tr0">
+    <td>
+      
+    </td>
+    <td>valid_until</td>
+    <td>timestamp without time zone</td>
+    <td>
+      <i>
+        
+        
+        
+        DEFAULT &#39;infinity&#39;::timestamp without time zone
       </i>
       
     </td>
@@ -657,6 +691,23 @@ This allows us to specify GIN, GIST, btree, and hash indexes.</p>
         
         NOT NULL
         
+      </i>
+      
+    </td>
+  </tr>
+  
+  <tr class="tr1">
+    <td>
+      
+    </td>
+    <td>tablespc</td>
+    <td>character varying</td>
+    <td>
+      <i>
+        
+        
+        NOT NULL
+        DEFAULT &#39;pg_default&#39;::character varying
       </i>
       
     </td>
@@ -983,7 +1034,7 @@ we can determine which servers are supposed to receive writes together.</p>
 
 <hr>
 <h2>Function:
-  <a href="#storage.schema">storage</a>.<a name="storage.function.append-dimension-in-fieldname-character-varying-in-default-val-character-varying">append_dimension(in_fieldname character varying, in_default_val character varying)</a>
+  <a href="#storage.schema">storage</a>.<a name="storage.function.append-dimension-in-fieldname-character-varying-in-default-val-character-varying-in-valid-from-timestamp-without-time-zone-in-valid-until-timestamp-without-time-zone">append_dimension(in_fieldname character varying, in_default_val character varying, in_valid_from timestamp without time zone, in_valid_until timestamp without time zone)</a>
 </h2>
 <h3>Returns: dimensions</h3>
 <h3>Language: SQL</h3>
@@ -1059,7 +1110,7 @@ order of evaluation for partitioning and all dimensions are evaluated.</p>
 
 <hr>
 <h2>Function:
-  <a href="#storage.schema">storage</a>.<a name="storage.function.insert-dimension-in-ordinality-integer-in-fieldname-character-varying-in-default-val-character-varying">insert_dimension(in_ordinality integer, in_fieldname character varying, in_default_val character varying)</a>
+  <a href="#storage.schema">storage</a>.<a name="storage.function.insert-dimension-in-ordinality-integer-in-fieldname-character-varying-in-default-val-character-varying-in-valid-from-timestamp-without-time-zone-in-valid-until-timestamp-without-time-zone">insert_dimension(in_ordinality integer, in_fieldname character varying, in_default_val character varying, in_valid_from timestamp without time zone, in_valid_until timestamp without time zone)</a>
 </h2>
 <h3>Returns: dimensions</h3>
 <h3>Language: SQL</h3>
@@ -1117,7 +1168,7 @@ By design the new node is created offline (state 0).  The arguments are:
 
 <hr>
 <h2>Function:
-  <a href="#storage.schema">storage</a>.<a name="storage.function.save-index-in-indexname-text-in-access-method-text">save_index(in_indexname text, in_access_method text)</a>
+  <a href="#storage.schema">storage</a>.<a name="storage.function.save-index-in-indexname-text-in-access-method-text-in-tablespc-text">save_index(in_indexname text, in_access_method text, in_tablespc text)</a>
 </h2>
 <h3>Returns: indexes</h3>
 <h3>Language: SQL</h3>

@@ -22,6 +22,9 @@ use warnings;
 use Moose;
 use namespace::autoclean;
 use PGObject::Util::DBMethod;
+use Moose::Util::TypeConstraints;
+use Bagger::Type::JSONPointer;
+use Bagger::Type::DateTime;
 with 'Bagger::Storage::PGObject';
 
 
@@ -42,7 +45,22 @@ this dimension.
 
 =cut
 
-has fieldname => (is => 'ro', isa => 'Str', required => 1);
+subtype 'Bagger::Type::JSONPointer'
+=>  as  'Bagger::Type::JSONPointer';
+
+coerce 'Bagger::Type::JSONPointer'
+=>  from 'Str | ArrayRef'
+=>   via { Bagger::Type::JSONPointer->new($_) };
+
+subtype 'Bagger::Type::DateTime'
+=>  as  'Bagger::Type::DateTime';
+
+coerce 'Bagger::Type::DateTime'
+=> from 'Str'
+=> via { Bagger::Type::DateTime->from_db($_) };
+
+has fieldname => (is => 'ro', isa => 'Bagger::Type::JSONPointer', 
+                 required => 1, coerce => 1);
 
 =head2 default_val
 
@@ -63,6 +81,23 @@ circumstances but this is not yet supported.
 =cut
 
 has ordinality => (is => 'ro', isa => 'Int');
+
+=head2 valid_from
+
+This represents the first time the dimension is valid
+
+=cut
+
+has valid_from => (is => 'ro', isa => 'Bagger::Type::DateTime', coerce => 1);
+
+=head2 valid_until
+
+This represnets the beginning of the interval the when the dimension is no
+longer valid.
+
+=cut
+
+has valid_until => (is => 'ro', isa => 'Bagger::Type::DateTime', coerce => 1);
 
 =head1 METHODS
 
