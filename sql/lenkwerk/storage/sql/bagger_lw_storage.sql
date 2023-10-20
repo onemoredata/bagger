@@ -71,7 +71,7 @@ create table storage.indexes (
    id serial not null unique,
    indexname varchar(16) default 'bagger_idx',
    access_method varchar not null, -- extensible, enforced in tooling
-   tablespc varchar not null default 'pg_default';
+   tablespc varchar not null default 'pg_default',
    primary key (indexname)
 );
 

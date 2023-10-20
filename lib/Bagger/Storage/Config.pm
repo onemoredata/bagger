@@ -69,6 +69,8 @@ has key => (is => 'ro', isa => 'Str', required => 1);
  
   use this one if you expect a string or number back.
 
+=back
+
 =cut
 
 subtype 'PGObject::Type::JSON'
