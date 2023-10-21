@@ -24,6 +24,7 @@ use parent 'PGObject::Type::DateTime'; # includes basic serializations
 use strict;
 use warnings;
 use Bagger::Type::DateTime::Infinite;
+use Carp 'croak';
 
 Bagger::Type::DateTime->register();
 
@@ -90,6 +91,35 @@ sub from_db {
     return $class->inf_past if $val eq '-infinity';
     my $retval = $class->SUPER::from_db($val);
     bless $retval, $class;
+}
+
+=head1 BAGGER-SPECIFIC Functions
+
+=head2 Bagger::Type::DateTime->hour_bound_plus($hours)
+
+   Returns a new Bagger::Type::DateTime object from the current time starting
+   on the next hour plus $int hours more.
+
+   So if it is '2023-08-02 23:59:59' then calling this method with an argumment
+   of 1 will lead to '2023-08-03 01:00:00'
+
+   Positive ints are required to ensure that the agents have time to update
+   partition, index, etc information before the data is expected to be there.
+
+   Although an hour is probably too long, this ensures at least one
+   hourly partitioning time boundary to pass before these new settings take
+   effect.
+
+   Note this MUST be called with -> notation due to the need to ensure the
+   correct class of the output.
+
+=cut
+
+sub hour_bound_plus{
+    my ($self, $hours) = @_;
+    croak 'Hours must be an int!' if int($hours) ne $hours;
+    croak 'Hours must be positive' if $hours < 1;
+    return $self->now->truncate(to => 'hour')->add( hours => (1 + $hours));
 }
 
 1;
