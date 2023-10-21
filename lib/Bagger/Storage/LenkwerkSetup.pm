@@ -10,6 +10,7 @@ use strict;
 use warnings;
 use URI::Escape;
 use Carp 'croak';
+use Capture::Tiny 'capture';
 our $VERSION = '0.0.1';
 
 =head1 SYNOPSIS
@@ -237,8 +238,13 @@ sub createdb {
     # This is safer than alternatives.
 
     local $ENV{PGPASSWORD} = $dbpass if defined $dbpass;
-    my $failure = system('createdb', _cli_args, $lenkwerkdb);
+    my ($stdout, $stderr, $failure) = capture {
+        return system('createdb', _cli_args, $lenkwerkdb);
+    };
     warn 'Database creation failed' if $failure;
+    for my $line (split /^/m, $stderr){
+        warn $line if $stderr;
+    } 
     return not $failure;
 }
 
@@ -261,13 +267,17 @@ sub load {
     my $success = 1;
     for my $ext (keys %exts) {
         local $! = undef; # mask last system error
-	my $failure = system('psql', dsn_uri, '-c', 
-	   "create extension ${ext} version '$exts{$ext}'"
-	);
+        my ($stdout, $stderr, $failure) = capture { 
+            return system('psql', dsn_uri, '-c', 
+                "create extension ${ext} version '$exts{$ext}'");
+        };
+        for my $line (split /^/m, $stderr){
+            warn $line if $stderr;
+        } 
 	warn "Error loading extension $ext" if $failure;
         return 0 if $failure;
     }
-    return $success;
+    return 1;
 }
 
 1;

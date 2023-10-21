@@ -14,6 +14,7 @@ WriteMakefile(
                           'PGObject::Util::DBMethod' => 0,
                           'PGObject::Type::JSON'     => 2.1.1,
                           'URI::Escape'              => 0,
+                          'Capture::Tiny'            => 0,
                          },
     TEST_REQUIRES    => {
                           'Test2::V0'                => 0,
