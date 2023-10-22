@@ -279,6 +279,17 @@ The ordinality of all dimensions equal to or greater than the requested
 ordinality number are incremented.
 $$;
 
+
+CREATE FUNCTION storage.expire_dimension 
+(in_id int, in_valid_until timestamp)
+returns storage.dimensions
+language sql begin atomic
+update storage.dimensions
+   set valid_until = in_valid_until
+ where id = in_id
+RETURNING *;
+END;
+
 -----------------------
 -- Indexes
 -----------------------

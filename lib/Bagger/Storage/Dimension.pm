@@ -25,6 +25,7 @@ use PGObject::Util::DBMethod;
 use Moose::Util::TypeConstraints;
 use Bagger::Type::JSONPointer;
 use Bagger::Type::DateTime;
+#use Bagger::Storage::Config;
 with 'Bagger::Storage::PGObject';
 
 
@@ -37,6 +38,14 @@ routines have provisions for default values although it is not clear if these
 will be supported in version 1 of Bagger.
 
 =head1 PROPERTIES
+
+=head2 id
+
+The id found in the database
+
+=cut
+
+has id => (is => 'ro', isa => 'Int');
 
 =head2 fieldname
 
@@ -84,20 +93,55 @@ has ordinality => (is => 'ro', isa => 'Int');
 
 =head2 valid_from
 
-This represents the first time the dimension is valid
+This represents the first time the dimension is valid.
+
+In production this dimension is valid at the hour boundary 
+dimensions_hrs_in_future in the future.  When not in production this is valid
+for all time.
 
 =cut
 
-has valid_from => (is => 'ro', isa => 'Bagger::Type::DateTime', coerce => 1);
+sub _config_dim_timing {
+    use Bagger::Storage::Config;
+    my $production = Bagger::Storage::Config->get('production');
+    $production = $production->value_string if defined $production;
+    my $dims_in_hrs = Bagger::Storage::Config->get('dimensions_hrs_in_future');
+    $dims_in_hrs = $dims_in_hrs->value_string if defined $dims_in_hrs;
+    die 'Production config value invalid' 
+                                       if $production and ($production ne '1');
+    die 'Invalid dimensions_hrs_in_future config variable must be positive int'
+                                    if $dims_in_hrs and ($dims_in_hrs =~ /\D/);
+    return ($production, $dims_in_hrs);
+}
+
+sub _def_valid_from {
+    my $self = shift;
+    my ($production, $dims_in_hrs) = _config_dim_timing;
+    return Bagger::Type::DateTime->inf_past unless $production;
+    return Bagger::Type::DateTime->hour_bound_plus($dims_in_hrs or 1);
+}
+
+
+has valid_from => (is => 'ro', isa => 'Bagger::Type::DateTime', coerce => 1,
+    builder => '_def_valid_from');
 
 =head2 valid_until
 
 This represnets the beginning of the interval the when the dimension is no
 longer valid.
 
+By default, this is valid forever.
+
+To get next expiratoin_date, use the next_expiration_date function.
+
 =cut
 
-has valid_until => (is => 'ro', isa => 'Bagger::Type::DateTime', coerce => 1);
+sub _def_valid_until {
+    return Bagger::Type::DateTime->inf_future;
+}
+
+has valid_until => (is => 'ro', isa => 'Bagger::Type::DateTime', coerce => 1,
+    builder => '_def_valid_until');
 
 =head1 METHODS
 
@@ -121,7 +165,40 @@ Note that the database will refuse to append the same fieldname more than once.
 
 =cut
 
+
 dbmethod append => (funcname => 'append_dimension', returns_objects => 1);
+
+=head2 next_expiration_date()
+
+When not in production, returns Past Infinity, because we can back-date
+expirations.
+
+In production, returns the next available dimension change point, namely
+
+the next hour boundary plus dims_in_hrs config variable.
+
+=cut
+
+sub next_expiration_date {
+    my $self = shift;
+    my ($production, $dims_in_hrs) = _config_dim_timing;
+    return Bagger::Type::DateTime->inf_past unless $production;
+    return Bagger::Type::DateTime->hour_bound_plus($dims_in_hrs or 1);
+}
+
+
+=head2 expire()
+
+Takes a dimension and sets the expiration time and saves it.
+
+=cut
+
+sub expire{
+    my $self = shift;
+    my $save_proxy = $self->new(%$self, valid_until => next_expiration_date);
+    my ($retval) =  $save_proxy->call_dbmethod(funcname => 'expire_dimension');
+    return $self->new($retval);
+}
 
 1;
 

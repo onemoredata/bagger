@@ -119,7 +119,9 @@ sub hour_bound_plus{
     my ($self, $hours) = @_;
     croak 'Hours must be an int!' if int($hours) ne $hours;
     croak 'Hours must be positive' if $hours < 1;
-    return $self->now->truncate(to => 'hour')->add( hours => (1 + $hours));
+    my $retval =  $self->now->truncate(to => 'hour')->add( hours => (1 + $hours));
+    $retval->{_pgobject_is_tz} = 0;
+    return $retval;
 }
 
 1;

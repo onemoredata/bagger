@@ -28,3 +28,13 @@ Storage configuration settings are:
       backfilled)
     - See `production` above.
 
+ - dimensions_hrs_in_future
+    - Defaults to 1
+    - If present, must be a positive integer
+    - How many hours ahead, on production, we future-date partition dimension
+      changes
+
+ - indexes_hrs_in_future
+    - Defaults to 1
+    - If present must be a positive integer
+    - How many hours ahead, on production, we future create index specifications
