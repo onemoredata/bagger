@@ -90,7 +90,6 @@ coerce 'Bagger::Type::DateTime'
 
 sub _config_dim_timing {
     my $self = shift;
-    use Bagger::Storage::Config;
     my $production = Bagger::Storage::Config->get('production');
     $production = $production->value_string if defined $production;
     my $hours_out;
