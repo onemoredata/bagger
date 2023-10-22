@@ -26,6 +26,7 @@ use warnings;
 use Moose::Role;
 use Bagger::Storage::Config;
 use Moose::Util::TypeConstraints;
+use Bagger::Type::DateTime;
 use namespace::autoclean;
 
 =head1 DESCRIPTION

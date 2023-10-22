@@ -327,9 +327,29 @@ CREATE FUNCTION storage.append_index_field(in_index_id int, in_expression varcha
 in_valid_from timestamp, in_valid_until timestamp)
 RETURNS storage.index_fields LANGUAGE SQL BEGIN ATOMIC
 INSERT INTO storage.index_fields
-       (index_id, expression, ordinality)
-SELECT in_index_id, in_expression, coalesce(max(ordinality) + 1, 0)
+       (index_id, expression, ordinality, valid_from, valid_until)
+SELECT in_index_id, in_expression, coalesce(max(ordinality) + 1, 0),
+       coalesce(in_valid_from, '-infinity'),
+       coalesce(in_valid_until, 'infinity')
   FROM storage.index_fields WHERE index_id = in_index_id
+RETURNING *;
+END;
+--
+CREATE FUNCTION storage.expire_index_field
+(in_id int, in_valid_until timestamp)
+returns storage.index_fields language sql begin atomic
+UPDATE storage.index_fields
+   SET valid_until = in_valid_until
+ WHERE id = in_id
+RETURNING *;
+END;
+--
+CREATE FUNCTION storage.expire_index
+(in_id int, in_valid_until timestamp)
+returns storage.indexes language sql begin atomic
+UPDATE storage.indexes
+   SET valid_until = in_valid_until
+ WHERE id = in_id
 RETURNING *;
 END;
 --
@@ -343,13 +363,17 @@ RETURNS storage.indexes LANGUAGE SQL BEGIN ATOMIC
 SELECT * FROM storage.indexes WHERE indexname = in_indexname;
 END;
 --
-DROP FUNCTION IF EXISTS storage.save_index(text, text, text);
-CREATE FUNCTION storage.save_index(in_indexname text, in_access_method text, in_tablespc text)
+CREATE FUNCTION storage.save_index(in_indexname text, 
+in_access_method text, in_tablespc text,
+in_valid_until timestamp, in_valid_from timestamp)
 RETURNS storage.indexes LANGUAGE SQL BEGIN ATOMIC
-INSERT INTO storage.indexes (indexname, access_method, tablespc)
-VALUES (in_indexname, in_access_method, coalesce(in_tablespc, 'pg_default'))
+INSERT INTO storage.indexes (indexname, access_method, tablespc, valid_until,
+                             valid_from)
+VALUES (in_indexname, in_access_method, coalesce(in_tablespc, 'pg_default'),
+       coalesce(in_valid_until, 'infinity'),
+       coalesce(in_valid_from, '-infinity'))
 ON CONFLICT(indexname)
-DO UPDATE SET access_method = in_access_method
+DO UPDATE SET access_method = in_access_method, valid_until = in_valid_until
 RETURNING *;
 END;
 

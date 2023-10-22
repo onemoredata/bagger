@@ -27,7 +27,9 @@ use Moose::Util::TypeConstraints;
 use namespace::autoclean;
 use Bagger::Storage::Index::Field;
 use Carp 'croak';
-with 'Bagger::Storage::PGObject';
+with 'Bagger::Storage::PGObject', 'Bagger::Storage::Time_Bound';
+
+sub _config_hours_out {'indexes_hrs_in_future'}
 
 =head1 DESCRIPTION
 
@@ -193,12 +195,12 @@ sub save {
     if (not $self->id){
         $new_idx = $self->call_dbmethod(funcname => 'save_index');
     }
-    for my $f (grep { not defined $_->id } $self->fields){
+    for my $f (grep { not defined $_->id } @{$self->fields}){
         $f->index_id($new_idx->id);
-        $f->save;
+        $f = $f->save;
     };
     # fields will be populated lazily from db
-    return $new_idx;
+    return $self->new($new_idx);
 }
 
 =head2 int next_ordinal
@@ -216,6 +218,19 @@ sub next_ordinal {
                   sort { $b->ordinality <=> $a->ordinality }
                   @{$self->fields};
     return $max_ordinal->ordinality + 1;
+}
+
+=head2 expire
+
+This function expires an index at the configured next hour boundary and returns
+the saved to-expire index entry.
+
+=cut
+
+sub expire {
+    my $self = shift;
+    my ($retval) = $self->expire_proxy->call_dbmethod(funcname => 'expire_index');
+    return $self->new(%$retval, fields => $self->fields);
 }
 
 =head2 $create_statement = $index->create_statement($schema_name, $table_name)
@@ -248,6 +263,7 @@ sub create_statement {
     $stmt .= " TABLESPACE " .
            $self->_dbh->quote_identifier($self->tablespc) if $self->tablespc;
 }
+
 
 1;
 
