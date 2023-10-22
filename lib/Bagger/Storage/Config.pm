@@ -103,7 +103,7 @@ sub get {
     my $key = (shift // $self);
     my ($config) = $self->call_procedure(funcname => 'get_config',
                           args => [$key]);
-    return __PACKAGE__->new($config);
+    return $self->new($config) if $config->{key};
 }
 
 =head2 save

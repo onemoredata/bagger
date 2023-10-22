@@ -15,7 +15,7 @@ db()->set_dbhost($ENV{BAGGER_TEST_LW_HOST}) if defined $ENV{BAGGER_TEST_LW_HOST}
 db()->set_dbport($ENV{BAGGER_TEST_LW_PORT}) if defined $ENV{BAGGER_TEST_LW_PORT};
 db()->set_dbuser($ENV{BAGGER_TEST_LW_USER}) if defined $ENV{BAGGER_TEST_LW_USER};
 
-plan 8;
+plan 9;
 
 # Test data setup
 my $initial_str = 'Nontrivial String {"\u0000"}[]';
@@ -41,3 +41,4 @@ is(pkg()->get($scal_cfg->key)->value_string, $initial_str, 'Initial string retur
 is(pkg()->get($aref_cfg->key)->value, $initial_array, 'Initial aref returned');
 is(pkg()->get($href_cfg->key)->value, $initial_href, 'Initial href returned');
 is(pkg()->get($struct_cfg->key)->value, $initial_struct, 'Struct round trip');
+is(pkg()->get('kfje1432gfds'), undef, 'Unknown key returns undef');
