@@ -20,7 +20,9 @@ use strict;
 use warnings;
 use Moose;
 use Carp 'croak';
-with 'Bagger::Storage::PGObject';
+with 'Bagger::Storage::PGObject', 'Bagger::Storage::Time_Bound';
+
+sub _config_hours_out {'indexes_hrs_in_future'}
 
 =head1 DESCRIPTION
 
@@ -142,7 +144,7 @@ Returns a list of index fields for the given index id.
 sub list {
     my ($self, $index_id) = @_;
     return map { __PACKAGE__->new($_) }
-          $self->call_procedure(funcname => 'list_index_fields',
+          $self->call_procedure(funcname => 'get_index_fields',
                                     args => [$index_id]);
 
 }
