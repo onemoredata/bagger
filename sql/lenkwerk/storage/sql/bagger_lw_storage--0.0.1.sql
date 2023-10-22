@@ -1,6 +1,22 @@
 
 create schema if not exists storage;
 
+create table storage.time_bound (
+    valid_from timestamp not null default '-infinity',
+    valid_until timestamp not null default 'infinity',
+    check (valid_from is null) NO INHERIT -- ensure nothing is saved here
+);
+
+create function storage.validrange(storage.time_bound)
+returns tsrange language sql
+return (tsrange($1.valid_from, $1.valid_until, '[)'));
+
+comment on table storage.time_bound IS
+$$
+This table is an interface table which, via inheritance, gives a consistent way
+of handling database entities which need to be available during various time
+ranges.
+$$;
 
 create table storage.postgres_instance (
    id serial not null unique,
@@ -55,10 +71,8 @@ CREATE TABLE storage.dimensions (
    id serial NOT NULL UNIQUE,
    ordinality INT NOT NULL UNIQUE DEFERRABLE INITIALLY DEFERRED,
    default_val varchar null default 'notexist',
-   valid_from timestamp default '-infinity',
-   valid_until   timestamp default 'infinity', 
    fieldname varchar PRIMARY KEY
-);
+) inherits (storage.time_bound);
 
 SELECT pg_catalog.pg_extension_config_dump('storage.dimensions', '');
 SELECT pg_catalog.pg_extension_config_dump('storage.dimensions_id_seq', '');
@@ -75,7 +89,7 @@ create table storage.indexes (
    access_method varchar not null, -- extensible, enforced in tooling
    tablespc varchar not null default 'pg_default',
    primary key (indexname)
-);
+) inherits (storage.time_bound);
 
 SELECT pg_catalog.pg_extension_config_dump('storage.indexes', '');
 SELECT pg_catalog.pg_extension_config_dump('storage.indexes_id_seq', '');
@@ -93,7 +107,7 @@ CREATE TABLE storage.index_fields (
    ordinality int,
    expression varchar not null,
    primary key (index_id, ordinality) DEFERRABLE INITIALLY DEFERRED
-);
+) inherits (storage.time_bound);
 
 SELECT pg_catalog.pg_extension_config_dump('storage.index_fields', '');
 SELECT pg_catalog.pg_extension_config_dump('storage.index_fields_id_seq', '');
@@ -295,19 +309,22 @@ END;
 -----------------------
 
 CREATE FUNCTION storage.insert_index_field
-(in_index_id int, in_ordinality int, in_expression varchar)
+(in_index_id int, in_ordinality int, in_expression varchar,
+in_valid_from timestamp, in_valid_until timestamp)
 RETURNS storage.index_fields LANGUAGE SQL BEGIN ATOMIC
 UPDATE storage.index_fields
    SET ordinality = ordinality + 1
  WHERE index_id = in_index_id and ordinality >= in_ordinality;
 
 INSERT INTO storage.index_fields
-       (index_id, ordinality, expression)
-VALUES (in_index_id, in_ordinality, in_expression)
+       (index_id, ordinality, expression, valid_from, valid_until)
+VALUES (in_index_id, in_ordinality, in_expression, in_valid_from,
+       in_valid_until)
 RETURNING *;
 END;
 --
-CREATE FUNCTION storage.append_index_field(in_index_id int, in_expression varchar)
+CREATE FUNCTION storage.append_index_field(in_index_id int, in_expression varchar,
+in_valid_from timestamp, in_valid_until timestamp)
 RETURNS storage.index_fields LANGUAGE SQL BEGIN ATOMIC
 INSERT INTO storage.index_fields
        (index_id, expression, ordinality)
