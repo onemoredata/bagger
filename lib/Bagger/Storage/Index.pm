@@ -26,6 +26,7 @@ use Moose;
 use Moose::Util::TypeConstraints;
 use namespace::autoclean;
 use Bagger::Storage::Index::Field;
+use Bagger::Type::DateTime;
 use Carp 'croak';
 with 'Bagger::Storage::PGObject', 'Bagger::Storage::Time_Bound';
 
@@ -156,9 +157,9 @@ sub _get_fields {
 
 has fields => (
               is      => 'ro',
-              isa     => 'ArrayRef[Bagger::Index::Fields]',
-              lazy    => 1,
+              isa     => 'ArrayRef[Bagger::Storage::Index::Field]',
               builder => '_get_fields',
+              lazy    => 1,
               required => 0,
 );
 
@@ -174,8 +175,8 @@ retrieved.
 
 sub get {
     my ($self, $indexname) = @_;
-    return __PACKAGE__->new(
-        __PACKAGE__->call_procedure(funcname => 'get_index',
+    return $self->new(
+        $self->call_procedure(funcname => 'get_index',
                                     args     => [$indexname])
     );
 };
@@ -195,12 +196,11 @@ sub save {
     if (not $self->id){
         $new_idx = $self->call_dbmethod(funcname => 'save_index');
     }
-    for my $f (grep { not defined $_->id } @{$self->fields}){
-        $f->index_id($new_idx->id);
-        $f = $f->save;
+    for my $f (@{$self->fields}){
+        $f->index_id($new_idx->{id});
+        $f = $f->save unless $f->id;
     };
-    # fields will be populated lazily from db
-    return $self->new($new_idx);
+    return $self->get($self->indexname);
 }
 
 =head2 int next_ordinal
@@ -246,6 +246,7 @@ sub create_statement {
     my ($self, $schema_name, $table_name) = @_;
     croak 'Must supply a schema_name to create_statement' unless $schema_name;
     croak 'Must supply a table_name to create_statement' unless $table_name;
+    return "" unless $self->in_time_bounds;
     croak "Index must have fields added first" unless $self->next_ordinal;
 
     my $idx_name    = $self->_dbh->quote_identifier(
@@ -254,7 +255,8 @@ sub create_statement {
     $table_name  = $self->_dbh->quote_identifier($table_name);
 
     my $field_str   = join ',',
-                   map { "($_)" } # indexes require this extra paren set
+                   map { '(' . $_->expression . ')' } # indexes require this extra paren set
+                   grep { $_->in_time_bounds }
                    sort { $a->ordinality <=> $b->ordinality }
                    @{$self->fields};
 
@@ -263,7 +265,6 @@ sub create_statement {
     $stmt .= " TABLESPACE " .
            $self->_dbh->quote_identifier($self->tablespc) if $self->tablespc;
 }
-
 
 1;
 
