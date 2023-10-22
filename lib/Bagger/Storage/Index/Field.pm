@@ -20,6 +20,7 @@ use strict;
 use warnings;
 use Moose;
 use Carp 'croak';
+use PGObject::Util::DBMethod;
 with 'Bagger::Storage::PGObject', 'Bagger::Storage::Time_Bound';
 
 sub _config_hours_out {'indexes_hrs_in_future'}
@@ -91,7 +92,7 @@ sub cast {
     } else {
         croak 'Not enough arguments to cast!  Expected 2.';
     }
-    return "${expression}::" . $self->_dbh->quote_identifier($type);
+    return "${expression}::" . $self->_get_dbh->quote_identifier($type);
 }
 
 =head2 extract_from_json_object($expression, $field)
@@ -116,7 +117,7 @@ sub extract_from_json_object{
     } else {
         croak 'Not enough arguments to extract_from_json_object!  Expected 2.';
     }
-    return "($expression)->" . $self->_dbh->quote($field);
+    return "($expression)->" . $self->_get_dbh->quote($field);
 }
 
 =head2 json_field
@@ -130,7 +131,7 @@ sub json_field {
     my ($self) = shift;
     my $field = shift // $self;
     croak "Must provide a field name!" unless defined $field;
-    return 'data->' . $self->_dbh->quote($field);
+    return 'data->' . $self->_get_dbh->quote($field);
 }
 
 =head1 METHODS
@@ -143,7 +144,7 @@ Returns a list of index fields for the given index id.
 
 sub list {
     my ($self, $index_id) = @_;
-    return map { __PACKAGE__->new($_) }
+    return map { $self->new($_) }
           $self->call_procedure(funcname => 'get_index_fields',
                                     args => [$index_id]);
 
@@ -152,6 +153,8 @@ sub list {
 =head2 save
 
 =cut
+
+dbmethod save => (funcname => 'append_index_field', returns_objects => 1);
 
 1;
 

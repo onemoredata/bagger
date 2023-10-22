@@ -6,6 +6,7 @@ use Test2::V0 -target => {pkg => 'Bagger::Storage::Index',
                       };
 use strict;
 use warnings;
+use Carp::Always;
 
 skip_all('BAGGER_TEST_LW environment variable not set') unless defined
                                                         $ENV{BAGGER_TEST_LW};
@@ -19,7 +20,7 @@ db()->set_dbhost($ENV{BAGGER_TEST_LW_HOST}) if defined $ENV{BAGGER_TEST_LW_HOST}
 db()->set_dbport($ENV{BAGGER_TEST_LW_PORT}) if defined $ENV{BAGGER_TEST_LW_PORT};
 db()->set_dbuser($ENV{BAGGER_TEST_LW_USER}) if defined $ENV{BAGGER_TEST_LW_USER};
 
-plan 23;
+plan 30;
 
 ### Constructor tests, without index_am
 
@@ -34,6 +35,16 @@ ok(pkg()->new(indexname => 'test', access_method => 'gin'),
 ok(my $basic_idx = pkg()->new(indexname => 'test', access_method => 'gin'), 'Gin index defined');
 is($basic_idx->valid_from, dt()->inf_past, 'By default, index valid_from forever');
 is($basic_idx->valid_until, dt()->inf_future, 'By default, index does not expire');
+push @{$basic_idx->fields}, fld()->new(
+      ordinality => $basic_idx->next_ordinal, expression => fld()->json_field('foo')
+);
+push @{$basic_idx->fields}, fld()->new(
+      ordinality => $basic_idx->next_ordinal, expression => fld()->json_field('bar')
+);
+ok(my $idx = $basic_idx->save, 'Saved idx');
+is($idx->create_statement('foo', 'bar'), 
+    q#CREATE INDEX "bar_test" ON "foo"."bar" ((data->'foo'),(data->'bar')) using gin TABLESPACE "pg_default"#, 
+    'Create Statement is correct');
 
 ok(dies { pkg()->new() }, 'empty args dies');
 
@@ -50,16 +61,30 @@ ok(dies { pkg()->new(indexname => 'test', access_method => ['gin']) },
 
 ## Field-saving tests
 
-my $field = 
 
 ## Production tests
 
 ok(cfg()->new('key' => 'production', value => 1)->save, 'Set production status');
 
-ok($basic_idx = pkg()->new(indexname => 'test', access_method => 'gin'), 'Gin index defined');
+ok($basic_idx = pkg()->new(indexname => 'test2', access_method => 'gin'), 'Gin index defined');
 is($basic_idx->valid_from, dt()->hour_bound_plus(1), 'By default, index set to start at next hr + 1hr');
 is($basic_idx->valid_until, dt()->inf_future, 'By default, index does not expire');
-ok(my $idx = $basic_idx->save, 'Saved idx');
+push @{$basic_idx->fields}, fld()->new(
+      ordinality => $basic_idx->next_ordinal, expression => fld()->json_field('foo')
+);
+push @{$basic_idx->fields}, fld()->new(
+      ordinality => $basic_idx->next_ordinal, expression => fld()->json_field('bar')
+);
+ok($idx = $basic_idx->save, 'Saved idx');
+
+ok($idx->fields->[0]->id, 'Saved idx has id for field 0');
+ok($idx->fields->[1]->id, 'Saved idx has id for field 1');
+
+is($idx->fields->[0]->valid_from, $idx->valid_from, 'Index and index_field 0 have same start time');
+is($idx->fields->[1]->valid_from, $idx->valid_from, 'Index and index field 1 have same start time');
+
+is($idx->create_statement('foo', 'bar'), '',
+    'Create Statement is correct when time out of bounds');
 
 is($idx->expire->valid_until, dt()->hour_bound_plus(1), 'Expired to correct hour bound');
 

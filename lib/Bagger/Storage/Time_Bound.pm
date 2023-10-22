@@ -168,4 +168,18 @@ sub expire_proxy {
     return $self->new(%$self, valid_until => $self->next_expiration_date);
 }
 
+=head1 in_time_bounds
+
+Returns 1 if the current time is between the valid_from and valid_until times
+
+=cut
+
+sub in_time_bounds {
+    my $self = shift;
+    my $now = Bagger::Type::DateTime->now();
+    return ($self->valid_from <= $now) 
+        && ($self->valid_until > $now);
+    return 1;
+}
+
 1;
