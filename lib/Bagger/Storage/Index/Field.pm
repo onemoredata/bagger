@@ -14,6 +14,9 @@ package Bagger::Storage::Index::Field;
    );
    push @{$index->fields} $field;
 
+   Note you can pass a Bagger::Type::JSONPointer object to expression
+   and have it automatically converted!
+
 =cut
 
 use strict;
@@ -21,9 +24,11 @@ use warnings;
 use Moose;
 use Carp 'croak';
 use PGObject::Util::DBMethod;
+use Moose::Util::TypeConstraints;
 with 'Bagger::Storage::PGObject', 'Bagger::Storage::Time_Bound';
 
 sub _config_hours_out {'indexes_hrs_in_future'}
+sub root_element { 'data' }
 
 =head1 DESCRIPTION
 
@@ -60,11 +65,20 @@ has ordinality => (is => 'ro', isa => 'Int', required => 1);
 
 =item expression -- indexed expression.  Required. See helper funcs below
 
+Note that if expression is a C<Bagger::Type::JSONPointer> type, it will
+be converted into an expression automatically.
+
 =back
 
 =cut
 
-has expression => (is => 'ro', isa => 'Str', required => 1);
+subtype 'Bagger::Type::JSONPointer' => as  'Bagger::Type::JSONPointer';
+
+coerce 'Str' 
+   => from 'Bagger::Type::JSONPointer'
+   => via { __PACKAGE__->from_json_pointer($_) };
+
+has expression => (is => 'ro', isa => 'Str', required => 1, coerce => 1);
 
 =head1 EXPRESSON HELPER FUNCTIONS
 
@@ -128,10 +142,28 @@ used in the top-level of the json object stored by Bagger.
 =cut
 
 sub json_field {
-    my ($self) = shift;
-    my $field = shift // $self;
+    my ($self, $field) = @_;
     croak "Must provide a field name!" unless defined $field;
-    return 'data->' . $self->_get_dbh->quote($field);
+    return root_element . '->' . $self->_get_dbh->quote($field);
+}
+
+=head2 from_json_pointer
+
+  Bagger::Storage::Index::Field->from_json_pointer($jsonptr)
+
+This method taks a Bagger::Type::JSONPointer type in and converts it to a sql
+expression.
+
+=cut
+
+sub from_json_pointer {
+    my ($class, $jsonptr) = @_;
+    my @elems = @$jsonptr; #copy so we can shift
+    my $exp = $class->json_field(shift @elems);
+    for my $elem (@elems) {
+        $exp = $class->extract_from_json_object($exp, $elem);
+    }
+    return $exp;
 }
 
 =head1 METHODS
