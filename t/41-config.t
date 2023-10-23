@@ -1,19 +1,8 @@
-use Test2::V0 -target => { pkg => 'Bagger::Storage::Config' , 
-                            db => 'Bagger::Storage::LenkwerkSetup'};
+use Test2::V0 -target => { pkg => 'Bagger::Storage::Config' };
+use Bagger::Test::PGTap;
+use Bagger::Test::DB::LW;
 use strict;
 use warnings;
-
-skip_all('BAGGER_TEST_LW environment variable not set') unless defined
-                                                        $ENV{BAGGER_TEST_LW};
-
-bail_out('BAGGER_TEST_LW_DB environment variable not set') unless defined
-                                                       $ENV{BAGGER_TEST_LW_DB};
-
-
-db()->set_lenkwerkdb($ENV{BAGGER_TEST_LW_DB});
-db()->set_dbhost($ENV{BAGGER_TEST_LW_HOST}) if defined $ENV{BAGGER_TEST_LW_HOST};
-db()->set_dbport($ENV{BAGGER_TEST_LW_PORT}) if defined $ENV{BAGGER_TEST_LW_PORT};
-db()->set_dbuser($ENV{BAGGER_TEST_LW_USER}) if defined $ENV{BAGGER_TEST_LW_USER};
 
 plan 9;
 

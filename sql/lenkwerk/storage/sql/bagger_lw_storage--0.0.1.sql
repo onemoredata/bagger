@@ -396,3 +396,11 @@ DO update set value = in_value
 RETURNING *;
 END;
 ---
+
+CREATE PUBLICATION bagger_lw_storage
+FOR TABLE storage.postgres_instance, 
+          storage.indexes, 
+          storage.index_fields, 
+          storage.dimensions, 
+          storage.servermaps, 
+          storage.config;

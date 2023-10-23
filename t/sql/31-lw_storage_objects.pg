@@ -1,0 +1,38 @@
+BEGIN;
+
+set search_path = 'storage';
+CREATE EXTENSION pgtap;
+select plan(14);
+
+select has_table(u)
+  from unnest(array['time_bound'::text, 'postgres_instance', 'indexes',
+                    'index_fields', 'dimensions', 'servermaps', 'config']) u;
+
+
+select set_eq(
+      $$select oid 
+          from pg_class 
+         where relnamespace = 'storage'::regnamespace and relkind in('r', 'S')
+               and relname <> 'time_bound'$$, -- time_bound has no data to dump
+      (select extconfig from pg_extension where extname = 'bagger_lw_storage'),
+      'All tables in the storage schema are set to be dumped'
+);
+
+select has_inherited_tables('storage', 'time_bound', 'Timebound tables exist');
+
+
+select is_ancestor_of('time_bound', u, format('%I is timebound', u))
+from unnest(array['indexes'::text, 'index_fields', 'dimensions']) u;
+
+select set_eq(
+      $$select prrelid::regclass from pg_publication_rel where prpubid in
+               (select oid from pg_publication where pubname = 'bagger_lw_storage')$$,
+      array['postgres_instance'::regclass, 'indexes', 'index_fields', 'dimensions', 
+            'servermaps', 'config'],
+      'All relevant tables are in the relevant publication');
+
+select is((select setting from pg_settings where name = 'wal_level'), 'logical',
+         'WAL level set to logical');
+
+select * from finish();
+ROLLBACK;
