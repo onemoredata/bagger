@@ -1,10 +1,10 @@
 =head1 NAME
 
-   Bagger::Test::PGTap -- Test class for running pgTAP files
+   Bagger::Test::DB::LW -- Test class for running pgTAP files
 
 =cut
 
-package Bagger::Test::PGTap;
+package Bagger::Test::DB::LW;
 
 =head1 SYNOPSIS
 
@@ -101,13 +101,11 @@ Returns false if not.
 
 sub pg_tap_available{
     my $self = shift;
-    my $q = "select count(*) from pg_available_extensions() where name = 'pgtap'";
-    my ($stdout, $stderr, $exit) = capture {
-        return system('psql', (scalar @args ? (@args) : ($dsn)),
-            -c => $q, '-t')
-    };
-    warn $stderr if $stderr;
-    return int($stdout);
+    my $q = q("select count(*) from pg_available_extensions() where name = 'pgtap'");
+    my $outcmd = join ' ', 'psql', (scalar @args ? (@args) : ($dsn)),
+            -c => $q, '-t';
+    my $output = `$outcmd`;
+    return int($output);
 }
 
 =head2 run($filename)
@@ -119,12 +117,20 @@ If params and a dsn are both set, the params take precedence.
 
 =cut
 
-sub params { scalar @args ? (@args) : ($dsn) }
-
+use Test2::V0;
 sub run {
     my $self = shift;
     my $file = shift // $self;
-    system('psql', params);
+    my $params = sub { (scalar @args ? (@args) : ($dsn)), -f => (join('/', ($test_dir, $file))),  -t => '-q' };
+    my $testcmd = join ' ', ('psql', &$params());
+    my $testout = `$testcmd`;
+    my @lines = split(/^/m, $testout);
+    for (@lines) {
+        if ($_ =~ /1\.\.(\d+)/)    { plan $1 };
+        if ($_ =~ /^\s+ok\s+/)     { my @elems = split( /-/, $_, 2); pass($elems[1]); }
+        if ($_ =~ /^\s+not ok\s+/) { my @elems = split( /-/, $_, 2); fail($elems[1]); }
+    }
+   
 }
 
 =head1 Bagger Initialization for Tests
@@ -168,11 +174,12 @@ sub lw_setup{
         (db()->dbport ? (-p => db()->dbport) : ()),
         (db()->lenkwerkdb ? (-d => db()->lenkwerkdb) : ()),
     );
+    set_dir('t/sql');
 }
 
 sub init{
     my ($self, $file) = @_;
-    lw_setup;
+    skip_all('pgTAP not installed') unless pg_tap_available;
     __PACKAGE__->run($file);
 }
 
