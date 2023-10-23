@@ -3,6 +3,7 @@ use Test2::V0 -target => {pkg => 'Bagger::Storage::Index',
                           cfg => 'Bagger::Storage::Config',
                            dt => 'Bagger::Type::DateTime',
                           fld => 'Bagger::Storage::Index::Field',
+                      jsonptr => 'Bagger::Type::JSONPointer',
                       };
 use strict;
 use warnings;
@@ -20,7 +21,7 @@ db()->set_dbhost($ENV{BAGGER_TEST_LW_HOST}) if defined $ENV{BAGGER_TEST_LW_HOST}
 db()->set_dbport($ENV{BAGGER_TEST_LW_PORT}) if defined $ENV{BAGGER_TEST_LW_PORT};
 db()->set_dbuser($ENV{BAGGER_TEST_LW_USER}) if defined $ENV{BAGGER_TEST_LW_USER};
 
-plan 30;
+plan 31;
 
 ### Constructor tests, without index_am
 
@@ -73,7 +74,7 @@ push @{$basic_idx->fields}, fld()->new(
       ordinality => $basic_idx->next_ordinal, expression => fld()->json_field('foo')
 );
 push @{$basic_idx->fields}, fld()->new(
-      ordinality => $basic_idx->next_ordinal, expression => fld()->json_field('bar')
+      ordinality => $basic_idx->next_ordinal, expression => jsonptr()->new('/bar')
 );
 ok($idx = $basic_idx->save, 'Saved idx');
 
@@ -97,3 +98,6 @@ ok($idx = $basic_idx->save, 'Saved idx');
 
 
 is($idx->expire->valid_until, dt()->hour_bound_plus(3), 'Expired to correct hour bound');
+is($fld->from_json_pointer(jsonptr()->new('/foo/bar/1/baz')), 
+   q((((data->'foo')->'bar')->'1')->'baz') , 
+   'JSON Pointer Serialization');
