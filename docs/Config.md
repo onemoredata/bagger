@@ -38,3 +38,8 @@ Storage configuration settings are:
     - Defaults to 1
     - If present must be a positive integer
     - How many hours ahead, on production, we future create index specifications
+
+ - data_storage_mode
+    - The storage mode of the data column for the main data tables.
+      When the table is created, this will be used to ALTER TABLE and set the
+      storage mode for the column
