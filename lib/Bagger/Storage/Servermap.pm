@@ -146,12 +146,7 @@ Returns the servermap row by id.
 
 =cut
 
-sub get {
-    my ($class, $id) = @_;
-    return $class->new(
-        ($class->call_procedure(funcname => 'get_servermap', args => [$id]))[0]
-    );
-}
+dbmethod get => (funcname => 'get_servermap', arg_list => ['id'], returns_objects => 1);
 
 =back
 

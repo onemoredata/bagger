@@ -6,9 +6,13 @@
 
 package Bagger::Type::JSON;
 use parent 'PGObject::Type::JSON';
+use Moose::Util::TypeConstraints;
 use strict;
 use warnings;
 use Carp 'croak';
+
+subtype __PACKAGE__
+ => as  __PACKAGE__;
 
 =head1 SYNOPSIS
 

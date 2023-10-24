@@ -174,13 +174,8 @@ Returns a list of index fields for the given index id.
 
 =cut
 
-sub list {
-    my ($self, $index_id) = @_;
-    return map { $self->new($_) }
-          $self->call_procedure(funcname => 'get_index_fields',
-                                    args => [$index_id]);
-
-}
+dbmethod list => (funcname => 'get_index_fields', arg_list => ['index_id'], 
+    returns_objects => 1);
 
 =head2 save
 

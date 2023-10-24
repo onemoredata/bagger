@@ -154,12 +154,8 @@ Returns the db instance by id.
 
 =cut
 
-sub get {
-    my ($self, $id) = @_;
-    my ($result) = __PACKAGE__->call_procedure(
-                     funcname => 'get_pg_instance_by_id', args => [$id]);
-    return __PACKAGE__->new($result);
-}
+dbmethod get => (funcname => 'get_pg_instance_by_id', arg_list => ['id'],
+    returns_objects => 1);
 
 =head2 get_by_info($host, $port)
 
@@ -167,14 +163,8 @@ Returns the db instance by hostname and port.
 
 =cut
 
-sub get_by_info {
-    my ($self, $host, $port) = @_;
-    my ($result) = __PACKAGE__->call_procedure(
-                     funcname => 'get_pg_instance_by_host_and_port',
-                     args     => [$host, $port]
-    );
-    return __PACKAGE__->new($result);
-}
+dbmethod get_by_info => (funcname => 'get_pg_instance_by_host_and_port',
+    arg_list => ['host', 'port'], returns_objects => 1);
 
 =head2 set_status($status)
 
@@ -182,12 +172,8 @@ This sets the instance status and returns a new object.
 
 =cut
 
-sub set_status {
-    my ($self, $status) = @_;
-    my ($result) = $self->call_dbmethod(funcname => 'set_pg_instance_status',
-            args => {status => $status});
-    return __PACKAGE__->new($result);
-}
+dbmethod set_status => (funcname => 'set_pg_instance_status',
+    arg_list => ['status'], returns_objects => 1);
 
 =head2 list()
 
@@ -195,11 +181,7 @@ This returns a list of instances, set up as objects from the database.
 
 =cut
 
-sub list {
-    my ($self) = @_;
-    my @results = $self->call_dbmethod(funcname => 'list_pg_instances');
-    return map { __PACKAGE__->new($_) } @results;
-}
+dbmethod list => (funcname => 'list_pg_instances', returns_objects => 1);
 
 =head2 export()
 
