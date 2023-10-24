@@ -27,6 +27,7 @@ use Moose::Util::TypeConstraints;
 use namespace::autoclean;
 use Bagger::Storage::Index::Field;
 use Bagger::Type::DateTime;
+use PGObject::Util::DBMethod;
 use Carp 'croak';
 with 'Bagger::Storage::PGObject', 'Bagger::Storage::Time_Bound';
 
@@ -173,13 +174,9 @@ retrieved.
 
 =cut
 
-sub get {
-    my ($self, $indexname) = @_;
-    return $self->new(
-        $self->call_procedure(funcname => 'get_index',
-                                    args     => [$indexname])
-    );
-};
+
+dbmethod get => (funcname => 'get_index', arg_list => ['indexname'],
+    returns_objects => 1);
 
 =head2 $newindex = $index->save()
 

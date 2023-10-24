@@ -73,9 +73,6 @@ has key => (is => 'ro', isa => 'Str', required => 1);
 
 =cut
 
-subtype 'Bagger::Type::JSON'
-  => as 'Bagger::Type::JSON';
-
 coerce 'Bagger::Type::JSON'
   => from 'Str | Ref'
   =>  via { Bagger::Type::JSON->new($_) };
@@ -95,6 +92,8 @@ has value => (is      => 'ro',
 =head2 get($key)
 
  Looks up the config item by key and returns it.
+
+ Returns undef if the key was not found.
 
 =cut
 
