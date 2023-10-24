@@ -56,12 +56,12 @@ New states may be added in the future.
 $$;
 
 create table storage.servermaps (
-   generation serial primary key,
+   id serial primary key,
    server_map json not null
 );
 
 SELECT pg_catalog.pg_extension_config_dump('storage.servermaps', '');
-SELECT pg_catalog.pg_extension_config_dump('storage.servermaps_generation_seq', '');
+SELECT pg_catalog.pg_extension_config_dump('storage.servermaps_id_seq', '');
 
 comment on table storage.servermaps is
 $$ The servermaps table stores the server maps by generation so that
@@ -396,6 +396,34 @@ DO update set value = in_value
 RETURNING *;
 END;
 ---
+
+----------------------
+-- Servermaps
+----------------------
+CREATE FUNCTION storage.get_servermap(in_id int)
+returns storage.servermaps LANGUAGE SQL BEGIN ATOMIC
+SELECT * FROM storage.servermaps where id = in_id;
+END;
+
+CREATE FUNCTION storage.most_recent_servermap()
+RETURNS storage.servermaps LANGUAGE SQL BEGIN ATOMIC
+SELECT * FROM storage.servermaps ORDER BY id desc limit 1;
+end;
+
+CREATE FUNCTION storage.save_servermap(in_server_map json)
+RETURNS storage.servermaps LANGUAGE SQL BEGIN ATOMIC
+INSERT INTO storage.servermaps (server_map)
+VALUES (in_server_map)
+RETURNING *;
+END;
+
+COMMENT ON FUNCTION storage.save_servermap(in_server_map json)
+IS
+$$ This function always inserts a new record.$$;
+
+---------------------
+-- Other
+---------------------
 
 CREATE PUBLICATION bagger_lw_storage
 FOR TABLE storage.postgres_instance, 

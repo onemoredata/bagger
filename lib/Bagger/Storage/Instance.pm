@@ -201,6 +201,27 @@ sub list {
     return map { __PACKAGE__->new($_) } @results;
 }
 
+=head2 export()
+
+This returns a hashref with the basic information needed for storing host info
+for servermaps etc.
+
+=cut
+
+sub export {
+    my $self = shift;
+    return { id => $self->id, host => $self->host, port => $self->port }
+}
+
+=head2 TO_JSON()
+
+Exports a full copy of the object as a hashref for JSON serialization
+
+=cut
+
+sub TO_JSON { %{$_[0]} }
+
+
 =head1 SEE ALSO
 
 =cut
