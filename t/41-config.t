@@ -1,5 +1,4 @@
 use Test2::V0 -target => { pkg => 'Bagger::Storage::Config' };
-use Bagger::Test::PGTap;
 use Bagger::Test::DB::LW;
 use strict;
 use warnings;

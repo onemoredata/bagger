@@ -105,11 +105,16 @@ Version 1 of the servermap has a structure as follows
 sub generate_server_map {
     my ($self) = @_;
     my @hosts = sort { $a->host cmp $b->host } Bagger::Storage::Instance->list;
+    my $rotate = $self->call_procedure(funcname => 'servermap_rotate_num');
+    ($rotate) = values %$rotate; 
     my $first = $hosts[0];
     my $primaries = [@hosts];
+    my $secondaries = [@hosts]; # independent copies
     # Rotate physical hosts
-    my $secondaries = [(grep { $_->host ne $first->host} @hosts ), 
-                       ( grep { $_->host eq $first->host} @hosts )];
+    for (1 .. $rotate){
+        my $s = shift @$secondaries;
+        push @$secondaries, $s;
+    }
     my $servmap = { version => 1 };
     for (@hosts) {
         my $primary = shift @$primaries;
