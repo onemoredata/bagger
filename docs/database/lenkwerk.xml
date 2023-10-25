@@ -156,6 +156,46 @@ can be set using the default_val field though this is not yet supported.
 
 
             <varlistentry>
+              <term><database class="field">valid_from</database></term>
+              <listitem><para>
+                <database class="datatype">timestamp without time zone</database>
+
+
+
+                <database class="constraint">NOT NULL</database>
+
+
+
+                <literal>DEFAULT &apos;-infinity&apos;::timestamp without time zone</literal>
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+            <varlistentry>
+              <term><database class="field">valid_until</database></term>
+              <listitem><para>
+                <database class="datatype">timestamp without time zone</database>
+
+
+
+                <database class="constraint">NOT NULL</database>
+
+
+
+                <literal>DEFAULT &apos;infinity&apos;::timestamp without time zone</literal>
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+            <varlistentry>
               <term><database class="field">id</database></term>
               <listitem><para>
                 <database class="datatype">serial</database>
@@ -217,42 +257,6 @@ can be set using the default_val field though this is not yet supported.
 
 
                 <literal>DEFAULT &apos;notexist&apos;::character varying</literal>
-
-
-
-              </para>
-
-            </listitem>
-          </varlistentry>
-
-            <varlistentry>
-              <term><database class="field">valid_from</database></term>
-              <listitem><para>
-                <database class="datatype">timestamp without time zone</database>
-
-
-
-
-
-                <literal>DEFAULT &apos;-infinity&apos;::timestamp without time zone</literal>
-
-
-
-              </para>
-
-            </listitem>
-          </varlistentry>
-
-            <varlistentry>
-              <term><database class="field">valid_until</database></term>
-              <listitem><para>
-                <database class="datatype">timestamp without time zone</database>
-
-
-
-
-
-                <literal>DEFAULT &apos;infinity&apos;::timestamp without time zone</literal>
 
 
 
@@ -326,6 +330,46 @@ For this reason registering indexes is a privileged operation.
               Structure of <database class="table">index_fields</database>
             </title>
 
+
+            <varlistentry>
+              <term><database class="field">valid_from</database></term>
+              <listitem><para>
+                <database class="datatype">timestamp without time zone</database>
+
+
+
+                <database class="constraint">NOT NULL</database>
+
+
+
+                <literal>DEFAULT &apos;-infinity&apos;::timestamp without time zone</literal>
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+            <varlistentry>
+              <term><database class="field">valid_until</database></term>
+              <listitem><para>
+                <database class="datatype">timestamp without time zone</database>
+
+
+
+                <database class="constraint">NOT NULL</database>
+
+
+
+                <literal>DEFAULT &apos;infinity&apos;::timestamp without time zone</literal>
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
 
             <varlistentry>
               <term><database class="field">id</database></term>
@@ -478,6 +522,46 @@ This allows us to specify GIN, GIST, btree, and hash indexes.
               Structure of <database class="table">indexes</database>
             </title>
 
+
+            <varlistentry>
+              <term><database class="field">valid_from</database></term>
+              <listitem><para>
+                <database class="datatype">timestamp without time zone</database>
+
+
+
+                <database class="constraint">NOT NULL</database>
+
+
+
+                <literal>DEFAULT &apos;-infinity&apos;::timestamp without time zone</literal>
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+            <varlistentry>
+              <term><database class="field">valid_until</database></term>
+              <listitem><para>
+                <database class="datatype">timestamp without time zone</database>
+
+
+
+                <database class="constraint">NOT NULL</database>
+
+
+
+                <literal>DEFAULT &apos;infinity&apos;::timestamp without time zone</literal>
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
 
             <varlistentry>
               <term><database class="field">id</database></term>
@@ -798,7 +882,7 @@ we can determine which servers are supposed to receive writes together.
 
 
             <varlistentry>
-              <term><database class="field">generation</database></term>
+              <term><database class="field">id</database></term>
               <listitem><para>
                 <database class="datatype">serial</database>
 
@@ -853,6 +937,97 @@ we can determine which servers are supposed to receive writes together.
       </para>
     </section>
 
+      <section id="storage.table.time-bound"
+               xreflabel="storage.time_bound">
+        <title id="storage.table.time-bound-title">
+         Table:
+         <database class="view">time_bound</database>
+         
+        </title>
+ 
+
+        <para>
+          
+This table is an interface table which, via inheritance, gives a consistent way
+of handling database entities which need to be available during various time
+ranges.
+
+        </para>
+
+
+        <para>
+          <variablelist>
+            <title>
+              Structure of <database class="table">time_bound</database>
+            </title>
+
+
+            <varlistentry>
+              <term><database class="field">valid_from</database></term>
+              <listitem><para>
+                <database class="datatype">timestamp without time zone</database>
+
+
+
+                <database class="constraint">NOT NULL</database>
+
+
+
+                <literal>DEFAULT &apos;-infinity&apos;::timestamp without time zone</literal>
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+            <varlistentry>
+              <term><database class="field">valid_until</database></term>
+              <listitem><para>
+                <database class="datatype">timestamp without time zone</database>
+
+
+
+                <database class="constraint">NOT NULL</database>
+
+
+
+                <literal>DEFAULT &apos;infinity&apos;::timestamp without time zone</literal>
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+        </variablelist>
+
+
+
+        <variablelist>
+          <title>Constraints on time_bound</title>
+
+          <varlistentry>
+            <term>time_bound_valid_from_check</term>
+            <listitem><para>CHECK ((valid_from IS NULL)) NO INHERIT</para></listitem>
+          </varlistentry>
+
+        </variablelist>
+
+
+
+
+
+
+
+
+
+
+      </para>
+    </section>
+
 
 
 <!-- Function append_dimension(in_fieldname character varying, in_default_val character varying, in_valid_from timestamp without time zone, in_valid_until timestamp without time zone) -->
@@ -885,14 +1060,95 @@ It returns the row as saved.
       </para>
     </section>
 
-<!-- Function append_index_field(in_index_id integer, in_expression character varying) -->
-    <section id="storage.function.append-index-field-in-index-id-integer-in-expression-character-varying"
+<!-- Function append_index_field(in_index_id integer, in_expression character varying, in_valid_from timestamp without time zone, in_valid_until timestamp without time zone) -->
+    <section id="storage.function.append-index-field-in-index-id-integer-in-expression-character-varying-in-valid-from-timestamp-without-time-zone-in-valid-until-timestamp-without-time-zone"
              xreflabel="()">
-      <title id="storage.function.append-index-field-in-index-id-integer-in-expression-character-varying-title">
-       append_index_field(in_index_id integer, in_expression character varying)
+      <title id="storage.function.append-index-field-in-index-id-integer-in-expression-character-varying-in-valid-from-timestamp-without-time-zone-in-valid-until-timestamp-without-time-zone-title">
+       append_index_field(in_index_id integer, in_expression character varying, in_valid_from timestamp without time zone, in_valid_until timestamp without time zone)
       </title>
-      <titleabbrev id="storage.function.append-index-field-in-index-id-integer-in-expression-character-varying-titleabbrev">
-       append_index_field(in_index_id integer, in_expression character varying)
+      <titleabbrev id="storage.function.append-index-field-in-index-id-integer-in-expression-character-varying-in-valid-from-timestamp-without-time-zone-in-valid-until-timestamp-without-time-zone-titleabbrev">
+       append_index_field(in_index_id integer, in_expression character varying, in_valid_from timestamp without time zone, in_valid_until timestamp without time zone)
+      </titleabbrev>
+
+      <para>
+       <segmentedlist>
+        <title>Function Properties</title>
+        <?dbhtml list-presentation="list"?>
+        <segtitle>Language</segtitle>
+        <segtitle>Return Type</segtitle>
+        <seglistitem>
+         <seg>SQL</seg>
+         <seg>index_fields</seg>
+        </seglistitem>
+       </segmentedlist>
+ 
+       
+        <programlisting></programlisting>
+      </para>
+    </section>
+
+<!-- Function expire_dimension(in_id integer, in_valid_until timestamp without time zone) -->
+    <section id="storage.function.expire-dimension-in-id-integer-in-valid-until-timestamp-without-time-zone"
+             xreflabel="()">
+      <title id="storage.function.expire-dimension-in-id-integer-in-valid-until-timestamp-without-time-zone-title">
+       expire_dimension(in_id integer, in_valid_until timestamp without time zone)
+      </title>
+      <titleabbrev id="storage.function.expire-dimension-in-id-integer-in-valid-until-timestamp-without-time-zone-titleabbrev">
+       expire_dimension(in_id integer, in_valid_until timestamp without time zone)
+      </titleabbrev>
+
+      <para>
+       <segmentedlist>
+        <title>Function Properties</title>
+        <?dbhtml list-presentation="list"?>
+        <segtitle>Language</segtitle>
+        <segtitle>Return Type</segtitle>
+        <seglistitem>
+         <seg>SQL</seg>
+         <seg>dimensions</seg>
+        </seglistitem>
+       </segmentedlist>
+ 
+       
+        <programlisting></programlisting>
+      </para>
+    </section>
+
+<!-- Function expire_index(in_id integer, in_valid_until timestamp without time zone) -->
+    <section id="storage.function.expire-index-in-id-integer-in-valid-until-timestamp-without-time-zone"
+             xreflabel="()">
+      <title id="storage.function.expire-index-in-id-integer-in-valid-until-timestamp-without-time-zone-title">
+       expire_index(in_id integer, in_valid_until timestamp without time zone)
+      </title>
+      <titleabbrev id="storage.function.expire-index-in-id-integer-in-valid-until-timestamp-without-time-zone-titleabbrev">
+       expire_index(in_id integer, in_valid_until timestamp without time zone)
+      </titleabbrev>
+
+      <para>
+       <segmentedlist>
+        <title>Function Properties</title>
+        <?dbhtml list-presentation="list"?>
+        <segtitle>Language</segtitle>
+        <segtitle>Return Type</segtitle>
+        <seglistitem>
+         <seg>SQL</seg>
+         <seg>indexes</seg>
+        </seglistitem>
+       </segmentedlist>
+ 
+       
+        <programlisting></programlisting>
+      </para>
+    </section>
+
+<!-- Function expire_index_field(in_id integer, in_valid_until timestamp without time zone) -->
+    <section id="storage.function.expire-index-field-in-id-integer-in-valid-until-timestamp-without-time-zone"
+             xreflabel="()">
+      <title id="storage.function.expire-index-field-in-id-integer-in-valid-until-timestamp-without-time-zone-title">
+       expire_index_field(in_id integer, in_valid_until timestamp without time zone)
+      </title>
+      <titleabbrev id="storage.function.expire-index-field-in-id-integer-in-valid-until-timestamp-without-time-zone-titleabbrev">
+       expire_index_field(in_id integer, in_valid_until timestamp without time zone)
       </titleabbrev>
 
       <para>
@@ -1075,6 +1331,33 @@ order of evaluation for partitioning and all dimensions are evaluated.
       </para>
     </section>
 
+<!-- Function get_servermap(in_id integer) -->
+    <section id="storage.function.get-servermap-in-id-integer"
+             xreflabel="()">
+      <title id="storage.function.get-servermap-in-id-integer-title">
+       get_servermap(in_id integer)
+      </title>
+      <titleabbrev id="storage.function.get-servermap-in-id-integer-titleabbrev">
+       get_servermap(in_id integer)
+      </titleabbrev>
+
+      <para>
+       <segmentedlist>
+        <title>Function Properties</title>
+        <?dbhtml list-presentation="list"?>
+        <segtitle>Language</segtitle>
+        <segtitle>Return Type</segtitle>
+        <seglistitem>
+         <seg>SQL</seg>
+         <seg>servermaps</seg>
+        </seglistitem>
+       </segmentedlist>
+ 
+       
+        <programlisting></programlisting>
+      </para>
+    </section>
+
 <!-- Function insert_dimension(in_ordinality integer, in_fieldname character varying, in_default_val character varying, in_valid_from timestamp without time zone, in_valid_until timestamp without time zone) -->
     <section id="storage.function.insert-dimension-in-ordinality-integer-in-fieldname-character-varying-in-default-val-character-varying-in-valid-from-timestamp-without-time-zone-in-valid-until-timestamp-without-time-zone"
              xreflabel="()">
@@ -1107,14 +1390,14 @@ ordinality number are incremented.
       </para>
     </section>
 
-<!-- Function insert_index_field(in_index_id integer, in_ordinality integer, in_expression character varying) -->
-    <section id="storage.function.insert-index-field-in-index-id-integer-in-ordinality-integer-in-expression-character-varying"
+<!-- Function insert_index_field(in_index_id integer, in_ordinality integer, in_expression character varying, in_valid_from timestamp without time zone, in_valid_until timestamp without time zone) -->
+    <section id="storage.function.insert-index-field-in-index-id-integer-in-ordinality-integer-in-expression-character-varying-in-valid-from-timestamp-without-time-zone-in-valid-until-timestamp-without-time-zone"
              xreflabel="()">
-      <title id="storage.function.insert-index-field-in-index-id-integer-in-ordinality-integer-in-expression-character-varying-title">
-       insert_index_field(in_index_id integer, in_ordinality integer, in_expression character varying)
+      <title id="storage.function.insert-index-field-in-index-id-integer-in-ordinality-integer-in-expression-character-varying-in-valid-from-timestamp-without-time-zone-in-valid-until-timestamp-without-time-zone-title">
+       insert_index_field(in_index_id integer, in_ordinality integer, in_expression character varying, in_valid_from timestamp without time zone, in_valid_until timestamp without time zone)
       </title>
-      <titleabbrev id="storage.function.insert-index-field-in-index-id-integer-in-ordinality-integer-in-expression-character-varying-titleabbrev">
-       insert_index_field(in_index_id integer, in_ordinality integer, in_expression character varying)
+      <titleabbrev id="storage.function.insert-index-field-in-index-id-integer-in-ordinality-integer-in-expression-character-varying-in-valid-from-timestamp-without-time-zone-in-valid-until-timestamp-without-time-zone-titleabbrev">
+       insert_index_field(in_index_id integer, in_ordinality integer, in_expression character varying, in_valid_from timestamp without time zone, in_valid_until timestamp without time zone)
       </titleabbrev>
 
       <para>
@@ -1153,6 +1436,33 @@ ordinality number are incremented.
         <seglistitem>
          <seg>SQL</seg>
          <seg>SET OF postgres_instance</seg>
+        </seglistitem>
+       </segmentedlist>
+ 
+       
+        <programlisting></programlisting>
+      </para>
+    </section>
+
+<!-- Function most_recent_servermap() -->
+    <section id="storage.function.most-recent-servermap"
+             xreflabel="()">
+      <title id="storage.function.most-recent-servermap-title">
+       most_recent_servermap()
+      </title>
+      <titleabbrev id="storage.function.most-recent-servermap-titleabbrev">
+       most_recent_servermap()
+      </titleabbrev>
+
+      <para>
+       <segmentedlist>
+        <title>Function Properties</title>
+        <?dbhtml list-presentation="list"?>
+        <segtitle>Language</segtitle>
+        <segtitle>Return Type</segtitle>
+        <seglistitem>
+         <seg>SQL</seg>
+         <seg>servermaps</seg>
         </seglistitem>
        </segmentedlist>
  
@@ -1223,14 +1533,14 @@ By design the new node is created offline (state 0).  The arguments are:
       </para>
     </section>
 
-<!-- Function save_index(in_indexname text, in_access_method text, in_tablespc text) -->
-    <section id="storage.function.save-index-in-indexname-text-in-access-method-text-in-tablespc-text"
+<!-- Function save_index(in_indexname text, in_access_method text, in_tablespc text, in_valid_until timestamp without time zone, in_valid_from timestamp without time zone) -->
+    <section id="storage.function.save-index-in-indexname-text-in-access-method-text-in-tablespc-text-in-valid-until-timestamp-without-time-zone-in-valid-from-timestamp-without-time-zone"
              xreflabel="()">
-      <title id="storage.function.save-index-in-indexname-text-in-access-method-text-in-tablespc-text-title">
-       save_index(in_indexname text, in_access_method text, in_tablespc text)
+      <title id="storage.function.save-index-in-indexname-text-in-access-method-text-in-tablespc-text-in-valid-until-timestamp-without-time-zone-in-valid-from-timestamp-without-time-zone-title">
+       save_index(in_indexname text, in_access_method text, in_tablespc text, in_valid_until timestamp without time zone, in_valid_from timestamp without time zone)
       </title>
-      <titleabbrev id="storage.function.save-index-in-indexname-text-in-access-method-text-in-tablespc-text-titleabbrev">
-       save_index(in_indexname text, in_access_method text, in_tablespc text)
+      <titleabbrev id="storage.function.save-index-in-indexname-text-in-access-method-text-in-tablespc-text-in-valid-until-timestamp-without-time-zone-in-valid-from-timestamp-without-time-zone-titleabbrev">
+       save_index(in_indexname text, in_access_method text, in_tablespc text, in_valid_until timestamp without time zone, in_valid_from timestamp without time zone)
       </titleabbrev>
 
       <para>
@@ -1242,6 +1552,60 @@ By design the new node is created offline (state 0).  The arguments are:
         <seglistitem>
          <seg>SQL</seg>
          <seg>indexes</seg>
+        </seglistitem>
+       </segmentedlist>
+ 
+       
+        <programlisting></programlisting>
+      </para>
+    </section>
+
+<!-- Function save_servermap(in_server_map json) -->
+    <section id="storage.function.save-servermap-in-server-map-json"
+             xreflabel="()">
+      <title id="storage.function.save-servermap-in-server-map-json-title">
+       save_servermap(in_server_map json)
+      </title>
+      <titleabbrev id="storage.function.save-servermap-in-server-map-json-titleabbrev">
+       save_servermap(in_server_map json)
+      </titleabbrev>
+
+      <para>
+       <segmentedlist>
+        <title>Function Properties</title>
+        <?dbhtml list-presentation="list"?>
+        <segtitle>Language</segtitle>
+        <segtitle>Return Type</segtitle>
+        <seglistitem>
+         <seg>SQL</seg>
+         <seg>servermaps</seg>
+        </seglistitem>
+       </segmentedlist>
+ 
+        This function always inserts a new record.
+        <programlisting></programlisting>
+      </para>
+    </section>
+
+<!-- Function servermap_rotate_num() -->
+    <section id="storage.function.servermap-rotate-num"
+             xreflabel="()">
+      <title id="storage.function.servermap-rotate-num-title">
+       servermap_rotate_num()
+      </title>
+      <titleabbrev id="storage.function.servermap-rotate-num-titleabbrev">
+       servermap_rotate_num()
+      </titleabbrev>
+
+      <para>
+       <segmentedlist>
+        <title>Function Properties</title>
+        <?dbhtml list-presentation="list"?>
+        <segtitle>Language</segtitle>
+        <segtitle>Return Type</segtitle>
+        <seglistitem>
+         <seg>SQL</seg>
+         <seg>integer</seg>
         </seglistitem>
        </segmentedlist>
  
@@ -1274,6 +1638,33 @@ By design the new node is created offline (state 0).  The arguments are:
  
         This function sets the status of a pg_instance to the value set, returning
 a complete database row for the instance as stored if successful.
+        <programlisting></programlisting>
+      </para>
+    </section>
+
+<!-- Function validrange(storage.time_bound) -->
+    <section id="storage.function.validrange-storage.time-bound"
+             xreflabel="()">
+      <title id="storage.function.validrange-storage.time-bound-title">
+       validrange(storage.time_bound)
+      </title>
+      <titleabbrev id="storage.function.validrange-storage.time-bound-titleabbrev">
+       validrange(storage.time_bound)
+      </titleabbrev>
+
+      <para>
+       <segmentedlist>
+        <title>Function Properties</title>
+        <?dbhtml list-presentation="list"?>
+        <segtitle>Language</segtitle>
+        <segtitle>Return Type</segtitle>
+        <seglistitem>
+         <seg>SQL</seg>
+         <seg>tsrange</seg>
+        </seglistitem>
+       </segmentedlist>
+ 
+       
         <programlisting></programlisting>
       </para>
     </section>

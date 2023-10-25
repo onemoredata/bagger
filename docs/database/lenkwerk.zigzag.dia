@@ -290,6 +290,52 @@ can be set using the default_val field though this is not yet supported.#</dia:s
 
         <dia:composite type="umlattribute">
           <dia:attribute name="name">
+            <dia:string>#  valid_from#</dia:string>
+          </dia:attribute>
+          <dia:attribute name="type">
+            <dia:string>#timestamp without time zone#</dia:string>
+          </dia:attribute>
+          <dia:attribute name="value">
+
+            <dia:string>#&#39;-infinity&#39;::time ...  zone#</dia:string>
+
+          </dia:attribute>
+          <dia:attribute name="visibility">
+            <dia:enum val="3"/>
+          </dia:attribute>
+          <dia:attribute name="abstract">
+            <dia:boolean val="false"/>
+          </dia:attribute>
+          <dia:attribute name="class_scope">
+            <dia:boolean val="false"/>
+          </dia:attribute>
+        </dia:composite>
+
+        <dia:composite type="umlattribute">
+          <dia:attribute name="name">
+            <dia:string>#  valid_until#</dia:string>
+          </dia:attribute>
+          <dia:attribute name="type">
+            <dia:string>#timestamp without time zone#</dia:string>
+          </dia:attribute>
+          <dia:attribute name="value">
+
+            <dia:string>#&#39;infinity&#39;::times ...  zone#</dia:string>
+
+          </dia:attribute>
+          <dia:attribute name="visibility">
+            <dia:enum val="3"/>
+          </dia:attribute>
+          <dia:attribute name="abstract">
+            <dia:boolean val="false"/>
+          </dia:attribute>
+          <dia:attribute name="class_scope">
+            <dia:boolean val="false"/>
+          </dia:attribute>
+        </dia:composite>
+
+        <dia:composite type="umlattribute">
+          <dia:attribute name="name">
             <dia:string>#  id#</dia:string>
           </dia:attribute>
           <dia:attribute name="type">
@@ -344,52 +390,6 @@ can be set using the default_val field though this is not yet supported.#</dia:s
           <dia:attribute name="value">
 
             <dia:string>#&#39;notexist&#39;::chara ... rying#</dia:string>
-
-          </dia:attribute>
-          <dia:attribute name="visibility">
-            <dia:enum val="3"/>
-          </dia:attribute>
-          <dia:attribute name="abstract">
-            <dia:boolean val="false"/>
-          </dia:attribute>
-          <dia:attribute name="class_scope">
-            <dia:boolean val="false"/>
-          </dia:attribute>
-        </dia:composite>
-
-        <dia:composite type="umlattribute">
-          <dia:attribute name="name">
-            <dia:string>#  valid_from#</dia:string>
-          </dia:attribute>
-          <dia:attribute name="type">
-            <dia:string>#timestamp without time zone#</dia:string>
-          </dia:attribute>
-          <dia:attribute name="value">
-
-            <dia:string>#&#39;-infinity&#39;::time ...  zone#</dia:string>
-
-          </dia:attribute>
-          <dia:attribute name="visibility">
-            <dia:enum val="3"/>
-          </dia:attribute>
-          <dia:attribute name="abstract">
-            <dia:boolean val="false"/>
-          </dia:attribute>
-          <dia:attribute name="class_scope">
-            <dia:boolean val="false"/>
-          </dia:attribute>
-        </dia:composite>
-
-        <dia:composite type="umlattribute">
-          <dia:attribute name="name">
-            <dia:string>#  valid_until#</dia:string>
-          </dia:attribute>
-          <dia:attribute name="type">
-            <dia:string>#timestamp without time zone#</dia:string>
-          </dia:attribute>
-          <dia:attribute name="value">
-
-            <dia:string>#&#39;infinity&#39;::times ...  zone#</dia:string>
 
           </dia:attribute>
           <dia:attribute name="visibility">
@@ -540,6 +540,52 @@ For this reason registering indexes is a privileged operation.
         <dia:real val="1"/>
       </dia:attribute>
       <dia:attribute name="attributes">
+
+        <dia:composite type="umlattribute">
+          <dia:attribute name="name">
+            <dia:string>#  valid_from#</dia:string>
+          </dia:attribute>
+          <dia:attribute name="type">
+            <dia:string>#timestamp without time zone#</dia:string>
+          </dia:attribute>
+          <dia:attribute name="value">
+
+            <dia:string>#&#39;-infinity&#39;::time ...  zone#</dia:string>
+
+          </dia:attribute>
+          <dia:attribute name="visibility">
+            <dia:enum val="3"/>
+          </dia:attribute>
+          <dia:attribute name="abstract">
+            <dia:boolean val="false"/>
+          </dia:attribute>
+          <dia:attribute name="class_scope">
+            <dia:boolean val="false"/>
+          </dia:attribute>
+        </dia:composite>
+
+        <dia:composite type="umlattribute">
+          <dia:attribute name="name">
+            <dia:string>#  valid_until#</dia:string>
+          </dia:attribute>
+          <dia:attribute name="type">
+            <dia:string>#timestamp without time zone#</dia:string>
+          </dia:attribute>
+          <dia:attribute name="value">
+
+            <dia:string>#&#39;infinity&#39;::times ...  zone#</dia:string>
+
+          </dia:attribute>
+          <dia:attribute name="visibility">
+            <dia:enum val="3"/>
+          </dia:attribute>
+          <dia:attribute name="abstract">
+            <dia:boolean val="false"/>
+          </dia:attribute>
+          <dia:attribute name="class_scope">
+            <dia:boolean val="false"/>
+          </dia:attribute>
+        </dia:composite>
 
         <dia:composite type="umlattribute">
           <dia:attribute name="name">
@@ -742,6 +788,52 @@ This allows us to specify GIN, GIST, btree, and hash indexes.#</dia:string>
         <dia:real val="1"/>
       </dia:attribute>
       <dia:attribute name="attributes">
+
+        <dia:composite type="umlattribute">
+          <dia:attribute name="name">
+            <dia:string>#  valid_from#</dia:string>
+          </dia:attribute>
+          <dia:attribute name="type">
+            <dia:string>#timestamp without time zone#</dia:string>
+          </dia:attribute>
+          <dia:attribute name="value">
+
+            <dia:string>#&#39;-infinity&#39;::time ...  zone#</dia:string>
+
+          </dia:attribute>
+          <dia:attribute name="visibility">
+            <dia:enum val="3"/>
+          </dia:attribute>
+          <dia:attribute name="abstract">
+            <dia:boolean val="false"/>
+          </dia:attribute>
+          <dia:attribute name="class_scope">
+            <dia:boolean val="false"/>
+          </dia:attribute>
+        </dia:composite>
+
+        <dia:composite type="umlattribute">
+          <dia:attribute name="name">
+            <dia:string>#  valid_until#</dia:string>
+          </dia:attribute>
+          <dia:attribute name="type">
+            <dia:string>#timestamp without time zone#</dia:string>
+          </dia:attribute>
+          <dia:attribute name="value">
+
+            <dia:string>#&#39;infinity&#39;::times ...  zone#</dia:string>
+
+          </dia:attribute>
+          <dia:attribute name="visibility">
+            <dia:enum val="3"/>
+          </dia:attribute>
+          <dia:attribute name="abstract">
+            <dia:boolean val="false"/>
+          </dia:attribute>
+          <dia:attribute name="class_scope">
+            <dia:boolean val="false"/>
+          </dia:attribute>
+        </dia:composite>
 
         <dia:composite type="umlattribute">
           <dia:attribute name="name">
@@ -1208,7 +1300,7 @@ we can determine which servers are supposed to receive writes together.#</dia:st
 
         <dia:composite type="umlattribute">
           <dia:attribute name="name">
-            <dia:string>#  generation#</dia:string>
+            <dia:string>#  id#</dia:string>
           </dia:attribute>
           <dia:attribute name="type">
             <dia:string>#serial#</dia:string>
@@ -1265,12 +1357,203 @@ we can determine which servers are supposed to receive writes together.#</dia:st
       <dia:attribute name="templates"/>
     </dia:object>
 
+    <dia:object type="UML - Class" version="0" id="O7">
+      <dia:attribute name="obj_pos">
+        <dia:point val="0,0"/>
+      </dia:attribute>
+      <dia:attribute name="obj_bb">
+        <dia:rectangle val="-0.05,-0.05;16.4,6.65"/>
+      </dia:attribute>
+      <dia:attribute name="elem_corner">
+        <dia:point val="0,0"/>
+      </dia:attribute>
+      <dia:attribute name="elem_width">
+        <dia:real val="16.350000000000001"/>
+      </dia:attribute>
+      <dia:attribute name="elem_height">
+        <dia:real val="6.6000000000000005"/>
+      </dia:attribute>
+      <dia:attribute name="name">
+        <dia:string>#time_bound#</dia:string>
+      </dia:attribute>
+
+      <dia:attribute name="stereotype">
+        <dia:string>#storage#</dia:string>
+      </dia:attribute>
+
+      <dia:attribute name="comment">
+        <dia:string>#
+This table is an interface table which, via inheritance, gives a consistent way
+of handling database entities which need to be available during various time
+ranges.
+#</dia:string>
+      </dia:attribute>
+      <dia:attribute name="abstract">
+        <dia:boolean val="false"/>
+      </dia:attribute>
+      <dia:attribute name="suppress_attributes">
+        <dia:boolean val="false"/>
+      </dia:attribute>
+      <dia:attribute name="suppress_operations">
+        <dia:boolean val="false"/>
+      </dia:attribute>
+      <dia:attribute name="visible_attributes">
+        <dia:boolean val="true"/>
+      </dia:attribute>
+      <dia:attribute name="visible_comments">
+        <dia:boolean val="true"/>
+      </dia:attribute>
+      <dia:attribute name="wrap_operations">
+        <dia:boolean val="false"/>
+      </dia:attribute>
+      <dia:attribute name="wrap_after_char">
+        <dia:int val="40"/>
+      </dia:attribute>
+      <dia:attribute name="line_color">
+        <dia:color val="#000000"/>
+      </dia:attribute>
+      <dia:attribute name="fill_color">
+        <dia:color val="#ffffff"/>
+      </dia:attribute>
+      <dia:attribute name="text_color">
+        <dia:color val="#000000"/>
+      </dia:attribute>
+      <dia:attribute name="normal_font">
+        <dia:font family="monospace" style="0" name="Courier"/>
+      </dia:attribute>
+      <dia:attribute name="abstract_font">
+        <dia:font family="monospace" style="88" name="Courier"/>
+      </dia:attribute>
+      <dia:attribute name="polymorphic_font">
+        <dia:font family="monospace" style="8" name="Courier"/>
+      </dia:attribute>
+      <dia:attribute name="classname_font">
+        <dia:font family="sans" style="80" name="Helvetica"/>
+      </dia:attribute>
+      <dia:attribute name="abstract_classname_font">
+        <dia:font family="sans" style="88" name="Helvetica"/>
+      </dia:attribute>
+      <dia:attribute name="comment_font">
+        <dia:font family="sans" style="8" name="Helvetica"/>
+      </dia:attribute>
+      <dia:attribute name="font_height">
+        <dia:real val="0.80000000000000004"/>
+      </dia:attribute>
+      <dia:attribute name="polymorphic_font_height">
+        <dia:real val="0.80000000000000004"/>
+      </dia:attribute>
+      <dia:attribute name="abstract_font_height">
+        <dia:real val="0.80000000000000004"/>
+      </dia:attribute>
+      <dia:attribute name="classname_font_height">
+        <dia:real val="1"/>
+      </dia:attribute>
+      <dia:attribute name="abstract_classname_font_height">
+        <dia:real val="1"/>
+      </dia:attribute>
+      <dia:attribute name="comment_font_height">
+        <dia:real val="1"/>
+      </dia:attribute>
+      <dia:attribute name="attributes">
+
+        <dia:composite type="umlattribute">
+          <dia:attribute name="name">
+            <dia:string>#  valid_from#</dia:string>
+          </dia:attribute>
+          <dia:attribute name="type">
+            <dia:string>#timestamp without time zone#</dia:string>
+          </dia:attribute>
+          <dia:attribute name="value">
+
+            <dia:string>#&#39;-infinity&#39;::time ...  zone#</dia:string>
+
+          </dia:attribute>
+          <dia:attribute name="visibility">
+            <dia:enum val="3"/>
+          </dia:attribute>
+          <dia:attribute name="abstract">
+            <dia:boolean val="false"/>
+          </dia:attribute>
+          <dia:attribute name="class_scope">
+            <dia:boolean val="false"/>
+          </dia:attribute>
+        </dia:composite>
+
+        <dia:composite type="umlattribute">
+          <dia:attribute name="name">
+            <dia:string>#  valid_until#</dia:string>
+          </dia:attribute>
+          <dia:attribute name="type">
+            <dia:string>#timestamp without time zone#</dia:string>
+          </dia:attribute>
+          <dia:attribute name="value">
+
+            <dia:string>#&#39;infinity&#39;::times ...  zone#</dia:string>
+
+          </dia:attribute>
+          <dia:attribute name="visibility">
+            <dia:enum val="3"/>
+          </dia:attribute>
+          <dia:attribute name="abstract">
+            <dia:boolean val="false"/>
+          </dia:attribute>
+          <dia:attribute name="class_scope">
+            <dia:boolean val="false"/>
+          </dia:attribute>
+        </dia:composite>
+
+      </dia:attribute>
+
+      <dia:attribute name="visible_operations">
+        <dia:boolean val="true"/>
+      </dia:attribute>
+      <dia:attribute name="operations">
+
+        <dia:composite type="umloperation">
+          <dia:attribute name="name">
+            <dia:string>#time_bound_valid_from_check#</dia:string>
+          </dia:attribute>
+          <dia:attribute name="visibility">
+            <dia:enum val="3"/>
+          </dia:attribute>
+          <dia:attribute name="abstract">
+            <dia:boolean val="false"/>
+          </dia:attribute>
+          <dia:attribute name="class_scope">
+            <dia:boolean val="false"/>
+          </dia:attribute>
+          <dia:attribute name="parameters">
+            <dia:composite type="umlparameter">
+              <dia:attribute name="name">
+                <dia:string>#CHECK ((valid_from IS NULL)) NO INHERIT#</dia:string>
+              </dia:attribute>
+              <dia:attribute name="type">
+                <dia:string>##</dia:string>
+              </dia:attribute>
+              <dia:attribute name="value">
+                <dia:string/>
+              </dia:attribute>
+              <dia:attribute name="kind">
+                <dia:enum val="0"/>
+              </dia:attribute>
+            </dia:composite>
+          </dia:attribute>
+        </dia:composite>
+
+      </dia:attribute>
+
+      <dia:attribute name="template">
+        <dia:boolean val="false"/>
+      </dia:attribute>
+      <dia:attribute name="templates"/>
+    </dia:object>
+
 
     </dia:group>
 
 
 
-    <dia:object type="UML - Dependency" version="0" id="O7">
+    <dia:object type="UML - Dependency" version="0" id="O8">
       <dia:attribute name="obj_pos">
         <dia:point val="0,3.5"/>
       </dia:attribute>
@@ -1303,8 +1586,8 @@ we can determine which servers are supposed to receive writes together.#</dia:st
         <dia:boolean val="true"/>
       </dia:attribute>
       <dia:connections>
-        <dia:connection handle="0" to="O3" connection="10"/>
-        <dia:connection handle="1" to="O4" connection="9"/>
+        <dia:connection handle="0" to="O3" connection="14"/>
+        <dia:connection handle="1" to="O4" connection="13"/>
       </dia:connections>
     </dia:object>
 
