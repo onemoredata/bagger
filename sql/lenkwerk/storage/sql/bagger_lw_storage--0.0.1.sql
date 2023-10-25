@@ -417,6 +417,12 @@ VALUES (in_server_map)
 RETURNING *;
 END;
 
+CREATE FUNCTION storage.servermap_rotate_num()
+RETURNS int language sql begin atomic
+SELECT count(*) from storage.postgres_instance
+group by host order by 1 desc limit 1;
+end;
+
 COMMENT ON FUNCTION storage.save_servermap(in_server_map json)
 IS
 $$ This function always inserts a new record.$$;
