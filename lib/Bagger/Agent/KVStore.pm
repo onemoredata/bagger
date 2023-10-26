@@ -17,7 +17,9 @@ package Bagger::Agent::KVStore;
 use strict;
 use warnings;
 use Moose;
+use Carp 'croak';
 use Bagger::Type::JSON;
+use Moose::Util::TypeConstraints;
 use Bagger::Agent::Storage::Mapper qw(pg_object kval_key);
 use namespace::autoclean;
 
@@ -58,20 +60,24 @@ This is the name of the module to load.  Currently only 'etcd' is supported.
 
 =cut
 
-has module => (is =>'ro', isa => 'Str', requird => 1);
+subtype 'kvstore_module',
+     as 'Str',
+     where { my $m = $_; scalar( grep { $m eq $_ } qw(etcd)) },
+     message { "$_ is not a valid module, must be one of (etcd)" };
 
-has _proxy => (is => 'ro', builder => '_connect');
+has module => (is =>'ro', isa => 'kvstore_module', required => 1);
+
+has _proxy => (is => 'ro', builder => '_connect', lazy => 1);
 
 sub _connect {
     my $self = shift;
-    croak 'Invalid module ' . $self->module unless $self->module eq 'etcd';
     my $module = 'Bagger::Agent::Drivers::KVStore::' . ucfirst($self->module);
     {
         local $@;
         eval "require $module";
         die $@ if $@;
     }
-    return $module->connect($self->config);
+    return $module->kvconnect($self->config);
 }
 
 =head1 config Hashref  Required
@@ -80,9 +86,13 @@ This is the configuration passed to the module's connect method.
 
 =cut
 
-has config => (is => 'ro', isa => 'HashRef', required => 1);
+coerce 'HashRef'
+=> from 'Bagger::Type::JSON'
+=> via { return { %{$_} } };
 
-has _proxy => (is => 'ro', isa => 'Object', builder => '_connect');
+has config => (is => 'ro', isa => 'HashRef', coerce => 1, required => 1);
+
+has _proxy => (is => 'ro', isa => 'Object', builder => '_connect', lazy => 1);
 
 =head1 METHODS
 
@@ -94,7 +104,9 @@ Reads a key, returns an object instantiated from the key information.
 
 sub read {
     my ($self, $key) = @_;
-    my $value = Bagger::Type::JSON->from_db($self->_proxy->kvread($key));
+    my $value = $self->_proxy->kvread($key);
+    warn $value;
+    #$value = Bagger::Type::JSON->from_db($self->_proxy->kvread($key));
     my $class = pg_object($key);
     return defined $class ? $class->new($value) : $value;
 }
@@ -123,5 +135,5 @@ sub watch {
     my ($self, $callback) = @_;
     return $self->_proxy->kvwatch($callback);
 }
-
-__PACKAGE__->meta->make_immutabe;
+1;
+#__PACKAGE__->meta->make_immutable;
