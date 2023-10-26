@@ -46,5 +46,11 @@ The following variables are used to run database Tests:
    BAGGER_TEST_LW_PORT -- Port for lenkwerk
    BAGGER_TEST_LW_DB   -- Database name for Lenkwerk DB
 
+For etcd, the LW ones are required plus:
+
+   BAGGER_TEST_ETCD       -- if set, test etcd functionality
+   BAGGER_TEST_ETCD_PORT  -- Port to run etcd on.
+   BAGGER_TEST_ETCD_PATH  -- Path to etcd binary.  Defaults to current path
+
 More of these will be added as we get to end to end testing and testing of
 storage nodes.

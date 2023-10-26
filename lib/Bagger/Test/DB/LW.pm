@@ -9,12 +9,12 @@ package Bagger::Test::DB::LW;
 =head1 SYNOPSIS
 
    skipall => 'pgTap not available' unless Test::PGTap->pgtap_available;
-   Test::PGTap->set_dir('t/sql');
+   Test::Test::DB::LW->set_dir('t/sql');
    # can also set db connection params for psql
-   Test::PGTap->set_psql_params(-U => 'postgres', -p => 5433, -d => 'mydb');
+   Test::Test::DB::LW->set_psql_params(-U => 'postgres', -p => 5433, -d => 'mydb');
    # or set dsn
-   Test::PGTap->set_dsn('postgresql://postgres@:5433/mydb');
-   Test::PGTap->run('mytest.pg');
+   Test::Test::DB::LW->set_dsn('postgresql://postgres@:5433/mydb');
+   Test::Test::DB::LW->run('mytest.pg');
 
 =cut
 use strict;
@@ -102,7 +102,7 @@ Returns false if not.
 sub pg_tap_available{
     my $self = shift;
     my $q = q("select count(*) from pg_available_extensions() where name = 'pgtap'");
-    my $outcmd = join ' ', 'psql', (scalar @args ? (@args) : ($dsn)),
+    my $outcmd = join ' ', 'psql', (scalar @args ? (@args) : ()), ($dsn ? ($dsn) : ()),
             -c => $q, '-t';
     my $output = `$outcmd`;
     return int($output);
@@ -168,7 +168,7 @@ sub lw_setup{
     db()->set_dbhost($ENV{BAGGER_TEST_LW_HOST}) if defined $ENV{BAGGER_TEST_LW_HOST};
     db()->set_dbport($ENV{BAGGER_TEST_LW_PORT}) if defined $ENV{BAGGER_TEST_LW_PORT};
     db()->set_dbuser($ENV{BAGGER_TEST_LW_USER}) if defined $ENV{BAGGER_TEST_LW_USER};
-    __PACKAGE__->set_psql_params(
+    @args = (
         (db()->dbuser ? (-U => db()->dbuser) : ()),
         (db()->dbhost ? (-h => db()->dbhost) : ()),
         (db()->dbport ? (-p => db()->dbport) : ()),

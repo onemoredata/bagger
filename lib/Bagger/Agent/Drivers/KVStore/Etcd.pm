@@ -16,10 +16,12 @@ The exports are automatic and intended to implement those interfaces.
 =cut
 
 use strict;
-use warnings
+use warnings;
 use Exporter 'import';
+use MIME::Base64;
 use Net::Etcd;
 use Moose;
+use Bagger::Type::JSON;
 with 'Bagger::Agent::Drivers::KVStore'; # enforces api
 
 =head1 DESCRIPTION
@@ -83,21 +85,32 @@ This is the active connection to the etcd database.
 # $self->_slice returns a hashref with the properties requested.
 # This relies on the fact that Moose objects are blessed hashrefs.
 
+sub _slice2 {
+    my $self = shift;
+    my @vars = @_;
+    my @list;
+    for my $var(@vars){
+        push @list, $var, $self->{$var};
+    }
+    return { @list };
+}
+
 sub _slice {
     my $self = shift;
     my @vars = @_;
-    return {%{$self}{@vars}};
+    return { %{$self}{@vars} };
 }
 
 sub _etcd_connect {
     my $self = shift;
     my $cnx = Net::Etcd->new($self->_slice('host', 'port', 'ssl'));
     die 'Could not create new etcd connection' unless $cnx;
-    $cnx->auth($self->_slice('user', 'password')->authenticate if $self->user;
+    $cnx->auth($self->_slice('user', 'password'))->authenticate if $self->user;
+    return $cnx;
 }
 
 
-has cnx => (is => 'ro', isa => 'Net::Etcd', builder => '_etcd_connect');
+has cnx => (is => 'ro', isa => 'Net::Etcd', builder => '_etcd_connect', lazy => 1);
 
 =head1 CONSTRUCTOR
 
@@ -110,8 +123,8 @@ it fails to connect, an exception is thrown.
 =cut
 
 sub kvconnect {
-    my ($class, $args) = @_;
-    my $self = $class->new($args);
+    my ($class, $arghash) = @_;
+    my $self = $class->new($arghash);
 }    
 
 =head1 METHODS
@@ -124,7 +137,9 @@ Reads a value from a key and returns a JSON document payload.
 
 sub kvread {
     my ($self, $key) = @_;
-    return $self->cnx->range({key => $key });
+    my $value =  $self->cnx->range({key => $key })->{response}->{content};
+    $value = Bagger::Type::JSON->from_db($value)->{kvs}->[0]->{value};
+    return decode_base64($value);
 }
 
 =head2 kvwrite($key, value)
@@ -135,7 +150,7 @@ Takes a key and a json object and writes it to the etcd store.
 
 sub kvwrite {
     my ($self, $key, $value)  = @_;
-    return $self->cnx->put( { key => $key, value => $value } );
+    return $self->cnx->put( { key => $key, value => $value } )->is_success;
 }
 
 =head2 kvwatch($subroutine)
@@ -149,13 +164,13 @@ Watches all Bagger-related keys and executes $subroutine
 
 sub _portability_wrapper {
     my $sub = shift;
-    $sub();
+    &$sub() if ref $sub;
 }
 
 sub kvwatch {
-    my ($self, $subroutine } = @_;
+    my ($self, $subroutine ) = @_;
     return $self->watch({key => '/Dim', range_end => "\0" }, 
         sub { _portability_wrapper($subroutine) });
 }
 
-__PACKAGE->meta->make_immutable;
+__PACKAGE__->meta->make_immutable;

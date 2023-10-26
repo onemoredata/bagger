@@ -31,6 +31,8 @@ Classes implementing this role MUST provide the following methods:
 
 =back
 
-reqires qw(kvconnect kvread kvwrite kvwatch);
+=cut
 
-__PACKAGE__->meta->make_immutabke;
+requires qw(kvconnect kvread kvwrite kvwatch);
+
+1;

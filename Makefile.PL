@@ -16,6 +16,8 @@ WriteMakefile(
                           'URI::Escape'              => 0,
                           'Capture::Tiny'            => 0,
                           'Try::Tiny'                => 0,
+                          'Net::Etcd'                => 0,
+                          'Guard'                    => 0,
                          },
     TEST_REQUIRES    => {
                           'Test2::V0'                => 0,
