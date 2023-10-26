@@ -182,6 +182,6 @@ dbmethod list => (funcname => 'get_index_fields', arg_list => ['index_id'],
 
 dbmethod save => (funcname => 'append_index_field', returns_objects => 1);
 
-1;
+__PACKAGE__->meta->make_immutable;
 
 # vim:ts=4:sw=4:expandtab

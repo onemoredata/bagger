@@ -208,6 +208,6 @@ sub TO_JSON { %{$_[0]} }
 
 =cut
 
-1;
+__PACKAGE__->meta->make_immutable();
 
 # vim:ts=4:sw=4:expandtab

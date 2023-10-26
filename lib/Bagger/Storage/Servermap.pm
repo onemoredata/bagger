@@ -155,4 +155,4 @@ dbmethod get => (funcname => 'get_servermap', arg_list => ['id'], returns_object
 
 =cut
 
-1;
+__PACKAGE__->meta->make_immutable;
