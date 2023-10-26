@@ -29,8 +29,6 @@ use PGObject::Util::DBMethod;
 use Moose::Util::TypeConstraints;
 with 'Bagger::Storage::PGObject';
 
-Bagger::Type::JSON->register;
-
 =head1 DESCRIPTION
 
 The servermap provides Bagger infrastructure with a general understanding of

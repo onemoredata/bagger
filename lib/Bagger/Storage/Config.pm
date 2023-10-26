@@ -26,8 +26,6 @@ use namespace::autoclean;
 use Scalar::Util 'reftype';
 use Moose::Util::TypeConstraints;
 with 'Bagger::Storage::PGObject';
-PGObject::Type::JSON->register; # become the codec for Perl <-> json
-                                # but not jsonb by default
 
 =head1 DESCRIPTION
 

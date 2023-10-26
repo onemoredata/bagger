@@ -10,6 +10,7 @@ use Moose::Util::TypeConstraints;
 use strict;
 use warnings;
 use Carp 'croak';
+__PACKAGE__->register(); # just going to register this globally
 
 subtype __PACKAGE__
  => as  __PACKAGE__;
