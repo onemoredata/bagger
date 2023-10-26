@@ -183,7 +183,9 @@ sub init{
     __PACKAGE__->run($file);
 }
 
-lw_setup; # always just initialize it for these tests.
+sub import {
+    lw_setup;
+}
 
 1;
 
