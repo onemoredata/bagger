@@ -40,6 +40,7 @@ use strict;
 use warnings;
 use namespace::autoclean;
 use PGObject;
+use Try::Tiny;
 use DBI;
 use Bagger::Storage::LenkwerkSetup;
 
@@ -71,11 +72,24 @@ sub _new_dbh() {
             Bagger::Storage::LenkwerkSetup->dbi_str,
 	    Bagger::Storage::LenkwerkSetup->dbuser,
 	    Bagger::Storage::LenkwerkSetup->dbpass,
-	    {AutoCommit => 0 }) or die $DBI::errstr;
+        {AutoCommit => 0, RaiseError => 1 }) 
+               or die Bagger::Type::Exception::DB->new();
    return $dbh;
 }
 
 }
+
+around qw(call_procedure call_dbmethod) => sub {
+    my $orig = shift;
+    my $self = shift;
+    my @args = @_;
+    try {
+        $self->$orig(@args);
+    } catch {
+        die Bagger::Type::Exception::Database->new($self->_dbh);
+    };
+};
+
 =head1 Utility Functions
 
 =head2 bool(val)
