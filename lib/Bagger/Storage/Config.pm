@@ -113,4 +113,4 @@ sub get {
 
 dbmethod save => (funcname => 'save_config', returns_objects => 1);
 
-1;
+__PACKAGE__->meta->make_immutable;

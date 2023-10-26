@@ -266,6 +266,6 @@ sub create_statement {
            $self->_dbh->quote_identifier($self->tablespc) if $self->tablespc;
 }
 
-1;
+__PACKAGE__->meta->make_immutable;
 
 # vim:ts=4:sw=4:expandtab

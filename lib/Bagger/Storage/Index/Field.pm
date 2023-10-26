@@ -187,6 +187,6 @@ sub list {
 
 dbmethod save => (funcname => 'append_index_field', returns_objects => 1);
 
-1;
+__PACKAGE__->meta->make_immutable;
 
 # vim:ts=4:sw=4:expandtab
