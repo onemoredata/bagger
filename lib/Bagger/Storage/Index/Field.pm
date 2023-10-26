@@ -25,6 +25,7 @@ use Moose;
 use Carp 'croak';
 use PGObject::Util::DBMethod;
 use Moose::Util::TypeConstraints;
+use Bagger::Type::JSONPointer;
 with 'Bagger::Storage::PGObject', 'Bagger::Storage::Time_Bound';
 
 sub _config_hours_out {'indexes_hrs_in_future'}
@@ -71,8 +72,6 @@ be converted into an expression automatically.
 =back
 
 =cut
-
-subtype 'Bagger::Type::JSONPointer' => as  'Bagger::Type::JSONPointer';
 
 coerce 'Str' 
    => from 'Bagger::Type::JSONPointer'

@@ -22,10 +22,9 @@ use warnings;
 use Moose;
 use namespace::autoclean;
 use PGObject::Util::DBMethod;
-use Moose::Util::TypeConstraints;
 use Bagger::Type::JSONPointer;
 use Bagger::Type::DateTime;
-#use Bagger::Storage::Config;
+use Moose::Util::TypeConstraints;
 with 'Bagger::Storage::PGObject';
 with 'Bagger::Storage::Time_Bound';
 
@@ -55,12 +54,10 @@ this dimension.
 
 =cut
 
-subtype 'Bagger::Type::JSONPointer'
-=>  as  'Bagger::Type::JSONPointer';
-
 coerce 'Bagger::Type::JSONPointer'
 =>  from 'Str | ArrayRef'
 =>   via { Bagger::Type::JSONPointer->new($_) };
+
 
 has fieldname => (is => 'ro', isa => 'Bagger::Type::JSONPointer', 
                  required => 1, coerce => 1);

@@ -5,6 +5,8 @@
 =cut
 
 package Bagger::Type::JSONPointer;
+use Moose::Util::TypeConstraints;
+use Bagger::Type::JSONPointer;
 use overload '""' => 'stringify';
 use Carp 'croak';
 
@@ -118,6 +120,16 @@ sub stringify {
     return '' unless scalar @$self; # return empty if no elements
     return '/' . join '/', map { _escape $_ } @$self;
 }
+
+=head1 Moose Integration
+
+  This module defines a Moose type with its class.  No coercions are declared
+  because these don't get exported.
+
+=cut
+
+subtype 'Bagger::Type::JSONPointer'
+=>  as  'Bagger::Type::JSONPointer';
 
 =head1 Database-facing functions
 

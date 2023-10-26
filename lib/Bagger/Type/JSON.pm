@@ -9,6 +9,7 @@ use parent 'PGObject::Type::JSON';
 use strict;
 use warnings;
 use Carp 'croak';
+__PACKAGE__->register(); # just going to register this globally
 
 =head1 SYNOPSIS
 
