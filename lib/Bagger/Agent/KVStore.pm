@@ -98,17 +98,30 @@ has _proxy => (is => 'ro', isa => 'Object', builder => '_connect', lazy => 1);
 
 =head2 read($key)
 
-Reads a key, returns an object instantiated from the key information.
+Reads a key, returns the string stored in the KVStore. Use get_object below
+to wrap this in an object.
 
 =cut
 
 sub read {
     my ($self, $key) = @_;
     my $value = $self->_proxy->kvread($key);
-    warn $value;
-    #$value = Bagger::Type::JSON->from_db($self->_proxy->kvread($key));
+    return $value;
+}
+
+=head2 get_object($key)
+
+Reads the key from the KV Store, determines the appropriate object type
+from the eky, and returns the key.  Returns undef if no class found.
+
+=cut
+
+sub get_object {
+    my ($self, $key) = @_;
+    my $value = $self->read($key);
+    $value = Bagger::Type::JSON->from_db($self->_proxy->kvread($key));
     my $class = pg_object($key);
-    return defined $class ? $class->new($value) : $value;
+    return defined $class ? $class->new($value) : undef;
 }
 
 =head2 write($key, $value)
