@@ -149,4 +149,4 @@ sub watch {
     return $self->_proxy->kvwatch($callback);
 }
 1;
-#__PACKAGE__->meta->make_immutable;
+__PACKAGE__->meta->make_immutable;

@@ -67,7 +67,7 @@ sub _kjoin { return join($delim, @_) }
 
 my %keygen = (
     config             => sub { return _kjoin('/Config', $_[0]->{key}) },
-    postgres_instances => sub { return _kjoin('/PostgresInstance', 
+    postgres_instance  => sub { return _kjoin('/PostgresInstance', 
                                               $_[0]->{host}, $_[0]->{port}) },
     servermaps         => sub { return '/Servermap' },
     dimensions         => sub { return _kjoin('/Dimension', $_[0]->{id}) },
@@ -78,7 +78,7 @@ my %keygen = (
 
 my %classmap = (
     'Bagger::Storage::Config'       => 'config',
-    'Bagger::Storage::Instance'     => 'postgres_instances',
+    'Bagger::Storage::Instance'     => 'postgres_instance',
     'Bagger::Storage::Servermap'    => 'servermaps', 
     'Bagger::Storage::Dimension'    => 'dimensions',
     'Bagger::Storage::Index::Field' => 'index_fields',
