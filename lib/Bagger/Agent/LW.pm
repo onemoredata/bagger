@@ -103,7 +103,7 @@ sub start {
     
     my $callback = unblock_sub {
         my ($message, $guard) = @_;
-        $inject = 1;
+        $inject = $ENV{TEST_AGENT};
         _run_injection('before_parse', $message) if $inject;
         my $hashref = parse($message);
         _run_injection('after_parse', $message, $hashref) if $inject;
@@ -113,10 +113,13 @@ sub start {
              my $cv = AnyEvent::condvar;
              _run_injection('before_kvwrite', $key, $value) if $inject;
              my $resp = $kvstore->write($key, $value);
+             undef $guard if $resp; # processing complete
              _run_injection('after_kvwrite', $resp) if $inject;
-             # TODO:  Handle errors, see issue #77
+         } else {
+             # message not of interest, can undef the guard
+             undef $guard;
          }
-         undef $guard;
+         warn "message $message unprocessed" if $guard;
      };
 
      # For the actual replication.....
