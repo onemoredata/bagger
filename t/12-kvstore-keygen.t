@@ -18,7 +18,7 @@ is(pg_object('/Index/1/1'), fld(), 'Index Field Found');
 is(pg_object('/Index/1'), idx(), 'Index found');
 
 # Table types
-is(kval_key('postgres_instances', {host => 'host1', port => '5432'}),
+is(kval_key('postgres_instance', {host => 'host1', port => '5432'}),
         '/PostgresInstance/host1/5432',
         'kval_key for postgres_instance record');
 

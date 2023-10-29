@@ -18,6 +18,7 @@ The exports are automatic and intended to implement those interfaces.
 use strict;
 use warnings;
 use Exporter 'import';
+use Coro;
 use MIME::Base64;
 use Net::Etcd;
 use Moose;
@@ -150,7 +151,7 @@ Takes a key and a json object and writes it to the etcd store.
 
 sub kvwrite {
     my ($self, $key, $value)  = @_;
-    return $self->cnx->put( { key => $key, value => $value } )->is_success;
+    return $self->cnx->put({ key => $key, value => $value })->is_success;
 }
 
 =head2 kvwatch($subroutine)

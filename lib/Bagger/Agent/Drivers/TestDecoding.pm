@@ -16,6 +16,7 @@ package Bagger::Agent::Drivers::TestDecoding;
 use strict;
 use warnings;
 use JSON;
+use Parse::RecDescent;
 use Exporter 'import';
 our @EXPORT_OK = qw(parse);
 
@@ -51,29 +52,46 @@ parse() takes in a message and returns a hashref with the following structure:
 
 =cut
 
-# I don't like this approach.  It is hard to read/reason about.
-# Maybe we should move this ti Parse::RecDescent?  Another research project...
+my $grammar = <<'_ENDGRAMMAR';
+    tablerec : header operation ":" col(s)
+             {$Bagger::Agent::Drivers::TestDecoding::parsed->{operation} = $item{operation}}
+    header : "table " schema "." tablename ":" 
+             {$Bagger::Agent::Drivers::TestDecoding::parsed->{schema} = $item{schema}}
+             {$Bagger::Agent::Drivers::TestDecoding::parsed->{tablename} = $item{tablename}}
+    col : column(s)
+    schema : sqlident
+    tablename : sqlident
+    column : /\s?/ colname "[" coltype "]" ":" value
+    {$Bagger::Agent::Drivers::TestDecoding::parsed->{row_data}->{$item{colname}} = $item{value} }
+    colname : sqlident
+    coltype : /[a-zA-Z0-9() ]+/
+    value   : literal
+    sqlident : /\w+/ | /"([^"]|"")+"/
+    literal : /\w+/ | /'([^']|'')+'/
+    operation : "INSERT" | "UPDATE" | "DELETE"
+             {$Bagger::Agent::Drivers::TestDecoding::parsed->{operation} = $item[1]; }
+_ENDGRAMMAR
+
+#recdescent apparently needs to access these things via direct fully
+#qualified variables, which means lexically scoped variables cannot
+#be used in this way.  This is fine since we can just locally scope it.
+
+our $parsed;
+my $parser = Parse::RecDescent->new($grammar);
+
 sub parse {
+    local $parsed;
     my $msg = shift;
-    return unless $msg =~ s/^table\s+//;
-    $msg =~ s/^(\w+)\.(\w+):\s+([A-Z]+):\s//;
-    my ($schema, $tablename, $op) = ($1, $2, $3);
-    my $row = {};
-    my @elems = split /\[[a-z]+\]:/, $msg;
-    my $nextkey = shift @elems;
-    for my $elem (@elems){
-        my $key = $nextkey;
-        $elem =~ s/\s+(\w+)$//;
-        $elem =~ s/(^'|'$)//g;
-        $nextkey = $1;
-        $row->{$key} = $elem;
+    return unless $msg =~ /^table\s+/;
+    $parser->tablerec($msg);
+    my $retval = {%$parsed};
+    for my $k (keys %{$retval->{row_data}}){
+        if ($retval->{row_data}->{$k} =~ /^'/){
+            $retval->{row_data}->{$k} =~ s/''/'/g;
+            $retval->{row_data}->{$k} =~ s/(^'|'$)//g;
+        }
     }
-    return  {
-        schema     => $schema,
-        tablename  => $tablename,
-        operation  => $op,
-        row_data   => $row,
-    }
+    return $retval;
 }
 
 

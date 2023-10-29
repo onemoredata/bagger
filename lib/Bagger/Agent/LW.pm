@@ -15,12 +15,17 @@ package Bagger::Agent::LW;
 
 use strict;
 use warnings;
-use Bagger::Agent::Storage::Mapper;
+use Coro;
+use Coro::AnyEvent;
+use AnyEvent;
+use AnyEvent::Loop;
+use Bagger::Agent::Storage::Mapper qw(kval_key);
 use Bagger::Agent::KVStore;
 use Bagger::Agent::Drivers::TestDecoding 'parse';
 use AnyEvent::PgRecvlogical;
 use Bagger::Storage::LenkwerkSetup;
 use Bagger::Storage::Config;
+use JSON;
 
 =head1 DESCRIPTION
 
@@ -76,35 +81,36 @@ _recv() function.
 our %_INJECTION = ();
 
 sub _run_injection {
-    my ($injectpoint, @args) = @_;
-    return $_INJECTION{$injectpoint}(@args) if ref $_INJECTION{$injectpoint};
+    my $injectpoint = shift @_;
+    $_INJECTION{$injectpoint}(@_) if ref $_INJECTION{$injectpoint};
 }
 
+my $done = AnyEvent->condvar;
 my $recv;
 
 sub recv { $recv }
 
-sub run {
-
+sub start {
+    my $inject = $ENV{TEST_AGENT}; # faster
     # It is fine to die here if not found
     my $kvstoremod = Bagger::Storage::Config->get('kvstore_type')->value_string;
     my $kvstoreconfig = Bagger::Storage::Config->get('kvstore_config')->value;
    
-    my $kvstore = Bagger::Agent::KVstore->new($kvstoremod, $kvstoreconfig);
+    my $kvstore = Bagger::Agent::KVStore->new(module => $kvstoremod, config => $kvstoreconfig);
 
     # the callback is a coderef here for procesing the messages and sending them forward.
     # The bulk of the work here is in this function.
     
-    my $callback = sub {
+    my $callback = unblock_sub {
         my ($message, $guard) = @_;
-        my $inject = $ENV{TEST_AGENT}; # faster
-
+        $inject = 1;
         _run_injection('before_parse', $message) if $inject;
         my $hashref = parse($message);
         _run_injection('after_parse', $message, $hashref) if $inject;
-        if ($hashref) && ($hashref->{schema} eq 'storage') {
-             my $key = kval_key($hashref->{tablename}, $hashref->{rowdata});
+        if ($hashref && ($hashref->{schema} eq 'storage')) {
+             my $key = kval_key($hashref->{tablename}, $hashref->{row_data});
              my $value = encode_json($hashref);
+             my $cv = AnyEvent::condvar;
              _run_injection('before_kvwrite', $key, $value) if $inject;
              my $resp = $kvstore->write($key, $value);
              _run_injection('after_kvwrite', $resp) if $inject;
@@ -116,9 +122,45 @@ sub run {
      # For the actual replication.....
 
     $recv = AnyEvent::PgRecvlogical->new(
-        dbname     =>  Bagger::Storage::LenkwerkSetup->lenkwerkdb,
-        slot       => 'lw_agent',
-        on_message => $callback
+        dbname         => Bagger::Storage::LenkwerkSetup->lenkwerkdb,
+        slot           => 'lw_agent',
+        do_create_slot => 1,
+        slot_exists_ok => 1,
+        options        => { 'skip-empty-xacts' => 1, 'include-xids' => 0 },
+        on_message     => $callback,
+        on_error       => sub { warn $_[0]; },
+        _assemble_args(),
     );
-
+    return $recv->start;
 }
+
+sub loop {
+    AnyEvent::Loop::run();
+}
+
+sub run {
+    my $promise = start;
+    loop;
+}
+
+sub _done_cv { $done };
+
+sub stop {
+    $recv->stop;
+    exit(8);
+}
+
+sub _assemble_args {
+    my $host = Bagger::Storage::LenkwerkSetup->dbhost;
+    my $port = Bagger::Storage::LenkwerkSetup->dbport;
+    my $user = Bagger::Storage::LenkwerkSetup->dbuser;
+    return (
+        ($host ? (host     => $host) : ()),
+        ($port ? (port     => $port) : ()),
+        ($user ? (username => $user) : ()),
+    )
+}
+
+$done->cb( sub { stop } );
+
+1;
