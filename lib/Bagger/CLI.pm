@@ -103,8 +103,13 @@ function called.
 
 =cut
 
+our %ini;
+
 sub run_program {
     my ($class, $noargs) = @_;
+    eval "require $class" or die $@;
+    $class->import if UNIVERSAL::can($class, 'import');
+    my @add_opts = $class->_add_opts() if UNIVERSAL::can($class, '_add_opts');
     my ($host, $port, $username, $dbname, $configfile);
     unless ($noargs) {
         GetOptions (
@@ -113,11 +118,11 @@ sub run_program {
             "username|U=s" => \$username,
             "database|d=s" => \$dbname,
             "config|c=s"   => \$configfile,
+            @add_opts,
         );
     }
     if ($configfile) {
         no autovivification;
-        my %ini;
         tie %ini, 'Config::IniFiles', ( -file => $configfile );
         $host     = $ini{lenkwerk}{host}     if exists $ini{lenkwerk}{host};
         $port     = $ini{lenkwerk}{port}     if exists $ini{lenkwerk}{port};
@@ -128,8 +133,6 @@ sub run_program {
     Bagger::Storage::LenkwerkSetup->set_dbport($port) if $port;
     Bagger::Storage::LenkwerkSetup->set_lenkwerkdb($dbname) if $dbname;
     Bagger::Storage::LenkwerkSetup->set_dbuser($username) if $username;
-    eval "require $class" or die $@;
-    $class->import if UNIVERSAL::can($class, 'import');
     $class->run;
 }
 
@@ -156,5 +159,25 @@ sub config_file {
     Bagger::Storage::LenkwerkSetup->set_lenkwerkdb($dbname) if $dbname;
     Bagger::Storage::LenkwerkSetup->set_dbuser($username) if $username;
 }
+
+=head1 WRITING BAGGER PROGRAMS
+
+There are a number of things which the Bagger CLI supports which require
+
+=head2 Extending Configuration
+
+There are two important methods for extending configuration supported by
+C<Bagger::CLI>.  The first is that additional directives can be placed in the
+inifile whose result has a global scope.  If an inifile has been used, the
+handler is at C<%Bagger::CLI::ini>.  Additional configuration variables can be
+accessed using C<Config::IniFile>'s tied hash API.
+
+The second method, usually used in tandem is to specify an C<_add_opts> in the
+main application class of your program.  This MUST return a list with an
+even-numbered list of elements.  These get passed along to the C<GetOptions>
+call.  Since you would usually pass along references to "my"-scoped variables
+in your module, these would get written there.
+
+=cut
 
 1;
