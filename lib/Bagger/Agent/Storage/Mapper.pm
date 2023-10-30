@@ -58,7 +58,7 @@ my @key_regex = (
     { regex => qr|^/PostgresInstance|, class => 'Bagger::Storage::Instance' },
     { regex => qr|^/Servermap|,        class => 'Bagger::Storage::Servermap' },
     { regex => qr|^/Dimension|,        class => 'Bagger::Storage::Dimension' },
-    { regex => qr|^/Index${delim}\d+${delim}\d|,     
+    { regex => qr|^/Index${delim}\d+${delim}\d|,
                                        class => 'Bagger::Storage::Index::Field' },
     { regex => qr|^/Index${delim}\d+$|,       class => 'Bagger::Storage::Index' },
 );
@@ -67,22 +67,22 @@ sub _kjoin { return join($delim, @_) }
 
 my %keygen = (
     config             => sub { return _kjoin('/Config', $_[0]->{key}) },
-    postgres_instance  => sub { return _kjoin('/PostgresInstance', 
+    postgres_instance  => sub { return _kjoin('/PostgresInstance',
                                               $_[0]->{host}, $_[0]->{port}) },
-    servermaps         => sub { return '/Servermap' },
-    dimensions         => sub { return _kjoin('/Dimension', $_[0]->{id}) },
-    indexes            => sub { return _kjoin('/Index', $_[0]->{id}) },
-    index_fields       => sub { return _kjoin('/Index', $_[0]->{index_id},
+    servermap          => sub { return '/Servermap' },
+    dimension          => sub { return _kjoin('/Dimension', $_[0]->{id}) },
+    index              => sub { return _kjoin('/Index', $_[0]->{id}) },
+    index_field        => sub { return _kjoin('/Index', $_[0]->{index_id},
                                               $_[0]->{id}) },
 );
 
 my %classmap = (
     'Bagger::Storage::Config'       => 'config',
     'Bagger::Storage::Instance'     => 'postgres_instance',
-    'Bagger::Storage::Servermap'    => 'servermaps', 
-    'Bagger::Storage::Dimension'    => 'dimensions',
-    'Bagger::Storage::Index::Field' => 'index_fields',
-    'Bagger::Storage::Index'        => 'indexes',
+    'Bagger::Storage::Servermap'    => 'servermap',
+    'Bagger::Storage::Dimension'    => 'dimension',
+    'Bagger::Storage::Index::Field' => 'index_field',
+    'Bagger::Storage::Index'        => 'index',
 );
 
 =head1 FUNCTIONS AND CONVERSION
@@ -133,8 +133,8 @@ table name or a blessed object passed in the first spot, and if not, then a hash
 
 Examples:
 
-    kval_key('postgres_instances', {host => 'host1', 
-                                    port => 5432, 
+    kval_key('postgres_instances', {host => 'host1',
+                                    port => 5432,
                                 username => 'bagger',
                                   status => 0 })
     #returns '/PostgresInstance/host1/5432'

@@ -22,16 +22,16 @@ is(kval_key('postgres_instance', {host => 'host1', port => '5432'}),
         '/PostgresInstance/host1/5432',
         'kval_key for postgres_instance record');
 
-is(kval_key('servermaps', {id => 1}), '/Servermap',
+is(kval_key('servermap', {id => 1}), '/Servermap',
        'kval_key for servermaps record');
 
-is(kval_key('dimensions', {id => 1}), '/Dimension/1',
+is(kval_key('dimension', {id => 1}), '/Dimension/1',
        'kval_key for dimensions record');
 
-is(kval_key('indexes', {id => 1}), '/Index/1',
+is(kval_key('index', {id => 1}), '/Index/1',
        'kval_key for indexes record');
 
-is(kval_key('index_fields', {id => 1, index_id => 2}), '/Index/2/1',
+is(kval_key('index_field', {id => 1, index_id => 2}), '/Index/2/1',
         'kval_key for index_fields record');
 
 ## Object types
