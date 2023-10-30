@@ -112,7 +112,7 @@
 <body>
 
 <!-- Primary Index -->
-<p><br><br>Dumped on 2023-10-25</p>
+<p><br><br>Dumped on 2023-10-30</p>
 <h1><a name="index">Index of database - lenkwerk</a></h1>
 <ul>
   
@@ -122,7 +122,7 @@
   </ul>
   
   <li><a name="storage.schema">storage</a></li><ul>
-    <li><a href="#storage.table.config">config</a></li><li><a href="#storage.table.dimensions">dimensions</a></li><li><a href="#storage.table.index-fields">index_fields</a></li><li><a href="#storage.table.indexes">indexes</a></li><li><a href="#storage.table.postgres-instance">postgres_instance</a></li><li><a href="#storage.table.servermaps">servermaps</a></li><li><a href="#storage.table.time-bound">time_bound</a></li>
+    <li><a href="#storage.table.config">config</a></li><li><a href="#storage.table.dimension">dimension</a></li><li><a href="#storage.table.index">index</a></li><li><a href="#storage.table.index-field">index_field</a></li><li><a href="#storage.table.postgres-instance">postgres_instance</a></li><li><a href="#storage.table.servermap">servermap</a></li><li><a href="#storage.table.time-bound">time_bound</a></li>
     <li><a href="#storage.function.append-dimension-in-fieldname-character-varying-in-default-val-character-varying-in-valid-from-timestamp-without-time-zone-in-valid-until-timestamp-without-time-zone">append_dimension(in_fieldname character varying, in_default_val character varying, in_valid_from timestamp without time zone, in_valid_until timestamp without time zone)</a></li><li><a href="#storage.function.append-index-field-in-index-id-integer-in-expression-character-varying-in-valid-from-timestamp-without-time-zone-in-valid-until-timestamp-without-time-zone">append_index_field(in_index_id integer, in_expression character varying, in_valid_from timestamp without time zone, in_valid_until timestamp without time zone)</a></li><li><a href="#storage.function.expire-dimension-in-id-integer-in-valid-until-timestamp-without-time-zone">expire_dimension(in_id integer, in_valid_until timestamp without time zone)</a></li><li><a href="#storage.function.expire-index-in-id-integer-in-valid-until-timestamp-without-time-zone">expire_index(in_id integer, in_valid_until timestamp without time zone)</a></li><li><a href="#storage.function.expire-index-field-in-id-integer-in-valid-until-timestamp-without-time-zone">expire_index_field(in_id integer, in_valid_until timestamp without time zone)</a></li><li><a href="#storage.function.get-config-in-key-text">get_config(in_key text)</a></li><li><a href="#storage.function.get-dimensions">get_dimensions()</a></li><li><a href="#storage.function.get-index-in-indexname-text">get_index(in_indexname text)</a></li><li><a href="#storage.function.get-index-fields-in-index-id-integer">get_index_fields(in_index_id integer)</a></li><li><a href="#storage.function.get-pg-instance-by-host-and-port-in-host-text-in-port-integer">get_pg_instance_by_host_and_port(in_host text, in_port integer)</a></li><li><a href="#storage.function.get-pg-instance-by-id-in-id-integer">get_pg_instance_by_id(in_id integer)</a></li><li><a href="#storage.function.get-servermap-in-id-integer">get_servermap(in_id integer)</a></li><li><a href="#storage.function.insert-dimension-in-ordinality-integer-in-fieldname-character-varying-in-default-val-character-varying-in-valid-from-timestamp-without-time-zone-in-valid-until-timestamp-without-time-zone">insert_dimension(in_ordinality integer, in_fieldname character varying, in_default_val character varying, in_valid_from timestamp without time zone, in_valid_until timestamp without time zone)</a></li><li><a href="#storage.function.insert-index-field-in-index-id-integer-in-ordinality-integer-in-expression-character-varying-in-valid-from-timestamp-without-time-zone-in-valid-until-timestamp-without-time-zone">insert_index_field(in_index_id integer, in_ordinality integer, in_expression character varying, in_valid_from timestamp without time zone, in_valid_until timestamp without time zone)</a></li><li><a href="#storage.function.list-pg-instances">list_pg_instances()</a></li><li><a href="#storage.function.most-recent-servermap">most_recent_servermap()</a></li><li><a href="#storage.function.register-pg-instance-in-host-text-in-port-integer-in-username-text">register_pg_instance(in_host text, in_port integer, in_username text)</a></li><li><a href="#storage.function.save-config-in-key-text-in-value-json">save_config(in_key text, in_value json)</a></li><li><a href="#storage.function.save-index-in-indexname-text-in-access-method-text-in-tablespc-text-in-valid-until-timestamp-without-time-zone-in-valid-from-timestamp-without-time-zone">save_index(in_indexname text, in_access_method text, in_tablespc text, in_valid_until timestamp without time zone, in_valid_from timestamp without time zone)</a></li><li><a href="#storage.function.save-servermap-in-server-map-json">save_servermap(in_server_map json)</a></li><li><a href="#storage.function.servermap-rotate-num">servermap_rotate_num()</a></li><li><a href="#storage.function.set-pg-instance-status-in-id-integer-in-status-integer">set_pg_instance_status(in_id integer, in_status integer)</a></li><li><a href="#storage.function.validrange-storage.time-bound">validrange(storage.time_bound)</a></li>
   </ul>
   
@@ -272,7 +272,7 @@ libraries are available in all major languages.
 <hr>
 <h2>Table:
   
-  <a href="#storage.schema">storage</a>.<a name="storage.table.dimensions">dimensions</a>
+  <a href="#storage.schema">storage</a>.<a name="storage.table.dimension">dimension</a>
 </h2>
 
 <p class="table_comment"> This contains the partitions by which data is partitioned. Default values
@@ -281,7 +281,7 @@ can be set using the default_val field though this is not yet supported.</p>
 
 
 <table class="schema" width="100%" cellspacing="0" cellpadding="3">
-  <caption>storage.dimensions Structure</caption>
+  <caption>storage.dimension Structure</caption>
   <tr>
     <th>F-Key</th>
     <th>Name</th>
@@ -418,7 +418,7 @@ can be set using the default_val field though this is not yet supported.</p>
 
 <!-- Inherits -->
 
-<p>Table storage.dimensions Inherits
+<p>Table storage.dimension Inherits
   
    
   <a href="#storage.table.time-bound">time_bound</a>, 
@@ -453,224 +453,17 @@ can be set using the default_val field though this is not yet supported.</p>
 <hr>
 <h2>Table:
   
-  <a href="#storage.schema">storage</a>.<a name="storage.table.index-fields">index_fields</a>
-</h2>
-
-<p class="table_comment">Stores the index fields or expressions.
-
-Some care needs to be paid as to the nature of the contents of this table
-because while naive SQL injection is not possile at index creation time,
-indexes can perform arbitrary code at insert or update time.
-
-For this reason registering indexes is a privileged operation.
-</p>
-
-
-
-<table class="schema" width="100%" cellspacing="0" cellpadding="3">
-  <caption>storage.index_fields Structure</caption>
-  <tr>
-    <th>F-Key</th>
-    <th>Name</th>
-    <th>Type</th>
-    <th>Description</th>
-  </tr>
-  
-  <tr class="tr0">
-    <td>
-      
-    </td>
-    <td>valid_from</td>
-    <td>timestamp without time zone</td>
-    <td>
-      <i>
-        
-        
-        NOT NULL
-        DEFAULT &#39;-infinity&#39;::timestamp without time zone
-      </i>
-      
-    </td>
-  </tr>
-  
-  <tr class="tr1">
-    <td>
-      
-    </td>
-    <td>valid_until</td>
-    <td>timestamp without time zone</td>
-    <td>
-      <i>
-        
-        
-        NOT NULL
-        DEFAULT &#39;infinity&#39;::timestamp without time zone
-      </i>
-      
-    </td>
-  </tr>
-  
-  <tr class="tr0">
-    <td>
-      
-      
-      
-    </td>
-    <td>id</td>
-    <td>serial</td>
-    <td>
-      <i>
-        
-        
-        
-        
-        UNIQUE
-        
-        
-        
-        NOT NULL
-        
-      </i>
-      
-    </td>
-  </tr>
-  
-  <tr class="tr1">
-    <td>
-      
-      
-      <a href="#storage.table.indexes">storage.indexes.id</a>
-      
-      
-      
-      
-    </td>
-    <td>index_id</td>
-    <td>integer</td>
-    <td>
-      <i>
-        
-        
-        
-        
-        
-        PRIMARY KEY
-        
-        
-        
-        
-        
-        
-        
-      </i>
-      
-    </td>
-  </tr>
-  
-  <tr class="tr0">
-    <td>
-      
-      
-      
-    </td>
-    <td>ordinality</td>
-    <td>integer</td>
-    <td>
-      <i>
-        
-        PRIMARY KEY
-        
-        
-        
-        
-        
-        
-        
-      </i>
-      
-    </td>
-  </tr>
-  
-  <tr class="tr1">
-    <td>
-      
-    </td>
-    <td>expression</td>
-    <td>character varying</td>
-    <td>
-      <i>
-        
-        
-        NOT NULL
-        
-      </i>
-      <br><br>This column has an important security consideration because improper
-management of indexes could allow attackers to run arbitrary code during
-index update.  The actual CREATE INDEX statement is not vulnerable to
-SQL injection attacks itself, but expressions can include function calls
-to any function marked immutable.  This means that a clever attacker could
-create a function with destructive intent, mark it as immutable and then
-call it from a function.
-
-This problem is not actually related to storing the index expressions in
-the database.  The problem can happen anywhere these expressions are stored
-and therefore it is important to have careful controls on that process.
-
-RECOMMENDATION:  update this table from an infrastructure-as-code framework
-only and implement checks to ensure the two are in sync.
-    </td>
-  </tr>
-  
-</table>
-
-<!-- Inherits -->
-
-<p>Table storage.index_fields Inherits
-  
-   
-  <a href="#storage.table.time-bound">time_bound</a>, 
-  
-</p>
-
-
-
-
-
-
-<!-- Constraint List -->
-
-
-<!-- Foreign Key Discovery -->
-
-<ul class="indexes">
-<!-- Indexes -->
-
-</ul>
-<!-- View Definition -->
-
-
-<!-- List off permissions -->
-
-
-<p>
-  <a href="#index">Index</a> -
-  <a href="#storage.schema">Schema storage</a>
-</p>
-
-<hr>
-<h2>Table:
-  
-  <a href="#storage.schema">storage</a>.<a name="storage.table.indexes">indexes</a>
+  <a href="#storage.schema">storage</a>.<a name="storage.table.index">index</a>
 </h2>
 
 <p class="table_comment"> This table includes index definition information for bagger nodes.
 
-This allows us to specify GIN, GIST, btree, and hash indexes.</p>
+This allows us to specify GIN, GIST, btree, and hash index.</p>
 
 
 
 <table class="schema" width="100%" cellspacing="0" cellpadding="3">
-  <caption>storage.indexes Structure</caption>
+  <caption>storage.index Structure</caption>
   <tr>
     <th>F-Key</th>
     <th>Name</th>
@@ -799,7 +592,7 @@ This allows us to specify GIN, GIST, btree, and hash indexes.</p>
 
 <!-- Inherits -->
 
-<p>Table storage.indexes Inherits
+<p>Table storage.index Inherits
   
    
   <a href="#storage.table.time-bound">time_bound</a>, 
@@ -820,10 +613,217 @@ This allows us to specify GIN, GIST, btree, and hash indexes.</p>
   <p>Tables referencing this one via Foreign Key Constraints:</p>
   
   <ul>
-    <li><a href="#storage.table.index-fields">storage.index_fields</a></li>
+    <li><a href="#storage.table.index-field">storage.index_field</a></li>
   </ul>
   
 </div>
+
+<ul class="indexes">
+<!-- Indexes -->
+
+</ul>
+<!-- View Definition -->
+
+
+<!-- List off permissions -->
+
+
+<p>
+  <a href="#index">Index</a> -
+  <a href="#storage.schema">Schema storage</a>
+</p>
+
+<hr>
+<h2>Table:
+  
+  <a href="#storage.schema">storage</a>.<a name="storage.table.index-field">index_field</a>
+</h2>
+
+<p class="table_comment">Stores the index fields or expressions.
+
+Some care needs to be paid as to the nature of the contents of this table
+because while naive SQL injection is not possile at index creation time,
+index can perform arbitrary code at insert or update time.
+
+For this reason registering index is a privileged operation.
+</p>
+
+
+
+<table class="schema" width="100%" cellspacing="0" cellpadding="3">
+  <caption>storage.index_field Structure</caption>
+  <tr>
+    <th>F-Key</th>
+    <th>Name</th>
+    <th>Type</th>
+    <th>Description</th>
+  </tr>
+  
+  <tr class="tr0">
+    <td>
+      
+    </td>
+    <td>valid_from</td>
+    <td>timestamp without time zone</td>
+    <td>
+      <i>
+        
+        
+        NOT NULL
+        DEFAULT &#39;-infinity&#39;::timestamp without time zone
+      </i>
+      
+    </td>
+  </tr>
+  
+  <tr class="tr1">
+    <td>
+      
+    </td>
+    <td>valid_until</td>
+    <td>timestamp without time zone</td>
+    <td>
+      <i>
+        
+        
+        NOT NULL
+        DEFAULT &#39;infinity&#39;::timestamp without time zone
+      </i>
+      
+    </td>
+  </tr>
+  
+  <tr class="tr0">
+    <td>
+      
+      
+      
+    </td>
+    <td>id</td>
+    <td>serial</td>
+    <td>
+      <i>
+        
+        
+        
+        
+        UNIQUE
+        
+        
+        
+        NOT NULL
+        
+      </i>
+      
+    </td>
+  </tr>
+  
+  <tr class="tr1">
+    <td>
+      
+      
+      <a href="#storage.table.index">storage.index.id</a>
+      
+      
+      
+      
+    </td>
+    <td>index_id</td>
+    <td>integer</td>
+    <td>
+      <i>
+        
+        
+        
+        
+        
+        PRIMARY KEY
+        
+        
+        
+        
+        
+        
+        
+      </i>
+      
+    </td>
+  </tr>
+  
+  <tr class="tr0">
+    <td>
+      
+      
+      
+    </td>
+    <td>ordinality</td>
+    <td>integer</td>
+    <td>
+      <i>
+        
+        PRIMARY KEY
+        
+        
+        
+        
+        
+        
+        
+      </i>
+      
+    </td>
+  </tr>
+  
+  <tr class="tr1">
+    <td>
+      
+    </td>
+    <td>expression</td>
+    <td>character varying</td>
+    <td>
+      <i>
+        
+        
+        NOT NULL
+        
+      </i>
+      <br><br>This column has an important security consideration because improper
+management of index could allow attackers to run arbitrary code during
+index update.  The actual CREATE INDEX statement is not vulnerable to
+SQL injection attacks itself, but expressions can include function calls
+to any function marked immutable.  This means that a clever attacker could
+create a function with destructive intent, mark it as immutable and then
+call it from a function.
+
+This problem is not actually related to storing the index expressions in
+the database.  The problem can happen anywhere these expressions are stored
+and therefore it is important to have careful controls on that process.
+
+RECOMMENDATION:  update this table from an infrastructure-as-code framework
+only and implement checks to ensure the two are in sync.
+    </td>
+  </tr>
+  
+</table>
+
+<!-- Inherits -->
+
+<p>Table storage.index_field Inherits
+  
+   
+  <a href="#storage.table.time-bound">time_bound</a>, 
+  
+</p>
+
+
+
+
+
+
+<!-- Constraint List -->
+
+
+<!-- Foreign Key Discovery -->
 
 <ul class="indexes">
 <!-- Indexes -->
@@ -1031,16 +1031,16 @@ New states may be added in the future.
 <hr>
 <h2>Table:
   
-  <a href="#storage.schema">storage</a>.<a name="storage.table.servermaps">servermaps</a>
+  <a href="#storage.schema">storage</a>.<a name="storage.table.servermap">servermap</a>
 </h2>
 
-<p class="table_comment"> The servermaps table stores the server maps by generation so that
+<p class="table_comment"> The servermap table stores the server maps by generation so that
 we can determine which servers are supposed to receive writes together.</p>
 
 
 
 <table class="schema" width="100%" cellspacing="0" cellpadding="3">
-  <caption>storage.servermaps Structure</caption>
+  <caption>storage.servermap Structure</caption>
   <tr>
     <th>F-Key</th>
     <th>Name</th>
@@ -1226,7 +1226,7 @@ ranges.
 <h2>Function:
   <a href="#storage.schema">storage</a>.<a name="storage.function.append-dimension-in-fieldname-character-varying-in-default-val-character-varying-in-valid-from-timestamp-without-time-zone-in-valid-until-timestamp-without-time-zone">append_dimension(in_fieldname character varying, in_default_val character varying, in_valid_from timestamp without time zone, in_valid_until timestamp without time zone)</a>
 </h2>
-<h3>Returns: dimensions</h3>
+<h3>Returns: dimension</h3>
 <h3>Language: SQL</h3>
 <p>This function inserts a named dimension at the end of the list.
 
@@ -1238,7 +1238,7 @@ It returns the row as saved.
 <h2>Function:
   <a href="#storage.schema">storage</a>.<a name="storage.function.append-index-field-in-index-id-integer-in-expression-character-varying-in-valid-from-timestamp-without-time-zone-in-valid-until-timestamp-without-time-zone">append_index_field(in_index_id integer, in_expression character varying, in_valid_from timestamp without time zone, in_valid_until timestamp without time zone)</a>
 </h2>
-<h3>Returns: index_fields</h3>
+<h3>Returns: index_field</h3>
 <h3>Language: SQL</h3>
 
 <pre></pre>
@@ -1247,7 +1247,7 @@ It returns the row as saved.
 <h2>Function:
   <a href="#storage.schema">storage</a>.<a name="storage.function.expire-dimension-in-id-integer-in-valid-until-timestamp-without-time-zone">expire_dimension(in_id integer, in_valid_until timestamp without time zone)</a>
 </h2>
-<h3>Returns: dimensions</h3>
+<h3>Returns: dimension</h3>
 <h3>Language: SQL</h3>
 
 <pre></pre>
@@ -1256,7 +1256,7 @@ It returns the row as saved.
 <h2>Function:
   <a href="#storage.schema">storage</a>.<a name="storage.function.expire-index-in-id-integer-in-valid-until-timestamp-without-time-zone">expire_index(in_id integer, in_valid_until timestamp without time zone)</a>
 </h2>
-<h3>Returns: indexes</h3>
+<h3>Returns: index</h3>
 <h3>Language: SQL</h3>
 
 <pre></pre>
@@ -1265,7 +1265,7 @@ It returns the row as saved.
 <h2>Function:
   <a href="#storage.schema">storage</a>.<a name="storage.function.expire-index-field-in-id-integer-in-valid-until-timestamp-without-time-zone">expire_index_field(in_id integer, in_valid_until timestamp without time zone)</a>
 </h2>
-<h3>Returns: index_fields</h3>
+<h3>Returns: index_field</h3>
 <h3>Language: SQL</h3>
 
 <pre></pre>
@@ -1283,17 +1283,17 @@ It returns the row as saved.
 <h2>Function:
   <a href="#storage.schema">storage</a>.<a name="storage.function.get-dimensions">get_dimensions()</a>
 </h2>
-<h3>Returns: SET OF dimensions</h3>
+<h3>Returns: SET OF dimension</h3>
 <h3>Language: SQL</h3>
-<p> Selects an ordered set of dimensions.  Note that the ordinality is the
-order of evaluation for partitioning and all dimensions are evaluated.</p>
+<p> Selects an ordered set of dimension.  Note that the ordinality is the
+order of evaluation for partitioning and all dimension are evaluated.</p>
 <pre></pre>
 
 <hr>
 <h2>Function:
   <a href="#storage.schema">storage</a>.<a name="storage.function.get-index-in-indexname-text">get_index(in_indexname text)</a>
 </h2>
-<h3>Returns: indexes</h3>
+<h3>Returns: index</h3>
 <h3>Language: SQL</h3>
 
 <pre></pre>
@@ -1302,7 +1302,7 @@ order of evaluation for partitioning and all dimensions are evaluated.</p>
 <h2>Function:
   <a href="#storage.schema">storage</a>.<a name="storage.function.get-index-fields-in-index-id-integer">get_index_fields(in_index_id integer)</a>
 </h2>
-<h3>Returns: SET OF index_fields</h3>
+<h3>Returns: SET OF index_field</h3>
 <h3>Language: SQL</h3>
 
 <pre></pre>
@@ -1329,7 +1329,7 @@ order of evaluation for partitioning and all dimensions are evaluated.</p>
 <h2>Function:
   <a href="#storage.schema">storage</a>.<a name="storage.function.get-servermap-in-id-integer">get_servermap(in_id integer)</a>
 </h2>
-<h3>Returns: servermaps</h3>
+<h3>Returns: servermap</h3>
 <h3>Language: SQL</h3>
 
 <pre></pre>
@@ -1338,7 +1338,7 @@ order of evaluation for partitioning and all dimensions are evaluated.</p>
 <h2>Function:
   <a href="#storage.schema">storage</a>.<a name="storage.function.insert-dimension-in-ordinality-integer-in-fieldname-character-varying-in-default-val-character-varying-in-valid-from-timestamp-without-time-zone-in-valid-until-timestamp-without-time-zone">insert_dimension(in_ordinality integer, in_fieldname character varying, in_default_val character varying, in_valid_from timestamp without time zone, in_valid_until timestamp without time zone)</a>
 </h2>
-<h3>Returns: dimensions</h3>
+<h3>Returns: dimension</h3>
 <h3>Language: SQL</h3>
 <p> This function inserts the dimension at the desired place and returns the row
 as saved in the database.
@@ -1352,7 +1352,7 @@ ordinality number are incremented.
 <h2>Function:
   <a href="#storage.schema">storage</a>.<a name="storage.function.insert-index-field-in-index-id-integer-in-ordinality-integer-in-expression-character-varying-in-valid-from-timestamp-without-time-zone-in-valid-until-timestamp-without-time-zone">insert_index_field(in_index_id integer, in_ordinality integer, in_expression character varying, in_valid_from timestamp without time zone, in_valid_until timestamp without time zone)</a>
 </h2>
-<h3>Returns: index_fields</h3>
+<h3>Returns: index_field</h3>
 <h3>Language: SQL</h3>
 
 <pre></pre>
@@ -1370,7 +1370,7 @@ ordinality number are incremented.
 <h2>Function:
   <a href="#storage.schema">storage</a>.<a name="storage.function.most-recent-servermap">most_recent_servermap()</a>
 </h2>
-<h3>Returns: servermaps</h3>
+<h3>Returns: servermap</h3>
 <h3>Language: SQL</h3>
 
 <pre></pre>
@@ -1405,7 +1405,7 @@ By design the new node is created offline (state 0).  The arguments are:
 <h2>Function:
   <a href="#storage.schema">storage</a>.<a name="storage.function.save-index-in-indexname-text-in-access-method-text-in-tablespc-text-in-valid-until-timestamp-without-time-zone-in-valid-from-timestamp-without-time-zone">save_index(in_indexname text, in_access_method text, in_tablespc text, in_valid_until timestamp without time zone, in_valid_from timestamp without time zone)</a>
 </h2>
-<h3>Returns: indexes</h3>
+<h3>Returns: index</h3>
 <h3>Language: SQL</h3>
 
 <pre></pre>
@@ -1414,7 +1414,7 @@ By design the new node is created offline (state 0).  The arguments are:
 <h2>Function:
   <a href="#storage.schema">storage</a>.<a name="storage.function.save-servermap-in-server-map-json">save_servermap(in_server_map json)</a>
 </h2>
-<h3>Returns: servermaps</h3>
+<h3>Returns: servermap</h3>
 <h3>Language: SQL</h3>
 <p> This function always inserts a new record.</p>
 <pre></pre>
