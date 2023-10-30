@@ -133,11 +133,11 @@ libraries are available in all major languages.</para>
       </para>
     </section>
 
-      <section id="storage.table.dimensions"
-               xreflabel="storage.dimensions">
-        <title id="storage.table.dimensions-title">
+      <section id="storage.table.dimension"
+               xreflabel="storage.dimension">
+        <title id="storage.table.dimension-title">
          Table:
-         <database class="view">dimensions</database>
+         <database class="view">dimension</database>
          
         </title>
  
@@ -151,7 +151,7 @@ can be set using the default_val field though this is not yet supported.
         <para>
           <variablelist>
             <title>
-              Structure of <database class="table">dimensions</database>
+              Structure of <database class="table">dimension</database>
             </title>
 
 
@@ -303,208 +303,11 @@ can be set using the default_val field though this is not yet supported.
       </para>
     </section>
 
-      <section id="storage.table.index-fields"
-               xreflabel="storage.index_fields">
-        <title id="storage.table.index-fields-title">
+      <section id="storage.table.index"
+               xreflabel="storage.index">
+        <title id="storage.table.index-title">
          Table:
-         <database class="view">index_fields</database>
-         
-        </title>
- 
-
-        <para>
-          Stores the index fields or expressions.
-
-Some care needs to be paid as to the nature of the contents of this table
-because while naive SQL injection is not possile at index creation time,
-indexes can perform arbitrary code at insert or update time.
-
-For this reason registering indexes is a privileged operation.
-
-        </para>
-
-
-        <para>
-          <variablelist>
-            <title>
-              Structure of <database class="table">index_fields</database>
-            </title>
-
-
-            <varlistentry>
-              <term><database class="field">valid_from</database></term>
-              <listitem><para>
-                <database class="datatype">timestamp without time zone</database>
-
-
-
-                <database class="constraint">NOT NULL</database>
-
-
-
-                <literal>DEFAULT &apos;-infinity&apos;::timestamp without time zone</literal>
-
-
-
-              </para>
-
-            </listitem>
-          </varlistentry>
-
-            <varlistentry>
-              <term><database class="field">valid_until</database></term>
-              <listitem><para>
-                <database class="datatype">timestamp without time zone</database>
-
-
-
-                <database class="constraint">NOT NULL</database>
-
-
-
-                <literal>DEFAULT &apos;infinity&apos;::timestamp without time zone</literal>
-
-
-
-              </para>
-
-            </listitem>
-          </varlistentry>
-
-            <varlistentry>
-              <term><database class="field">id</database></term>
-              <listitem><para>
-                <database class="datatype">serial</database>
-
-
-
-
-                <database class="constraint">UNIQUE</database>
-
-
-
-
-                <database class="constraint">NOT NULL</database>
-
-
-
-
-
-
-
-              </para>
-
-            </listitem>
-          </varlistentry>
-
-            <varlistentry>
-              <term><database class="field">index_id</database></term>
-              <listitem><para>
-                <database class="datatype">integer</database>
-
-
-
-
-
-
-                <database class="constraint">PRIMARY KEY</database>
-
-
-
-
-
-
-
-
-
-
-
-                <database class="constraint">REFERENCES <xref linkend="storage.table.indexes"/></database>
-
-
-
-
-              </para>
-
-            </listitem>
-          </varlistentry>
-
-            <varlistentry>
-              <term><database class="field">ordinality</database></term>
-              <listitem><para>
-                <database class="datatype">integer</database>
-
-
-                <database class="constraint">PRIMARY KEY</database>
-
-
-
-
-
-
-
-
-
-
-
-
-              </para>
-
-            </listitem>
-          </varlistentry>
-
-            <varlistentry>
-              <term><database class="field">expression</database></term>
-              <listitem><para>
-                <database class="datatype">character varying</database>
-
-
-
-                <database class="constraint">NOT NULL</database>
-
-
-
-
-
-              </para>
-
-              <para>This column has an important security consideration because improper
-management of indexes could allow attackers to run arbitrary code during
-index update.  The actual CREATE INDEX statement is not vulnerable to
-SQL injection attacks itself, but expressions can include function calls
-to any function marked immutable.  This means that a clever attacker could
-create a function with destructive intent, mark it as immutable and then
-call it from a function.
-
-This problem is not actually related to storing the index expressions in
-the database.  The problem can happen anywhere these expressions are stored
-and therefore it is important to have careful controls on that process.
-
-RECOMMENDATION:  update this table from an infrastructure-as-code framework
-only and implement checks to ensure the two are in sync.</para>
-
-            </listitem>
-          </varlistentry>
-
-        </variablelist>
-
-
-
-
-
-
-
-
-
-
-      </para>
-    </section>
-
-      <section id="storage.table.indexes"
-               xreflabel="storage.indexes">
-        <title id="storage.table.indexes-title">
-         Table:
-         <database class="view">indexes</database>
+         <database class="view">index</database>
          
         </title>
  
@@ -512,14 +315,14 @@ only and implement checks to ensure the two are in sync.</para>
         <para>
            This table includes index definition information for bagger nodes.
 
-This allows us to specify GIN, GIST, btree, and hash indexes.
+This allows us to specify GIN, GIST, btree, and hash index.
         </para>
 
 
         <para>
           <variablelist>
             <title>
-              Structure of <database class="table">indexes</database>
+              Structure of <database class="table">index</database>
             </title>
 
 
@@ -663,16 +466,213 @@ This allows us to specify GIN, GIST, btree, and hash indexes.
 
         <itemizedlist>
           <title>
-            Tables referencing storage.index_fields via Foreign Key Constraints
+            Tables referencing storage.index_field via Foreign Key Constraints
           </title>
 
           <listitem>
             <para>
-              <xref linkend="storage.table.index-fields"/>
+              <xref linkend="storage.table.index-field"/>
             </para>
           </listitem>
 
         </itemizedlist>
+
+
+
+
+
+
+      </para>
+    </section>
+
+      <section id="storage.table.index-field"
+               xreflabel="storage.index_field">
+        <title id="storage.table.index-field-title">
+         Table:
+         <database class="view">index_field</database>
+         
+        </title>
+ 
+
+        <para>
+          Stores the index fields or expressions.
+
+Some care needs to be paid as to the nature of the contents of this table
+because while naive SQL injection is not possile at index creation time,
+index can perform arbitrary code at insert or update time.
+
+For this reason registering index is a privileged operation.
+
+        </para>
+
+
+        <para>
+          <variablelist>
+            <title>
+              Structure of <database class="table">index_field</database>
+            </title>
+
+
+            <varlistentry>
+              <term><database class="field">valid_from</database></term>
+              <listitem><para>
+                <database class="datatype">timestamp without time zone</database>
+
+
+
+                <database class="constraint">NOT NULL</database>
+
+
+
+                <literal>DEFAULT &apos;-infinity&apos;::timestamp without time zone</literal>
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+            <varlistentry>
+              <term><database class="field">valid_until</database></term>
+              <listitem><para>
+                <database class="datatype">timestamp without time zone</database>
+
+
+
+                <database class="constraint">NOT NULL</database>
+
+
+
+                <literal>DEFAULT &apos;infinity&apos;::timestamp without time zone</literal>
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+            <varlistentry>
+              <term><database class="field">id</database></term>
+              <listitem><para>
+                <database class="datatype">serial</database>
+
+
+
+
+                <database class="constraint">UNIQUE</database>
+
+
+
+
+                <database class="constraint">NOT NULL</database>
+
+
+
+
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+            <varlistentry>
+              <term><database class="field">index_id</database></term>
+              <listitem><para>
+                <database class="datatype">integer</database>
+
+
+
+
+
+
+                <database class="constraint">PRIMARY KEY</database>
+
+
+
+
+
+
+
+
+
+
+
+                <database class="constraint">REFERENCES <xref linkend="storage.table.index"/></database>
+
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+            <varlistentry>
+              <term><database class="field">ordinality</database></term>
+              <listitem><para>
+                <database class="datatype">integer</database>
+
+
+                <database class="constraint">PRIMARY KEY</database>
+
+
+
+
+
+
+
+
+
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+            <varlistentry>
+              <term><database class="field">expression</database></term>
+              <listitem><para>
+                <database class="datatype">character varying</database>
+
+
+
+                <database class="constraint">NOT NULL</database>
+
+
+
+
+
+              </para>
+
+              <para>This column has an important security consideration because improper
+management of index could allow attackers to run arbitrary code during
+index update.  The actual CREATE INDEX statement is not vulnerable to
+SQL injection attacks itself, but expressions can include function calls
+to any function marked immutable.  This means that a clever attacker could
+create a function with destructive intent, mark it as immutable and then
+call it from a function.
+
+This problem is not actually related to storing the index expressions in
+the database.  The problem can happen anywhere these expressions are stored
+and therefore it is important to have careful controls on that process.
+
+RECOMMENDATION:  update this table from an infrastructure-as-code framework
+only and implement checks to ensure the two are in sync.</para>
+
+            </listitem>
+          </varlistentry>
+
+        </variablelist>
+
+
+
+
 
 
 
@@ -859,17 +859,17 @@ New states may be added in the future.
       </para>
     </section>
 
-      <section id="storage.table.servermaps"
-               xreflabel="storage.servermaps">
-        <title id="storage.table.servermaps-title">
+      <section id="storage.table.servermap"
+               xreflabel="storage.servermap">
+        <title id="storage.table.servermap-title">
          Table:
-         <database class="view">servermaps</database>
+         <database class="view">servermap</database>
          
         </title>
  
 
         <para>
-           The servermaps table stores the server maps by generation so that
+           The servermap table stores the server maps by generation so that
 we can determine which servers are supposed to receive writes together.
         </para>
 
@@ -877,7 +877,7 @@ we can determine which servers are supposed to receive writes together.
         <para>
           <variablelist>
             <title>
-              Structure of <database class="table">servermaps</database>
+              Structure of <database class="table">servermap</database>
             </title>
 
 
@@ -1048,7 +1048,7 @@ ranges.
         <segtitle>Return Type</segtitle>
         <seglistitem>
          <seg>SQL</seg>
-         <seg>dimensions</seg>
+         <seg>dimension</seg>
         </seglistitem>
        </segmentedlist>
  
@@ -1078,7 +1078,7 @@ It returns the row as saved.
         <segtitle>Return Type</segtitle>
         <seglistitem>
          <seg>SQL</seg>
-         <seg>index_fields</seg>
+         <seg>index_field</seg>
         </seglistitem>
        </segmentedlist>
  
@@ -1105,7 +1105,7 @@ It returns the row as saved.
         <segtitle>Return Type</segtitle>
         <seglistitem>
          <seg>SQL</seg>
-         <seg>dimensions</seg>
+         <seg>dimension</seg>
         </seglistitem>
        </segmentedlist>
  
@@ -1132,7 +1132,7 @@ It returns the row as saved.
         <segtitle>Return Type</segtitle>
         <seglistitem>
          <seg>SQL</seg>
-         <seg>indexes</seg>
+         <seg>index</seg>
         </seglistitem>
        </segmentedlist>
  
@@ -1159,7 +1159,7 @@ It returns the row as saved.
         <segtitle>Return Type</segtitle>
         <seglistitem>
          <seg>SQL</seg>
-         <seg>index_fields</seg>
+         <seg>index_field</seg>
         </seglistitem>
        </segmentedlist>
  
@@ -1213,12 +1213,12 @@ It returns the row as saved.
         <segtitle>Return Type</segtitle>
         <seglistitem>
          <seg>SQL</seg>
-         <seg>SET OF dimensions</seg>
+         <seg>SET OF dimension</seg>
         </seglistitem>
        </segmentedlist>
  
-        Selects an ordered set of dimensions.  Note that the ordinality is the
-order of evaluation for partitioning and all dimensions are evaluated.
+        Selects an ordered set of dimension.  Note that the ordinality is the
+order of evaluation for partitioning and all dimension are evaluated.
         <programlisting></programlisting>
       </para>
     </section>
@@ -1241,7 +1241,7 @@ order of evaluation for partitioning and all dimensions are evaluated.
         <segtitle>Return Type</segtitle>
         <seglistitem>
          <seg>SQL</seg>
-         <seg>indexes</seg>
+         <seg>index</seg>
         </seglistitem>
        </segmentedlist>
  
@@ -1268,7 +1268,7 @@ order of evaluation for partitioning and all dimensions are evaluated.
         <segtitle>Return Type</segtitle>
         <seglistitem>
          <seg>SQL</seg>
-         <seg>SET OF index_fields</seg>
+         <seg>SET OF index_field</seg>
         </seglistitem>
        </segmentedlist>
  
@@ -1349,7 +1349,7 @@ order of evaluation for partitioning and all dimensions are evaluated.
         <segtitle>Return Type</segtitle>
         <seglistitem>
          <seg>SQL</seg>
-         <seg>servermaps</seg>
+         <seg>servermap</seg>
         </seglistitem>
        </segmentedlist>
  
@@ -1376,7 +1376,7 @@ order of evaluation for partitioning and all dimensions are evaluated.
         <segtitle>Return Type</segtitle>
         <seglistitem>
          <seg>SQL</seg>
-         <seg>dimensions</seg>
+         <seg>dimension</seg>
         </seglistitem>
        </segmentedlist>
  
@@ -1408,7 +1408,7 @@ ordinality number are incremented.
         <segtitle>Return Type</segtitle>
         <seglistitem>
          <seg>SQL</seg>
-         <seg>index_fields</seg>
+         <seg>index_field</seg>
         </seglistitem>
        </segmentedlist>
  
@@ -1462,7 +1462,7 @@ ordinality number are incremented.
         <segtitle>Return Type</segtitle>
         <seglistitem>
          <seg>SQL</seg>
-         <seg>servermaps</seg>
+         <seg>servermap</seg>
         </seglistitem>
        </segmentedlist>
  
@@ -1551,7 +1551,7 @@ By design the new node is created offline (state 0).  The arguments are:
         <segtitle>Return Type</segtitle>
         <seglistitem>
          <seg>SQL</seg>
-         <seg>indexes</seg>
+         <seg>index</seg>
         </seglistitem>
        </segmentedlist>
  
@@ -1578,7 +1578,7 @@ By design the new node is created offline (state 0).  The arguments are:
         <segtitle>Return Type</segtitle>
         <seglistitem>
          <seg>SQL</seg>
-         <seg>servermaps</seg>
+         <seg>servermap</seg>
         </seglistitem>
        </segmentedlist>
  
