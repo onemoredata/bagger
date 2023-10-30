@@ -88,8 +88,8 @@ For version 1, only a replication factor of 2 is supported.
 Version 1 of the servermap has a structure as follows
 
  {
-    host1_port1_id1 => { shaulfel => { host info},
-                         copies   => { [
+    host1_port1 => { shaulfel => { host info},
+                     copies   => { [
                                       { primary host info } ,
                                       { seconary host info }
                                      ] }
