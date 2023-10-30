@@ -118,7 +118,7 @@ at a time as they are received.
 # These represent all the constant data needed for handling events.  They should
 # ONLY be set by start().
 my ($hostname, $instanceport, $connect_role, $instance, $retention, $servermap,
-    $kvstore, $genconfig, @copies);
+    $kvstore, $genconfig);
 
 sub _add_opts {
     return (
@@ -137,10 +137,11 @@ sub _add_opts {
 sub _my_smap_key { join('_', $instance->host, $instance->port) };
 
 sub start {
+    # get config
+    # Bagger::CLI already sets up our db info
     #
     # Step 1:  Find our instance
     write_config() if $genconfig;
-
 
     if (!$hostname) {
         # fallback:  inifile, then Sys::Hostname::hostname
