@@ -55,35 +55,35 @@ This leads to the following values:
 New states may be added in the future.
 $$;
 
-create table storage.servermaps (
+create table storage.servermap (
    id serial primary key,
    server_map json not null
 );
 
-SELECT pg_catalog.pg_extension_config_dump('storage.servermaps', '');
-SELECT pg_catalog.pg_extension_config_dump('storage.servermaps_id_seq', '');
+SELECT pg_catalog.pg_extension_config_dump('storage.servermap', '');
+SELECT pg_catalog.pg_extension_config_dump('storage.servermap_id_seq', '');
 
-comment on table storage.servermaps is
-$$ The servermaps table stores the server maps by generation so that
+comment on table storage.servermap is
+$$ The servermap table stores the server maps by generation so that
 we can determine which servers are supposed to receive writes together.$$;
 
-CREATE TABLE storage.dimensions (
+CREATE TABLE storage.dimension (
    id serial NOT NULL UNIQUE,
    ordinality INT NOT NULL UNIQUE DEFERRABLE INITIALLY DEFERRED,
    default_val varchar null default 'notexist',
    fieldname varchar PRIMARY KEY
 ) inherits (storage.time_bound);
 
-SELECT pg_catalog.pg_extension_config_dump('storage.dimensions', '');
-SELECT pg_catalog.pg_extension_config_dump('storage.dimensions_id_seq', '');
+SELECT pg_catalog.pg_extension_config_dump('storage.dimension', '');
+SELECT pg_catalog.pg_extension_config_dump('storage.dimension_id_seq', '');
 
 
-COMMENT ON TABLE storage.dimensions IS
+COMMENT ON TABLE storage.dimension IS
 $$ This contains the partitions by which data is partitioned. Default values
 can be set using the default_val field though this is not yet supported.$$;
 
 
-create table storage.indexes (
+create table storage.index (
    id serial not null unique,
    indexname varchar(16) default 'bagger_idx',
    access_method varchar not null, -- extensible, enforced in tooling
@@ -91,42 +91,42 @@ create table storage.indexes (
    primary key (indexname)
 ) inherits (storage.time_bound);
 
-SELECT pg_catalog.pg_extension_config_dump('storage.indexes', '');
-SELECT pg_catalog.pg_extension_config_dump('storage.indexes_id_seq', '');
+SELECT pg_catalog.pg_extension_config_dump('storage.index', '');
+SELECT pg_catalog.pg_extension_config_dump('storage.index_id_seq', '');
 
-comment on table storage.indexes is
+comment on table storage.index is
 $$ This table includes index definition information for bagger nodes.
 
-This allows us to specify GIN, GIST, btree, and hash indexes.$$;
+This allows us to specify GIN, GIST, btree, and hash index.$$;
 
 --
 
-CREATE TABLE storage.index_fields (
+CREATE TABLE storage.index_field (
    id serial not null unique,
-   index_id int not null references storage.indexes (id),
+   index_id int not null references storage.index (id),
    ordinality int,
    expression varchar not null,
    primary key (index_id, ordinality) DEFERRABLE INITIALLY DEFERRED
 ) inherits (storage.time_bound);
 
-SELECT pg_catalog.pg_extension_config_dump('storage.index_fields', '');
-SELECT pg_catalog.pg_extension_config_dump('storage.index_fields_id_seq', '');
+SELECT pg_catalog.pg_extension_config_dump('storage.index_field', '');
+SELECT pg_catalog.pg_extension_config_dump('storage.index_field_id_seq', '');
 
-COMMENT ON TABLE storage.index_fields IS
+COMMENT ON TABLE storage.index_field IS
 $$Stores the index fields or expressions.
 
 Some care needs to be paid as to the nature of the contents of this table
 because while naive SQL injection is not possile at index creation time,
-indexes can perform arbitrary code at insert or update time.
+index can perform arbitrary code at insert or update time.
 
-For this reason registering indexes is a privileged operation.
+For this reason registering index is a privileged operation.
 $$;
 
 
 
-comment on column storage.index_fields.expression is
+comment on column storage.index_field.expression is
 $$This column has an important security consideration because improper
-management of indexes could allow attackers to run arbitrary code during
+management of index could allow attackers to run arbitrary code during
 index update.  The actual CREATE INDEX statement is not vulnerable to
 SQL injection attacks itself, but expressions can include function calls
 to any function marked immutable.  This means that a clever attacker could
@@ -229,30 +229,30 @@ END;
 
 
 CREATE FUNCTION storage.get_dimensions()
-RETURNS SETOF storage.dimensions
+RETURNS SETOF storage.dimension
 LANGUAGE SQL BEGIN ATOMIC
-  SELECT * FROM storage.dimensions 
+  SELECT * FROM storage.dimension
 ORDER BY ordinality;
 END;
 
 COMMENT ON FUNCTION storage.get_dimensions() IS
-$$ Selects an ordered set of dimensions.  Note that the ordinality is the
-order of evaluation for partitioning and all dimensions are evaluated.$$;
+$$ Selects an ordered set of dimension.  Note that the ordinality is the
+order of evaluation for partitioning and all dimension are evaluated.$$;
 
 ----
 
 CREATE FUNCTION storage.append_dimension
 (in_fieldname varchar, in_default_val varchar, 
  in_valid_from timestamp, in_valid_until timestamp)
-returns storage.dimensions
+returns storage.dimension
 language sql BEGIN ATOMIC
-insert into storage.dimensions
+insert into storage.dimension
             (ordinality, fieldname, default_val, valid_from, valid_until)
      select coalesce(max(ordinality) + 1, 0), in_fieldname, 
             coalesce(in_default_val, 'notexist'),
             coalesce(in_valid_from, '-infinity'), 
             coalesce(in_valid_until, 'infinity')
-       FROM storage.dimensions
+       FROM storage.dimension
   RETURNING *;
 END; 
 
@@ -267,14 +267,14 @@ $$;
 CREATE FUNCTION storage.insert_dimension
 (in_ordinality int, in_fieldname varchar, in_default_val varchar,
  in_valid_from timestamp, in_valid_until timestamp)
-returns storage.dimensions language sql BEGIN ATOMIC
+returns storage.dimension language sql BEGIN ATOMIC
 -- This is why the ordinality unique constraint is 
 -- initially deferred.
-UPDATE storage.dimensions
+UPDATE storage.dimension
    SET ordinality = ordinality + 1
  WHERE ordinality >= in_ordinality;
 
-INSERT INTO storage.dimensions
+INSERT INTO storage.dimension
             (ordinality, fieldname, default_val, valid_from, valid_until)
      VALUES (in_ordinality, in_fieldname,
             coalesce(in_default_val, 'notexist'),
@@ -296,9 +296,9 @@ $$;
 
 CREATE FUNCTION storage.expire_dimension 
 (in_id int, in_valid_until timestamp)
-returns storage.dimensions
+returns storage.dimension
 language sql begin atomic
-update storage.dimensions
+update storage.dimension
    set valid_until = in_valid_until
  where id = in_id
 RETURNING *;
@@ -311,12 +311,12 @@ END;
 CREATE FUNCTION storage.insert_index_field
 (in_index_id int, in_ordinality int, in_expression varchar,
 in_valid_from timestamp, in_valid_until timestamp)
-RETURNS storage.index_fields LANGUAGE SQL BEGIN ATOMIC
-UPDATE storage.index_fields
+RETURNS storage.index_field LANGUAGE SQL BEGIN ATOMIC
+UPDATE storage.index_field
    SET ordinality = ordinality + 1
  WHERE index_id = in_index_id and ordinality >= in_ordinality;
 
-INSERT INTO storage.index_fields
+INSERT INTO storage.index_field
        (index_id, ordinality, expression, valid_from, valid_until)
 VALUES (in_index_id, in_ordinality, in_expression, in_valid_from,
        in_valid_until)
@@ -325,20 +325,20 @@ END;
 --
 CREATE FUNCTION storage.append_index_field(in_index_id int, in_expression varchar,
 in_valid_from timestamp, in_valid_until timestamp)
-RETURNS storage.index_fields LANGUAGE SQL BEGIN ATOMIC
-INSERT INTO storage.index_fields
+RETURNS storage.index_field LANGUAGE SQL BEGIN ATOMIC
+INSERT INTO storage.index_field
        (index_id, expression, ordinality, valid_from, valid_until)
 SELECT in_index_id, in_expression, coalesce(max(ordinality) + 1, 0),
        coalesce(in_valid_from, '-infinity'),
        coalesce(in_valid_until, 'infinity')
-  FROM storage.index_fields WHERE index_id = in_index_id
+  FROM storage.index_field WHERE index_id = in_index_id
 RETURNING *;
 END;
 --
 CREATE FUNCTION storage.expire_index_field
 (in_id int, in_valid_until timestamp)
-returns storage.index_fields language sql begin atomic
-UPDATE storage.index_fields
+returns storage.index_field language sql begin atomic
+UPDATE storage.index_field
    SET valid_until = in_valid_until
  WHERE id = in_id
 RETURNING *;
@@ -346,28 +346,28 @@ END;
 --
 CREATE FUNCTION storage.expire_index
 (in_id int, in_valid_until timestamp)
-returns storage.indexes language sql begin atomic
-UPDATE storage.indexes
+returns storage.index language sql begin atomic
+UPDATE storage.index
    SET valid_until = in_valid_until
  WHERE id = in_id
 RETURNING *;
 END;
 --
 CREATE FUNCTION storage.get_index_fields(in_index_id int)
-RETURNS SETOF storage.index_fields LANGUAGE SQL BEGIN ATOMIC
-select * from storage.index_fields WHERE index_id = in_index_id;
+RETURNS SETOF storage.index_field LANGUAGE SQL BEGIN ATOMIC
+select * from storage.index_field WHERE index_id = in_index_id;
 END;
 --
 CREATE FUNCTION storage.get_index(in_indexname text)
-RETURNS storage.indexes LANGUAGE SQL BEGIN ATOMIC
-SELECT * FROM storage.indexes WHERE indexname = in_indexname;
+RETURNS storage.index LANGUAGE SQL BEGIN ATOMIC
+SELECT * FROM storage.index WHERE indexname = in_indexname;
 END;
 --
 CREATE FUNCTION storage.save_index(in_indexname text, 
 in_access_method text, in_tablespc text,
 in_valid_until timestamp, in_valid_from timestamp)
-RETURNS storage.indexes LANGUAGE SQL BEGIN ATOMIC
-INSERT INTO storage.indexes (indexname, access_method, tablespc, valid_until,
+RETURNS storage.index LANGUAGE SQL BEGIN ATOMIC
+INSERT INTO storage.index (indexname, access_method, tablespc, valid_until,
                              valid_from)
 VALUES (in_indexname, in_access_method, coalesce(in_tablespc, 'pg_default'),
        coalesce(in_valid_until, 'infinity'),
@@ -401,18 +401,18 @@ END;
 -- Servermaps
 ----------------------
 CREATE FUNCTION storage.get_servermap(in_id int)
-returns storage.servermaps LANGUAGE SQL BEGIN ATOMIC
-SELECT * FROM storage.servermaps where id = in_id;
+returns storage.servermap LANGUAGE SQL BEGIN ATOMIC
+SELECT * FROM storage.servermap where id = in_id;
 END;
 
 CREATE FUNCTION storage.most_recent_servermap()
-RETURNS storage.servermaps LANGUAGE SQL BEGIN ATOMIC
-SELECT * FROM storage.servermaps ORDER BY id desc limit 1;
+RETURNS storage.servermap LANGUAGE SQL BEGIN ATOMIC
+SELECT * FROM storage.servermap ORDER BY id desc limit 1;
 end;
 
 CREATE FUNCTION storage.save_servermap(in_server_map json)
-RETURNS storage.servermaps LANGUAGE SQL BEGIN ATOMIC
-INSERT INTO storage.servermaps (server_map)
+RETURNS storage.servermap LANGUAGE SQL BEGIN ATOMIC
+INSERT INTO storage.servermap (server_map)
 VALUES (in_server_map)
 RETURNING *;
 END;
@@ -433,8 +433,8 @@ $$ This function always inserts a new record.$$;
 
 CREATE PUBLICATION bagger_lw_storage
 FOR TABLE storage.postgres_instance, 
-          storage.indexes, 
-          storage.index_fields, 
-          storage.dimensions, 
-          storage.servermaps, 
+          storage.index, 
+          storage.index_field, 
+          storage.dimension, 
+          storage.servermap , 
           storage.config;
