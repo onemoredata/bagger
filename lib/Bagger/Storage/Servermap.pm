@@ -88,9 +88,9 @@ For version 1, only a replication factor of 2 is supported.
 Version 1 of the servermap has a structure as follows
 
  {
-    host1_port1_id1 => { shaulfel => { host info},
-                         copies   => { [ 
-                                      { primary host info } , 
+    host1_port1 => { shaulfel => { host info},
+                     copies   => { [
+                                      { primary host info } ,
                                       { seconary host info }
                                      ] }
     ...
@@ -104,7 +104,7 @@ sub generate_server_map {
     my ($self) = @_;
     my @hosts = sort { $a->host cmp $b->host } Bagger::Storage::Instance->list;
     my $rotate = $self->call_procedure(funcname => 'servermap_rotate_num');
-    ($rotate) = values %$rotate; 
+    ($rotate) = values %$rotate;
     my $first = $hosts[0];
     my $primaries = [@hosts];
     my $secondaries = [@hosts]; # independent copies

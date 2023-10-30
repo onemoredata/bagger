@@ -130,6 +130,21 @@ sub _can_write {
     return bool($self->status & F_WRITE);
 }
 
+=head2 cnx
+
+This is a database connection to the host instance itself.  It is used for
+interacting with the storage nodes.
+
+=cut
+
+sub _build_cnx {
+    my $self = shift;
+    return DBI->connect("dbi:Pg:host=" . $self->host . ";port=" . $self->port,
+        $self->username, , { AutoCommit => 0, RaiseError => 1 });
+}
+
+has cnx => (is => 'ro', lazy => 1, builder => '_build_cnx');
+
 =head1 METHODS
 
 =head2 register
