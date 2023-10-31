@@ -70,8 +70,8 @@ sub _get_dbh() {
 sub _new_dbh() {
    $dbh = DBI->connect(
             Bagger::Storage::LenkwerkSetup->dbi_str,
-	    Bagger::Storage::LenkwerkSetup->dbuser,
-	    Bagger::Storage::LenkwerkSetup->dbpass,
+            Bagger::Storage::LenkwerkSetup->dbuser,
+            Bagger::Storage::LenkwerkSetup->dbpass,
         {AutoCommit => 0, RaiseError => 1 }) 
                or die Bagger::Type::Exception::DB->new();
    return $dbh;
