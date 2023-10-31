@@ -10,7 +10,7 @@ package Bagger::Storage::Config;
 
    my $config = Bagger::Storage::Config(
              key   => 'additional_index_types', 
-	     value => ['rum', 'sp-gist']
+             value => ['rum', 'sp-gist']
    );
    $config->save
 
@@ -79,9 +79,8 @@ coerce 'Bagger::Type::JSON'
 has value => (is      => 'ro', 
              isa      => 'Bagger::Type::JSON',
              required => 1,
-	     coerce   => 1,
-	     handles  => {  value_string => 'orig' },
-	      
+             coerce   => 1,
+             handles  => {  value_string => 'orig' },
              );
 
 

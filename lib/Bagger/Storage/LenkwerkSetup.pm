@@ -185,7 +185,7 @@ sub dbi_str { "DBI:Pg:" .
              join(';', _dbi_str_keyval($lenkwerkdb, 'database'),
                        _dbi_str_keyval($dbhost, 'host'),
                        _dbi_str_keyval($dbport, 'port'),
-	 )
+                 )
 }
 
 =head2 dsn_uri
@@ -274,7 +274,7 @@ sub load {
         for my $line (split /^/m, $stderr){
             warn $line if $stderr;
         } 
-	warn "Error loading extension $ext" if $failure;
+        warn "Error loading extension $ext" if $failure;
         return 0 if $failure;
     }
     return 1;
