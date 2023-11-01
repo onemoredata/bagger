@@ -82,10 +82,7 @@ for all time.
 
 =cut
 
-subtype 'Bagger::Type::DateTime'
-=>  as  'Bagger::Type::DateTime';
-
-coerce 'Bagger::Type::DateTime'
+coerce 'PGObject::Type::DateTime'
 => from 'Str'
 => via { Bagger::Type::DateTime->from_db($_) };
 
@@ -111,7 +108,7 @@ sub _def_valid_from {
 }
 
 
-has valid_from => (is => 'ro', isa => 'Bagger::Type::DateTime', coerce => 1,
+has valid_from => (is => 'ro', isa => 'PGObject::Type::DateTime', coerce => 1,
     builder => '_def_valid_from');
 
 =head2 valid_until
@@ -131,7 +128,7 @@ sub _def_valid_until {
     return Bagger::Type::DateTime->inf_future;
 }
 
-has valid_until => (is => 'ro', isa => 'Bagger::Type::DateTime', coerce => 1,
+has valid_until => (is => 'ro', isa => 'PGObject::Type::DateTime', coerce => 1,
     builder => '_def_valid_until');
 
 =head1 METHODS

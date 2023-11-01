@@ -15,7 +15,7 @@ WriteMakefile(
                           'PGObject::Util::DBMethod'        => 0,
                           'PGObject::Util::LogRep::TestDecoding' => 0,
                           'PGObject::Type::JSON'            => 2.1.1,
-                          'PGObject::Type::DateTime'        => 0,
+                          'PGObject::Type::DateTime'        => 2.1.0,
                           'URI::Escape'                     => 0,
                           'Capture::Tiny'                   => 0,
                           'Try::Tiny'                       => 0,
