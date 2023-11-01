@@ -63,7 +63,7 @@ module.
 {
 my $dbh;
 sub _get_dbh() {
-   return $dbh if $dbh; # retrieve singleton if available
+   return $dbh if $dbh and ($dbh->ping); # retrieve singleton if connected
    return _new_dbh();
 }
 
