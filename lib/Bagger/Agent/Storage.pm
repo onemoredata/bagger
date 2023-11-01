@@ -69,6 +69,92 @@ restart the agent.  If the node is listed as having a read-only or offline
 status, then changing this in Lenkwerk should cause the agent to start
 schaufel.
 
+=head1 CONFIGURATION PARAMETERS USED
+
+=head2 Commandline usage
+
+=over
+
+=item -h --host hostname or ip address for Lenkwerk (default: unix socket)
+
+=item -p --port port to connect for Lenkwerk (default: 5432)
+
+=item -U --user username to connect to Lenkwerk (default: same as system username)
+
+=item -d --database database name to connect to (default: lenkwerk)
+
+=item -c --config path/to/config/file (default: no config file)
+
+=item -H --instancehost  Hostname or ip address for the storage node
+
+=item -B --baggerdbuser  Username to connect as Schaufel to Bagger
+
+=item -g --genconfig  Config file to write.
+
+Note that in this case, the agent writes the config and exits without doing
+anything else.  This allows you to create a new config file from a template
+overwriting whatever you like.
+
+=back
+
+=head2 Configuration file usage
+
+The config file is an inifile with two sections: lenkwerk and instance.
+
+Both contain host, port, and user, and the lenkwerk section can specify a
+database as well.
+
+If no user is specified either on commandline or in the file for the connection
+to the storage note, the instance's username field is used for the connection.
+
+As with other sections, no provision is made for specifying passwords.  Please
+try to use other methods of access where possible, such as certificate
+authentication, but when absolutely needed, you can set the PGPASSWORD
+environment variable.
+
+An example of a full config file is:
+
+  [lenkwerk]
+  host=lenkwerk.mydomain
+  port=5432
+  username=bagger
+  database=lenkwerk
+
+  [instance]
+  host=storage-1.mydomain
+  port=5432
+  username=schaufel
+
+=head2 Lenkwerk Config
+
+=over
+
+=item kvstore_type
+
+The KVStore type (usually 'etcd')
+
+=item kvstore_config
+
+Connection incormation passed to the KVStore driver
+
+=item kafka_topic
+
+A text description of the kafka topic to be consumed
+
+=item kafka_broker
+
+The IP or hostname of the Kafka broker
+
+=item kafka_consumer_group
+
+The ID of the consumer group used
+
+=item schaufel_threads
+
+Integer number of threads to run with Schaufel
+
+=back
+
 =head1 PROGRAM CONTROL FUNCTIONS
 
 The program control functions provide handles on running the actual agent.
@@ -118,7 +204,8 @@ at a time as they are received.
 # These represent all the constant data needed for handling events.  They should
 # ONLY be set by start().
 my ($hostname, $instanceport, $connect_role, $instance, $retention, $servermap,
-    $kvstore, $genconfig);
+    $kvstore, $genconfig, $kafka_topic, $kafka_broker, $kafka_consumer_group,
+    $schaufel_threads, @copies);
 
 sub _add_opts {
     return (
@@ -185,6 +272,17 @@ sub start {
     my $kvstore_config = Bagger::Storage::Config->get('kvstore_config');
     $kvstore = Bagger::Agent::KVStore->new($kvstore_type, $kvstore_config);
 
+    # Schaufel config
+    $kafka_topic = Bagger::Storage::Config->get('kafka_topic')->value_string;
+    $kafka_broker = Bagger::Storage::Config->get('kafka_broker')->value_string;
+    $kafka_consumer_group = Bagger::Storage::Config->get(
+        'kafka_consumer_group'
+    )->value_string;
+    $schaufel_threads = Bagger::Storage::Config->get(
+        'schaufel_threads'
+    )->value_string;
+
+
     # Disconnect from Lenkwerk
     my $dbh = $instance->_dbh->disconnect;
     $dbh->disconnect;
@@ -201,9 +299,8 @@ sub start {
 # Clears shared state and starts again.
 
 sub _restart {
-    undef $instance;
-    undef $retention;
-    undef $kvstore;
+    undef $_ for ($kafka_topic, $kafka_broker, $kafka_consumer_group, 
+                  $schaufel_threads, $instance, $retention, $kvstore);
     undef @copies;
     start();
 }
@@ -351,15 +448,15 @@ sub postgres_instance{
 
 =head2 update_servermap
 
-Writes the data to the storage node, writes a new Schaufel config, and
-restarts Schaufel.
+Writes the data to the storage node stops schaufel and restarts schaufel with the
+new hostconfig.  Then re-initiates our own data structures on a phased basis over
+about 10 seconds..
 
 =cut
 
 sub update_servermap{
     my ($key, $value) = @_;
     write_data($key, $value);
-    write_schaufel_config();
     restart_schaufel();
 
     # We don't wnat all agents to restart at once and therefore overwhelm
@@ -404,21 +501,28 @@ sub write_conifig{
     exit(0);
 }
 
-=head2 write_schaufel_config
-
-Writes the schaufel config based on the servermap
-
-=cut
-
-sub write_schaufel_config{}
-
 =head2 restart_schaufel
 
 Restarts Schaufel
 
+Returns 1 on successful restart, 0 on failure.
+
+This module will B<not> restart Schaufel if it exits with a status other
+than 0.
+
 =cut
 
-sub restart_schaufel{}
+sub restart_schaufel{
+    my $success = stop_schaufel();
+    if ($success){
+        $success = $success && start_schaufel();
+    } else {
+        warn "Schaufel exited with a non-zero status.  Not restarting.";
+    }
+   warn "Unable to restart Schaufel.  It is probably in a stopped state."
+        unless $success;
+   return $success;
+}
 
 =head2 start_shchaufel
 
@@ -428,9 +532,12 @@ Starts Schaufel.  An error will be thrown if Schaufel is already started
 
 sub start_schaufel {}
 
-=head2 stop_schayufel
+=head2 stop_schaufel
 
-Stops Schaufel.  An error will be thrown if Schaufel is already stopped
+Stops Schaufel.  An error will be thrown if Schaufel is already stopped.
+
+Returns true if schaufel stops with an exit code of 0, returns false if
+an exit code is above 1.
 
 =cut
 
