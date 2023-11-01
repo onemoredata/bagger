@@ -1,10 +1,10 @@
-#Bagger Configuration
+# Bagger Configuration
 
 This document lists a full list of Bagger configuration options and their
 relevant values.  Each major component describes the configuration schema and
 each option is documented.
 
-##Storage
+## Storage
 
 This sets up the configuration for storing data on Bagger storage nodes.  It
 is stored in the storage schema on lenkwerk and storage databases.
@@ -13,6 +13,8 @@ Here the value is any JSON value (object, array, string, or number) which
 allows great flexibility bur adds some complexity for management.
 
 Storage configuration settings are:
+
+### Temporal Management
 
  - production
     - If this is missing or 0, then index and partitions can be valid into the
@@ -39,7 +41,23 @@ Storage configuration settings are:
     - If present must be a positive integer
     - How many hours ahead, on production, we future create index specifications
 
+### Table Management
+
  - data_storage_mode
     - The storage mode of the data column for the main data tables.
       When the table is created, this will be used to ALTER TABLE and set the
       storage mode for the column
+
+### Schaufel Management
+
+ - kafka_topic
+    - The Kafka topic we are to load data from
+
+ - kafka_broker
+    - The broker host for Kafka
+
+ - schaufel_threads
+   -  How many threads to use to load data from Kafka via Schaufel
+
+ - kafka_consumer_group
+   -  The consumer group to join
