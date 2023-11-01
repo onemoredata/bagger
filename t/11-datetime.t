@@ -2,7 +2,7 @@ use Test2::V0 -target => { pkg => 'Bagger::Type::DateTime' };
 use strict; # just a reminder
 use warnings;
 
-plan 17;
+plan 18;
 
 my $now = pkg()->now();
 my $inf = pkg()->inf_future;
@@ -10,11 +10,12 @@ my $infpast = pkg()->inf_past;
 
 for my $dt($now, $inf, $infpast) {
     ok($dt->to_db, 'Serialization to db is true for datetime:' . $dt->to_db);
-    isa_ok($dt, 'DateTime', 'PGObject::Type::DateTime', 'Bagger::Type::DateTime');
+    isa_ok($dt, 'DateTime', 'PGObject::Type::DateTime');
 }
+isa_ok($now, 'Bagger::Type::DateTime');
 
-isa_ok($inf, 'DateTime::Infinite::Future', 'Bagger::Type::DateTime::Infinite::Future');
-isa_ok($infpast, 'DateTime::Infinite::Past', 'Bagger::Type::DateTime::Infinite::Past');
+isa_ok($inf, 'DateTime::Infinite::Future');
+isa_ok($infpast, 'DateTime::Infinite::Past');
 
 my @dtstrings = (
     'infinity',
