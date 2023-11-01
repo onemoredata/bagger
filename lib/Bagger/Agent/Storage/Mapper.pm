@@ -151,4 +151,19 @@ sub kval_key {
     return $keygen{$class}($val) if defined $keygen{$class};
 }
 
+=head2 key_to_relname ($key)
+
+Returns the relation name used by the key.  This allows a sort of logical
+replication to be built between the KVStore and the storage node's Postgresql
+instances.
+
+=cut
+
+sub key_to_relname {
+    my ($key) = @_;
+    my $class = pg_object($key);
+    return unless $class;
+    return $classmap{$class};
+}
+
 1;

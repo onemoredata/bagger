@@ -118,7 +118,7 @@ at a time as they are received.
 # These represent all the constant data needed for handling events.  They should
 # ONLY be set by start().
 my ($hostname, $instanceport, $connect_role, $instance, $retention, $servermap,
-    $kvstore, $genconfig);
+    $kvstore, $genconfig, @copies);
 
 sub _add_opts {
     return (
@@ -129,12 +129,18 @@ sub _add_opts {
     );
 }
 
+# internal function _my_smap_key()
+#
+# Returns the key of the primary instance we are responsible for (i.e. the one
+# running Schaufel
+
+sub _my_smap_key { join('_', $instance->host, $instance->port) };
+
 sub start {
-    # get config
-    # Bagger::CLI already sets up our db info
     #
     # Step 1:  Find our instance
     write_config() if $genconfig;
+
 
     if (!$hostname) {
         # fallback:  inifile, then Sys::Hostname::hostname
@@ -165,15 +171,40 @@ sub start {
     $servermap = Bagger::Storage::Servermap->most_recent;
     die 'No servermap set yet' unless $servermap;
 
+    # we need to get instances for all copies we currently use
+    #
+    # This is needed to write new Schaufel configs as well as to determine
+    # states needed for starting or stopping schaufel.
+    #
+    for my $item (@{$servermap->servermap->{_my_smap_key}->copies}){
+        push @copies, $instance->get_by_info($item->{host}, $item->{port});
+    }
+
     my $kvstore_type = Bagger::Storage::Config->get('kvstore_type');
     my $kvstore_config = Bagger::Storage::Config->get('kvstore_config');
     $kvstore = Bagger::Agent::KVStore->new($kvstore_type, $kvstore_config);
+
+    # Disconnect from Lenkwerk
+    my $dbh = $instance->_dbh->disconnect;
+    $dbh->disconnect;
 
     # enforce_retention to set up next callback
     enforce_retention();
     # set up watches on kvstore
     $kvstore->watch(\&_process_kvmsg);
     return;
+}
+
+# internal function _restart()
+#
+# Clears shared state and starts again.
+
+sub _restart {
+    undef $instance;
+    undef $retention;
+    undef $kvstore;
+    undef @copies;
+    start();
 }
 
 =head2 loop
@@ -239,8 +270,9 @@ Used to write the data from Etcd to the storage node.
 
 sub write_data {
     my ($key, $value) = $_;
-    # Write data to local instance
-    # need to write row, thinking of just passing the json to populate_record.
+    Bagger::Agent::Storage::Message->new(
+        instance => $instance, key => $key, value => $value
+    )->save;
 }
 
 =head2 postgres_instance
@@ -250,12 +282,71 @@ schaufel.
 
 =cut
 
+# Internal function _is_my_key($key)
+#
+# Must be a /PostgresInstance/ key.
+#
+# Checks to see if it corresponds to $instance
+
+sub _is_my_key { $_[0] eq _my_smap_key }
+
+# Internal function _is_copy_instance
+#
+# Returns true if the key corresponds to any of our copies.   Otherwise returns
+# false.
+
+# Internal function _instance_key takes an Instance object and returns a
+# corresponding key
+
+sub _instance_key { join('/', '/PostgresInstance', $_->host, $_->port) }
+
+sub _is_copy_instance {
+    my ($key) = @_;
+    return scalar grep { $key eq _instance_key($_) } @copies;
+}
+
+
+# Internal function _all_copies_can_write($key)
+#
+# Identifies the item in @copies where the key refers, checks the status
+# of instance values.
+#
+# Returns true if all copies can write.  Returns false if any copy cannot.
+
+sub _all_copies_can_write {
+    my ($key) = @_;
+    my $can_copy = 1;
+    for my $c (@copies) {
+        if ($key eq _instance_key($c)){
+            $c = Bagger::Storage::Instance->get_instance_by_info($c->host, $c->port);
+            $c->_dbh->disconnect;
+        }
+        $can_copy = $can_copy and $c->can_copy;
+    }
+    return $can_copy;
+}
+
+
 sub postgres_instance{
     my ($key, $value) = @_;
     write_data($key, $value);
-    # Need to see if it is us or one of our copies
-    # Handle state appropriately
+    if (_is_my_instance($key) or _is_copy_instance($key)){
+        my $schaufel_up = _is_schaufel_up();
+        if (_all_copies_can_write($key) and $schaufel_up) {
+            # we may want to log here in the future
+        } elsif (!_all_copies_can_write($key) and $schaufel_up) {
+            stop_schaufel();
+        } elsif (_all_copies_can_write($key) and !$schaufel_up) {
+            start_schaufel();
+        } elsif (!_all_copies_can_write($key) and !$schaufel_up) {
+            # may want to log here
+        }
+    }
 }
+
+# _all_copies_can_write($key, $value)
+#
+# This internal function exists to determine if all copies of an 
 
 =head2 update_servermap
 
@@ -269,6 +360,17 @@ sub update_servermap{
     write_data($key, $value);
     write_schaufel_config();
     restart_schaufel();
+
+    # We don't wnat all agents to restart at once and therefore overwhelm
+    # the Lenkwerk database in the case of large clusters.  So we will
+    # phase this and assume that the database queries for 10% of the cluster
+    # take less than 1 second.
+    #
+    # Note that Schaufel is already running on the new config so this is not a
+    # time-critical operation anymore.
+
+    sleep rand();
+    _restart();
 }
 
 =head1 AGENT FUNCTION CHANGES
@@ -316,6 +418,22 @@ Restarts Schaufel
 =cut
 
 sub restart_schaufel{}
+
+=head2 start_shchaufel
+
+Starts Schaufel.  An error will be thrown if Schaufel is already started
+
+=cut
+
+sub start_schaufel {}
+
+=head2 stop_schayufel
+
+Stops Schaufel.  An error will be thrown if Schaufel is already stopped
+
+=cut
+
+sub stop_schaufel{}
 
 =head2 enforce_retention
 
