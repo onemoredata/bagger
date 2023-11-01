@@ -10,7 +10,7 @@ use Test2::V0 -target => { inst => Bagger::Storage::Instance,
                            ae   => AnyEvent,
                        };
 
-plan 34;
+plan 36;
 my $guard = Bagger::Test::DB::Etcd->guard;
 $ENV{TEST_AGENT} = 1;
 

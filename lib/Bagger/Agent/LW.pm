@@ -137,8 +137,9 @@ sub start {
     return $recv->start;
 }
 
+my $stop = 0;
 sub loop {
-    AnyEvent::Loop::run();
+    AnyEvent::Loop::one_event() while not $stop;
 }
 
 sub run {
@@ -149,8 +150,9 @@ sub run {
 sub _done_cv { $done };
 
 sub stop {
-    $recv->stop;
-    exit(8);
+    $stop = 1;
+    $done->cb( sub {} ); # no-op event
+    $done->send; # fire the noop event
 }
 
 sub _assemble_args {
