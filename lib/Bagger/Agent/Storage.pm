@@ -25,6 +25,7 @@ package Bagger::Agent::Storage;
 
 =cut
 
+use 5.020;
 use strict;
 use warnings;
 use AnyEvent;
@@ -153,6 +154,14 @@ The ID of the consumer group used
 
 Integer number of threads to run with Schaufel
 
+=item schaufel_cmd
+
+The command used to launch schaufel, defaults to /usr/bin/schaufel
+
+=item schaufel_log
+
+The place to log schaufel output.  Defaults to /var/log/schaufel/bagger.log
+
 =back
 
 =head1 PROGRAM CONTROL FUNCTIONS
@@ -205,7 +214,7 @@ at a time as they are received.
 # ONLY be set by start().
 my ($hostname, $instanceport, $connect_role, $instance, $retention, $servermap,
     $kvstore, $genconfig, $kafka_topic, $kafka_broker, $kafka_consumer_group,
-    $schaufel_threads, @copies);
+    $schaufel_threads, @copies, $schaufel_pid, $schaufel_cmd, $schaufel_log);
 
 sub _add_opts {
     return (
@@ -222,6 +231,16 @@ sub _add_opts {
 # running Schaufel
 
 sub _my_smap_key { join('_', $instance->host, $instance->port) };
+
+# Internal function _cond_start_schaufel
+#
+# Checks to see if Schaufel is running.
+# If not, and it is able to run, we start it
+
+sub _cond_start_schaufel {
+    return if $schaufel_pid;
+    start_schaufel() if _all_copies_can_write();
+}
 
 sub start {
     # get config
@@ -281,16 +300,24 @@ sub start {
     $schaufel_threads = Bagger::Storage::Config->get(
         'schaufel_threads'
     )->value_string;
+    $schaufel_cmd = Bagger::Storage::Config->get('schaufel_cmd')->value_string
+        || '/usr/bin/schaufel'; # default
+    $schaufel_log = Bagger::Storage::Config->get('schaufel_log')->value_string
+        || '/var/log/schaufel/bagger.log'; # default
 
 
     # Disconnect from Lenkwerk
     my $dbh = $instance->_dbh->disconnect;
     $dbh->disconnect;
 
+    AnyEvent->signal(signal => 'TERM', cb => sub { stop() });
+    AnyEvent->signal(signal => 'INT', cb => sub { rude_quit() });
+
     # enforce_retention to set up next callback
     enforce_retention();
     # set up watches on kvstore
     $kvstore->watch(\&_process_kvmsg);
+    _cond_start_schaufel
     return;
 }
 
@@ -320,13 +347,32 @@ sub loop {
 
 =head2 stop
 
-Stops the event loop and exits
+Stops the event loop and exits.  This is done at the end of te current event
+queue.
+
+This works by setting a stop variable and sending an event to process.
 
 =cut
 
 sub stop {
     $stop = 1;
+    my $sentinel = AnyEvent->condvar;
+    $sentinel->cb(sub {} );
+    $sentinel->send; # send noop to be processed
+    stop_schaufel();
 }
+
+=head2 rude_quit
+
+This simply exits the loop making no attempt to finish processing.
+
+=cut
+
+sub rude_quit {
+    stop_shaufel();
+    exit(0);
+}
+
 
 =head1 EVENT PROCESSING
 
@@ -407,12 +453,16 @@ sub _is_copy_instance {
 # Internal function _all_copies_can_write($key)
 #
 # Identifies the item in @copies where the key refers, checks the status
-# of instance values.
+# of instance values..  This is done at the end of te current event
+# queue.
 #
 # Returns true if all copies can write.  Returns false if any copy cannot.
+#
+# This can be called without $key in which case no instances will be updated
 
 sub _all_copies_can_write {
     my ($key) = @_;
+    $key //= ''; # default is not to match anything.
     my $can_copy = 1;
     for my $c (@copies) {
         if ($key eq _instance_key($c)){
@@ -442,10 +492,6 @@ sub postgres_instance{
     }
 }
 
-# _all_copies_can_write($key, $value)
-#
-# This internal function exists to determine if all copies of an 
-
 =head2 update_servermap
 
 Writes the data to the storage node stops schaufel and restarts schaufel with the
@@ -466,6 +512,9 @@ sub update_servermap{
     #
     # Note that Schaufel is already running on the new config so this is not a
     # time-critical operation anymore.
+    #
+    # Additionally we actually want to pause event processing during this time
+    # since we will just get caught up once we restart.
 
     sleep rand();
     _restart();
@@ -530,7 +579,22 @@ Starts Schaufel.  An error will be thrown if Schaufel is already started
 
 =cut
 
-sub start_schaufel {}
+sub start_schaufel {
+    $schaufel_pid = fork;
+    return if $schaufel_pid; # parent_pricess
+
+    # Host_string is a comma-delimited list of $host:$port designations
+    my $host_string = join (',', (map { join(':', $_->host, $_->port) } @copies));
+    # build argument list
+    my @schaufel_args = (
+        -l => $schaufel_log,         -i => 'k',          -b => $kafka_broker,
+        -g => $kafka_consumer_group, -o => 'p',          -t => $kafka_topic,
+        -p => $schaufel_threads,     -H => $host_string,
+    );
+    exec($schaufel_cmd, @schaufel_args);
+    exit; # never reached but silencing warnings.
+
+}
 
 =head2 stop_schaufel
 
@@ -541,7 +605,9 @@ an exit code is above 1.
 
 =cut
 
-sub stop_schaufel{}
+sub stop_schaufel{
+    kill 'TERM', $schaufel_pid;
+}
 
 =head2 enforce_retention
 
@@ -549,9 +615,12 @@ This handles the retention strategy by processing the partition list and
 dropping expired tables.
 
 =cut
-
 sub enforce_retention{
-    AnyEvent->timer(after => 3600, cb => \&enforce_retention);
+    state $timer;
+    $timer = AnyEvent->timer(
+        after => 3600, interval => 3600, cb => \&enforce_retention
+    ) unless $timer;
+    $instance->cnx->do('select storage.enforce_retention()');
 }
 
 1;
