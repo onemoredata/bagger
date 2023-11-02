@@ -16,7 +16,7 @@ package Bagger::Agent::Storage;
    Bagger::Agent::Storage->loop
 
    # to stop
-   
+
    Bagger::Agent::Storage->stop
 
    # also can write config:
@@ -37,6 +37,7 @@ use Config::IniFiles;
 use Sys::Hostname;
 use Bagger::Storage::Config;
 use Bagger::Storage::Instance;
+use Bagger::Agent::Storage::Schaufel;
 
 =head1 DESCRIPTION
 
@@ -212,9 +213,12 @@ at a time as they are received.
 # Using module-local variables for the singular state of the running instance.
 # These represent all the constant data needed for handling events.  They should
 # ONLY be set by start().
+#
+# Most of these are config variables which can be reset on restart.
+#
 my ($hostname, $instanceport, $connect_role, $instance, $retention, $servermap,
     $kvstore, $genconfig, $kafka_topic, $kafka_broker, $kafka_consumer_group,
-    $schaufel_threads, @copies, $schaufel_pid, $schaufel_cmd, $schaufel_log);
+    $schaufel_threads, @copies, $schaufel, $schaufel_cmd, $schaufel_log);
 
 sub _add_opts {
     return (
@@ -238,7 +242,7 @@ sub _my_smap_key { join('_', $instance->host, $instance->port) };
 # If not, and it is able to run, we start it
 
 sub _cond_start_schaufel {
-    return if $schaufel_pid;
+    return if $schaufel; # already running
     start_schaufel() if _all_copies_can_write();
 }
 
@@ -278,11 +282,13 @@ sub start {
     $servermap = Bagger::Storage::Servermap->most_recent;
     die 'No servermap set yet' unless $servermap;
 
+    # Step 2, servermap preparation
+    #
     # we need to get instances for all copies we currently use
     #
     # This is needed to write new Schaufel configs as well as to determine
     # states needed for starting or stopping schaufel.
-    #
+
     for my $item (@{$servermap->servermap->{_my_smap_key}->copies}){
         push @copies, $instance->get_by_info($item->{host}, $item->{port});
     }
@@ -291,7 +297,7 @@ sub start {
     my $kvstore_config = Bagger::Storage::Config->get('kvstore_config');
     $kvstore = Bagger::Agent::KVStore->new($kvstore_type, $kvstore_config);
 
-    # Schaufel config
+    # Step 3: Schaufel config
     $kafka_topic = Bagger::Storage::Config->get('kafka_topic')->value_string;
     $kafka_broker = Bagger::Storage::Config->get('kafka_broker')->value_string;
     $kafka_consumer_group = Bagger::Storage::Config->get(
@@ -313,6 +319,14 @@ sub start {
     AnyEvent->signal(signal => 'TERM', cb => sub { stop() });
     AnyEvent->signal(signal => 'INT', cb => sub { rude_quit() });
 
+    # We need to set up a dummy sigchild handler here so that when we do watch
+    # for the end of a child process, we can properly get it.  So we will set
+    # up a handler for our own exit.  This avoids a race condition where the
+    # the signal is not handled if Schaufel quickly exits.
+    #
+    # See AnyEvent main docs for more information
+    AnyEvent->child(pid => $$, cb => sub {});
+
     # enforce_retention to set up next callback
     enforce_retention();
     # set up watches on kvstore
@@ -326,7 +340,7 @@ sub start {
 # Clears shared state and starts again.
 
 sub _restart {
-    undef $_ for ($kafka_topic, $kafka_broker, $kafka_consumer_group, 
+    undef $_ for ($kafka_topic, $kafka_broker, $kafka_consumer_group,
                   $schaufel_threads, $instance, $retention, $kvstore);
     undef @copies;
     start();
@@ -479,14 +493,13 @@ sub postgres_instance{
     my ($key, $value) = @_;
     write_data($key, $value);
     if (_is_my_instance($key) or _is_copy_instance($key)){
-        my $schaufel_up = _is_schaufel_up();
-        if (_all_copies_can_write($key) and $schaufel_up) {
+        if (_all_copies_can_write($key) and $schaufel) {
             # we may want to log here in the future
-        } elsif (!_all_copies_can_write($key) and $schaufel_up) {
+        } elsif (!_all_copies_can_write($key) and $schaufel) {
             stop_schaufel();
-        } elsif (_all_copies_can_write($key) and !$schaufel_up) {
+        } elsif (_all_copies_can_write($key) and !$schaufel) {
             start_schaufel();
-        } elsif (!_all_copies_can_write($key) and !$schaufel_up) {
+        } elsif (!_all_copies_can_write($key) and !$schaufel) {
             # may want to log here
         }
     }
@@ -580,20 +593,31 @@ Starts Schaufel.  An error will be thrown if Schaufel is already started
 =cut
 
 sub start_schaufel {
-    $schaufel_pid = fork;
-    return if $schaufel_pid; # parent_pricess
-
-    # Host_string is a comma-delimited list of $host:$port designations
-    my $host_string = join (',', (map { join(':', $_->host, $_->port) } @copies));
-    # build argument list
-    my @schaufel_args = (
-        -l => $schaufel_log,         -i => 'k',          -b => $kafka_broker,
-        -g => $kafka_consumer_group, -o => 'p',          -t => $kafka_topic,
-        -p => $schaufel_threads,     -H => $host_string,
+    $schaufel = Bagger::Agent::Storage::Schaufel->new(
+        log => $schaufel_log, broker => $kafka_broker, hosts => [@copies],
+        cmd => $schaufel_cmd, topic  => $kafka_topic,
+        threads => $schaufel_threads, group => $kafka_consumer_group
     );
-    exec($schaufel_cmd, @schaufel_args);
-    exit; # never reached but silencing warnings.
+    $schaufel->start;
 
+    # Set up sigchild handler
+    my $sigchild = sub {
+        my ($pid, $status) = @_;
+        if ($status != 0) {
+            warn "Schaufel stopped with exit code of $status. Stopping agent.";
+            warn "Please check Schaufel and Postgres logs, fix the problem, and restart";
+            stop();
+        }
+        # There may be causes where we want to automatically restart schaufel
+        # or the agent on a 0 status, but not sure what they are so we need
+        # to wait for now.  Chances are this will mostly happen during restart
+        # events when we are already restarting Schaufel.
+        #
+        # However, if we expect to have Schaufel auto-exit in the future, then
+        # we need to add an additional listener in that case to restart when
+        # that happens.
+    };
+    my $w = AnyEvent->child(pid => $schaufel->pid, cb => $sigchild);
 }
 
 =head2 stop_schaufel
@@ -606,7 +630,8 @@ an exit code is above 1.
 =cut
 
 sub stop_schaufel{
-    kill 'TERM', $schaufel_pid;
+    my $sig = shift // 'TERM';
+    $schaufel->stop($sig);
 }
 
 =head2 enforce_retention
@@ -620,6 +645,8 @@ sub enforce_retention{
     $timer = AnyEvent->timer(
         after => 3600, interval => 3600, cb => \&enforce_retention
     ) unless $timer;
+    # Running this directly but could be eventually moved to a pgobject
+    # class
     $instance->cnx->do('select storage.enforce_retention()');
 }
 
