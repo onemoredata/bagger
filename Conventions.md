@@ -102,6 +102,30 @@ sub build_dsn {
 }
 ```
 
+### Unpacking @_
+
+In general @_ should always be unpacked.  There are, however, two exceptions
+where direct use of @_ can be permissible:
+
+  1.  One-liner functions may reference @_ elements directly, and
+  2.  Cases of argument passthrough are cleaner when @_ is referenced directly.
+
+Examples:
+
+```
+sub keyport { $_[0]->host . ':' $_[0]->port } # ok, one-liner
+
+sub dispatch {
+    my $type = shift;
+    goto $dispatch->{$type}; # tail call, uses current @_
+}
+
+sub other_dispatch {
+    my $type = shift;
+    &{$dispatch->{$type})(@_); // ok being clear about reusing @_
+}
+```
+
 ### Open questions
 
 Should we use prototypes?
