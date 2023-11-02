@@ -130,9 +130,11 @@ This is the process id of the actual schaufel child process.  It represents
 a handle for signals intended to cause the process to terminate or to watch
 for its termination.
 
+A value of 0 means the process has been stopped.
+
 =cut
 
-has pid => (is => 'rw', isa => 'Int', writer => '_set_pid');
+has pid => (is => 'ro', isa => 'Int', writer => '_set_pid');
 
 =head1 METHODS
 
@@ -143,7 +145,7 @@ This starts the schaufel process and returns $self->pid.
 =cut
 
 sub start {
-    my $self = (@_);
+    my ($self) = @_;
     my $pid = fork;
 
     # if parent process set the pid and return
@@ -168,7 +170,7 @@ sub stop {
     my ($self, $sig) = @_;
     $sig //= 'TERM';
     kill $sig, $self->pid;
-    undef $self;
+    $self->_set_pid(0);
 }
 
 __PACKAGE__->meta->make_immutable;
