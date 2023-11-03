@@ -43,6 +43,7 @@ use PGObject;
 use Try::Tiny;
 use DBI;
 use Bagger::Storage::LenkwerkSetup;
+use Bagger::Type::Exception::Database;
 
 with 'PGObject::Simple::Role';
 
@@ -86,6 +87,7 @@ around qw(call_procedure call_dbmethod) => sub {
     try {
         $self->$orig(@args);
     } catch {
+        die $_ unless $self->_dbh->state; # not db error
         die Bagger::Type::Exception::Database->new($self->_dbh);
     };
 };

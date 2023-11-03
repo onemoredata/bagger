@@ -428,6 +428,25 @@ IS
 $$ This function always inserts a new record.$$;
 
 ---------------------
+-- Inbound from kvstore
+---------------------
+
+CREATE FUNCTION storage.inbound_from_kvstore
+(in_relname regclass, in_value json)
+returns void
+language plpgsql
+as
+$$
+begin
+    -- Note that regclass as a type does escaping during stringification
+    execute format(
+        'INSERT INTO %s SELECT * from json_populate_record(NULL::%s, $1)',
+        in_relname, in_relname) using in_value;
+
+end;
+$$;
+
+---------------------
 -- Other
 ---------------------
 

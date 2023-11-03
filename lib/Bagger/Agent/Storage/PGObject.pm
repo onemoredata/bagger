@@ -38,8 +38,15 @@ of the connection.
 
 =cut
 
-has instance => (is => 'ro', isa => 'Bagger::Storage::PGObject');
+has instance => (is => 'ro', isa => 'Bagger::Storage::PGObject', required => 1);
 
-sub _get_dbh { $_[0]->instance->cnx }
-
+sub _get_dbh { 
+    my ($self) = @_;
+    my $dbh = $self->instance->cnx;
+    $dbh->do(q(set session_replication_role = 'replica')) 
+        unless ($dbh->{replication});
+    $dbh->do(q(set search_path = 'storage')) unless ($dbh->{replication});
+    $dbh->{replication} = 1;
+    return $dbh;
+}
 1;

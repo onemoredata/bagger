@@ -29,7 +29,7 @@ use strict;
 use warnings;
 use Exporter 'import';
 use Scalar::Util 'blessed';
-our @EXPORT_OK = qw(kval_key pg_object);
+our @EXPORT_OK = qw(kval_key pg_object key_to_relname);
 
 =head1 DESCRIPTION
 
@@ -133,7 +133,7 @@ table name or a blessed object passed in the first spot, and if not, then a hash
 
 Examples:
 
-    kval_key('postgres_instances', {host => 'host1', 
+    kval_key('postgres_instance', {host => 'host1', 
                                     port => 5432, 
                                 username => 'bagger',
                                   status => 0 })

@@ -18,7 +18,7 @@ use strict;
 use warnings;
 use Moose;
 use namespace::autoclean;
-use Bagger::Agent::Storage::Mapper;
+use Bagger::Agent::Storage::Mapper 'key_to_relname';
 use PGObject::Util::DBMethod;
 with 'Bagger::Agent::Storage::PGObject';
 
@@ -62,9 +62,9 @@ save the data.
 
 =cut
 
-sub _build_relname { Bagger::Agent::Storage::Mapper::relname_from_ley($_[0]->key) };
+sub _build_relname { key_to_relname($_[0]->key) };
 
-has relname => (is => 'ro', isa => 'lazy');
+has relname => (is => 'ro', lazy => 1, builder => '_build_relname');
 
 =head1 METHODS
 
@@ -75,5 +75,7 @@ Writes this to the storage node.
 =cut
 
 dbmethod save => (funcname => 'inbound_from_kvstore');
+before save => sub { $_[0]->relname };
+after save => sub { $_[0]->_dbh->commit}; # needed for visibility.
 
 __PACKAGE__->meta->make_immutable;
