@@ -440,9 +440,8 @@ $$
 begin
     -- Note that regclass as a type does escaping during stringification
     execute format(
-        'INSERT INTO %s SELECT json_populate_recordset(NULL::$s, $2)',
-        relname, relname) using data;
-    RETURN;
+        'INSERT INTO %s SELECT * from json_populate_record(NULL::%s, $1)',
+        in_relname, in_relname) using in_value;
 
 end;
 $$;
