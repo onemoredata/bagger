@@ -43,7 +43,6 @@ use PGObject;
 use Try::Tiny;
 use DBI;
 use Bagger::Storage::LenkwerkSetup;
-
 with 'PGObject::Simple::Role';
 
 our $VERSION = '0.0.1';

@@ -139,11 +139,13 @@ interacting with the storage nodes.
 
 sub _build_cnx {
     my $self = shift;
-    return DBI->connect("dbi:Pg:host=" . $self->host . ";port=" . $self->port,
-        $self->username, , { AutoCommit => 0, RaiseError => 1 });
+    my $dbname = Bagger::Storage::Config->get('bagger_db')->value_string;
+    return DBI->connect("dbi:Pg:host=" . $self->host . ";port=" . $self->port .
+        ";dbname=" . ($dbname // 'bagger'),
+        $self->username, undef, { AutoCommit => 0, RaiseError => 1 });
 }
 
-has cnx => (is => 'ro', lazy => 1, builder => '_build_cnx');
+has cnx => (is => 'ro', lazy => 1, builder => '_build_cnx', isa => 'DBI::db');
 
 =head1 METHODS
 

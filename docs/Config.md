@@ -41,6 +41,10 @@ Storage configuration settings are:
     - If present must be a positive integer
     - How many hours ahead, on production, we future create index specifications
 
+ - bagger_db
+    - defaults to bagger
+    - Name of database on storage nodes.
+
 ### Table Management
 
  - data_storage_mode
