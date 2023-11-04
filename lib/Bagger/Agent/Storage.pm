@@ -247,28 +247,21 @@ sub _cond_start_schaufel {
 }
 
 sub start {
-    # get config
-    # Bagger::CLI already sets up our db info
-    #
-    # Step 1:  Find our instance
-    write_config() if $genconfig;
-
+    $instance = shift;
+    if ($instance) {
+        $hostname = $instance->host;
+        $instanceport = $instance->port;
+    } else {
+        #
+        # Step 1:  Find our instance
+        write_config() if $genconfig;
     if (!$hostname) {
         # fallback:  inifile, then Sys::Hostname::hostname
         $hostname = (defined $Bagger::CLI::ini{instance}{host}) ?
              $Bagger::CLI::ini{instance}{host} : hostname;
     }
-    if(!$instanceport) {
-        # fallback: inifile, then if there is only one port rgistered
-        # on host
-        $instanceport = (defined $Bagger::CLI::ini{instance}{port} ?
-             $Bagger::CLI::ini{instance}{port} : undef);
-    }
-
-    # At this point we can assume we have a hostname.  We can NOT assume we
-    # have a port.
-
     if ($instanceport) {
+        # even if we got an instance we should validate it and reload it.
         $instance = Bagger::Storage::Instance->get_by_info($hostname, $instanceport);
     } else {
         my @instancelist = rep {$_->host eq $hostname} Bagger::Storage::Instance->list;
