@@ -446,6 +446,41 @@ begin
 end;
 $$;
 
+CREATE FUNCTION storage.enforce_retention
+()
+returns void
+language plpgsql
+as
+$$
+declare retain_hrs int;
+        retain_threshold timestamp;
+        delete_rel regclass;
+begin
+    select trim(both '"' from value)::int into retain_hrs
+     FROM storage.config WHERE key = 'retain_hrs';
+    IF NOT FOUND THEN
+        retain_hrs := 24;
+    END IF;
+    IF retain_hrs = 0 THEN
+        RETURN;
+    END IF;
+    retain_threshold := now() - make_interval(hours => retain_hrs);
+
+    FOR delete_rel IN 
+        SELECT oid FROM regclass 
+         WHERE relnamespace::regnamespace::text LIKE 'partition%' AND
+               remain_threshold >
+               to_timestamp(substring(relname from '.{13}$'),'YYYY_MM_DD_HH24')
+    LOOP
+        -- we may need to add some sort of lock management here.  My thinking
+        -- is that we could set a lock_timeout and skip those we cannot lock
+        -- for the current hour.  After all we will try agian next hour.
+        -- bot for V1, keeping it very simple.
+        execute format('drop table %s', delete_rel::text);
+    END LOOP;
+end;
+$$;
+
 ---------------------
 -- Other
 ---------------------
