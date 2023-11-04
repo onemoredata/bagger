@@ -45,6 +45,12 @@ Storage configuration settings are:
     - defaults to bagger
     - Name of database on storage nodes.
 
+ - retain_hrs
+    - defaults to 24
+    - Number of hours to retain inbound data.
+    - 0 disables purging of old data.
+
+
 ### Table Management
 
  - data_storage_mode
