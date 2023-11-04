@@ -1,3 +1,4 @@
+use strict;
 use ExtUtils::MakeMaker;
 
 WriteMakefile(
@@ -29,5 +30,17 @@ WriteMakefile(
                           'File::Find'               => 0,
                         },
 );
+
+sub MY::postamble {
+return <<"MAKE_EOF";
+.PHONY: lint
+sql-lint:
+\tsqlfluff lint
+
+.PHONY: sql-fmt
+sql-fmt:
+\tsqlfluff format
+MAKE_EOF
+}
 
 # vim:ts=4:sw=4:expandtab

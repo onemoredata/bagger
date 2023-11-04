@@ -1,0 +1,15 @@
+;https://docs.sqlfluff.com/en/stable/configuration.html
+;https://docs.sqlfluff.com/en/stable/rules.html#ruleref
+[sqlfluff]
+dialect=postgres
+sql_file_exts=.sql
+max_line_length=80
+
+[sqlfluff:indentation]
+allow_implicit_indents = true
+
+
+[sqlfluff:rules:capitalisation.keywords]
+capitalisation_policy = upper
+[sqlfluff:rules:capitalisation.identifiers]
+capitalisation_policy = upper
