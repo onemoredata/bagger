@@ -131,7 +131,6 @@ sub run {
         if ($_ =~ /^\s+ok\s+/)     { my @elems = split( /-/, $_, 2); pass($elems[1]); }
         if ($_ =~ /^\s+not ok\s+/) { my @elems = split( /-/, $_, 2); fail($elems[1]); }
     }
-   
 }
 
 =head1 Bagger Initialization for Tests

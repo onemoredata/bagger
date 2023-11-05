@@ -51,6 +51,7 @@ WriteMakefile(
     TEST_REQUIRES    => {
                           'Test2::V0'                       => 0,
                           'File::Find'                      => 0,
+                          'Perl::Critic'                    => 0,
                         },
 );
 
