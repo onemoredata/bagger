@@ -99,7 +99,7 @@ This returns the class which the key is associated.  The value can then be
 converted from JSON into Perl data structures and used to create an object of
 this class.  The class is also autoloaded once it is identified.
 
-This function will return undef if no class is found.
+This function will return undef or an empty list if no class is found.
 
 =cut
 
@@ -114,15 +114,22 @@ sub pg_object {
         if ($key =~ $r->{regex}){
             my $class = $r->{class};
             if (not $loaded{$class}){
-                local $@;
-                eval "require $class";
-                warn $@ if $@;
+                local $@ = undef;
+
+                # The eval below should be sufficiently tested in the
+                # testing suites that all possible values will be tested
+                # If we hit here we really should die because otherwise
+                # we don't know what we are getting into.
+
+                ## no critic qw(BuiltinFunctions::ProhibitStringyEval)
+                eval "require $class" or die "could not load $class";
+                ## use critic
                 $loaded{$class} = 1;
             }
             return $class;
         }
     }
-    return undef;
+    return;
 }
 
 =head2 kval_key
