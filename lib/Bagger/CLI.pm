@@ -13,6 +13,7 @@ package Bagger::CLI;
 
 =cut
 
+## no critic qw(Modules::ProhibitAutomaticExportation)
 use Getopt::Long;
 use Config::IniFiles;
 use Bagger::Storage::LenkwerkSetup;
@@ -128,8 +129,9 @@ sub run_program {
     Bagger::Storage::LenkwerkSetup->set_dbport($port) if $port;
     Bagger::Storage::LenkwerkSetup->set_lenkwerkdb($dbname) if $dbname;
     Bagger::Storage::LenkwerkSetup->set_dbuser($username) if $username;
+    ## no critic qw(BuiltinFunctions::ProhibitStringyEval)
     eval "require $class" or die $@;
-    $class->import if UNIVERSAL::can($class, 'import');
+    $class->import if $class->can('import');
     $class->run;
 }
 

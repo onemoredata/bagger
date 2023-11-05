@@ -91,7 +91,7 @@ sub _parse {
     my @elems = split '/', $ptr;
     shift @elems; # remove empty element
     return [ map { _unescape($_) } @elems];
-} 
+}
 
 sub new {
     my ($class, @args) = @_;

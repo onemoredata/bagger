@@ -9,7 +9,7 @@ package Bagger::Storage::Config;
 =head1 SYNOPSIS
 
    my $config = Bagger::Storage::Config(
-             key   => 'additional_index_types', 
+             key   => 'additional_index_types',
              value => ['rum', 'sp-gist']
    );
    $config->save
@@ -64,7 +64,7 @@ has key => (is => 'ro', isa => 'Str', required => 1);
   it will return a reference to that scalar.
 
 =item value_string -- For scalars, handle as string ref
- 
+
   use this one if you expect a string or number back.
 
 =back
@@ -76,11 +76,12 @@ coerce 'Bagger::Type::JSON'
   =>  via { Bagger::Type::JSON->new($_) };
 
 
-has value => (is      => 'ro', 
+has value => (is      => 'ro',
              isa      => 'Bagger::Type::JSON',
              required => 1,
              coerce   => 1,
              handles  => {  value_string => 'orig' },
+
              );
 
 

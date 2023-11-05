@@ -95,6 +95,8 @@ my $config;
 
 sub get_config { $config }
 
+
+## no critic qw(Subroutines::ProtectPrivateSubs)
 sub config {
     my $port = $ENV{BAGGER_TEST_ETCD_PORT};
     $config = {host => '127.0.0.1', port => $port};
@@ -104,6 +106,8 @@ sub config {
                                         ->new($config)
                                    )->save->_dbh->commit;
 }
+
+## use critic
 
 =head2 cleanup
 
@@ -126,13 +130,14 @@ sub DESTROY { cleanup }
 =head2 guard
 
 Returns a guard that runs cleanup() when it goes out of scope.  This allows for
-automatic cleanup to the extent permitted by circumstance.
+automatic cleanup to the extent permitted by circumstance.  This currently does
+not allow for subclassing.
 
 =cut
 
 sub guard {
     my $pkg = __PACKAGE__;
     my $guard = \$pkg;
-    bless $guard;
+    bless $guard, $pkg;
 }
 1;
