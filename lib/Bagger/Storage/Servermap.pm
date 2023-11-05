@@ -70,7 +70,7 @@ has server_map => (is => 'ro', isa => 'Bagger::Type::JSON',
 
 =head1 METHODS
 
-The following general methods are used here.  These are also exposed to the 
+The following general methods are used here.  These are also exposed to the
 user but not always used.
 
 =over
@@ -89,8 +89,8 @@ Version 1 of the servermap has a structure as follows
 
  {
     host1_port1_id1 => { shaulfel => { host info},
-                         copies   => { [ 
-                                      { primary host info } , 
+                         copies   => { [
+                                      { primary host info } ,
                                       { seconary host info }
                                      ] }
     ...
@@ -100,11 +100,12 @@ Version 1 of the servermap has a structure as follows
 
 # Not the most computationally efficient approach but this isn't a frequent
 # task.
+
 sub generate_server_map {
     my ($self) = @_;
     my @hosts = sort { $a->host cmp $b->host } Bagger::Storage::Instance->list;
     my $rotate = $self->call_procedure(funcname => 'servermap_rotate_num');
-    ($rotate) = values %$rotate; 
+    ($rotate) = values %$rotate;
     my $first = $hosts[0];
     my $primaries = [@hosts];
     my $secondaries = [@hosts]; # independent copies

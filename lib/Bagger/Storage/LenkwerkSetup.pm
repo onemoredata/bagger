@@ -90,7 +90,7 @@ sub set_dbport {
     my ($self, $port) = @_;
     croak 'Port must be an integer' if $port =~ /\D/;
     croak "Postgres cannot use privileged port $port" if $port < 1024;
-    croak "Port $port out of range, must be between 1024 and 65535" 
+    croak "Port $port out of range, must be between 1024 and 65535"
                                                               if $port > 65535;
     $dbport = $port if defined $port;
 }
@@ -181,11 +181,11 @@ sub _dbi_str_keyval {
     return ("$key=$value");
 }
 
-sub dbi_str { "DBI:Pg:" . 
+sub dbi_str { "DBI:Pg:" .
              join(';', _dbi_str_keyval($lenkwerkdb, 'database'),
                        _dbi_str_keyval($dbhost, 'host'),
                        _dbi_str_keyval($dbport, 'port'),
-                 )
+    )
 }
 
 =head2 dsn_uri
@@ -230,7 +230,7 @@ sub _cli_args {
 
 sub createdb {
     croak 'No database set' unless $lenkwerkdb;
-    local $! ; # mask last system error
+    local $! = undef; # mask last system error
 
     # If we are told to use a password, then we will
     # mask the environment variable in this routine.
@@ -244,7 +244,7 @@ sub createdb {
     warn 'Database creation failed' if $failure;
     for my $line (split /^/m, $stderr){
         warn $line if $stderr;
-    } 
+    }
     return not $failure;
 }
 
@@ -267,13 +267,13 @@ sub load {
     my $success = 1;
     for my $ext (keys %exts) {
         local $! = undef; # mask last system error
-        my ($stdout, $stderr, $failure) = capture { 
-            return system('psql', dsn_uri, '-c', 
+        my ($stdout, $stderr, $failure) = capture {
+            return system('psql', dsn_uri, '-c',
                 "create extension ${ext} version '$exts{$ext}'");
         };
         for my $line (split /^/m, $stderr){
             warn $line if $stderr;
-        } 
+        }
         warn "Error loading extension $ext" if $failure;
         return 0 if $failure;
     }
