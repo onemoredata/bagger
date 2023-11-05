@@ -21,6 +21,7 @@ use strict;
 use warnings;
 use Carp 'croak';
 use Capture::Tiny;
+## no critic qw(InputOutput::ProhibitBacktickOperators)
 
 =head1 FUNCTIONS
 
@@ -121,8 +122,8 @@ use Test2::V0;
 sub run {
     my $self = shift;
     my $file = shift // $self;
-    my $params = sub { (scalar @args ? (@args) : ($dsn)), -f => (join('/', ($test_dir, $file))),  -t => '-q' };
-    my $testcmd = join ' ', ('psql', &$params());
+    my @params = ((scalar @args ? (@args) : ($dsn)), -f => (join('/', ($test_dir, $file))),  '-t' => '-q' );
+    my $testcmd = join ' ', ('psql', @params);
     my $testout = `$testcmd`;
     my @lines = split(/^/m, $testout);
     for (@lines) {
