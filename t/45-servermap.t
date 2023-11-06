@@ -1,7 +1,6 @@
 use Test2::V0 -target => {smap => 'Bagger::Storage::Servermap',
                           inst => 'Bagger::Storage::Instance' };
 use Bagger::Test::DB::LW;
-use Carp::Always;
 
 plan(19);
 

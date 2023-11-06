@@ -4,7 +4,6 @@ use Test2::V0 -target => {pkg => 'Bagger::Storage::Index',
                           fld => 'Bagger::Storage::Index::Field',
                       jsonptr => 'Bagger::Type::JSONPointer',
                       };
-use Carp::Always;
 use Bagger::Test::DB::LW;
 use strict;
 use warnings;
