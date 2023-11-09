@@ -94,7 +94,7 @@ my @exp_keys = (
                             is($hashref, shift @exp_hashref, "Got back expected hashref for $msg");
                              unless (scalar @exp_hashref) {
                                  undef $guard;
-                                 exit(0);
+                                 Bagger::Agent::LW::stop();
                              }
                         },
     before_kvwrite => sub { my ($key, $value) = @_;
