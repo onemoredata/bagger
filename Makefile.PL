@@ -25,7 +25,12 @@ WriteMakefile(
                           'DBI'                             => 0,
                           'namespace::autoclean'            => 0,
                           'MIME::Base64'                    => 0,
+                          'AnyEvent'                        => 0,
+                          'Coro'                            => 0,
+                          'Parse::RecDescent'               => 0,
                           # Mostly core dependencies shipping with Perl
+                          'Coro::AnyEvent'                  => 0,
+                          'AnyEvent::Loop'                  => 0,
                           'Carp'                            => 0,
                           'Data::Dumper'                    => 0,
                           'Exporter'                        => 0,
