@@ -21,7 +21,7 @@ use AnyEvent;
 use AnyEvent::Loop;
 use Bagger::Agent::Storage::Mapper qw(kval_key);
 use Bagger::Agent::KVStore;
-use Bagger::Agent::Drivers::TestDecoding 'parse';
+use PGObject::Util::LogRep::TestDecoding;
 use AnyEvent::PgRecvlogical;
 use Bagger::Storage::LenkwerkSetup;
 use Bagger::Storage::Config;
@@ -85,7 +85,6 @@ sub _run_injection {
     $_INJECTION{$injectpoint}(@_) if ref $_INJECTION{$injectpoint};
 }
 
-my $done = AnyEvent->condvar;
 my $recv;
 
 sub recv { $recv }
@@ -100,12 +99,14 @@ sub start {
 
     # the callback is a coderef here for procesing the messages and sending them forward.
     # The bulk of the work here is in this function.
+    my $parser = PGObject::Util::LogRep::TestDecoding->new(schema => ['storage']);
     
     my $callback = unblock_sub {
         my ($message, $guard) = @_;
         $inject = $ENV{TEST_AGENT};
         _run_injection('before_parse', $message) if $inject;
-        my $hashref = parse($message);
+        my $hashref = undef;
+        $hashref = $parser->parse($message) if $parser->matches($message);
         _run_injection('after_parse', $message, $hashref) if $inject;
         if ($hashref && ($hashref->{schema} eq 'storage')) {
              my $key = kval_key($hashref->{tablename}, $hashref->{row_data});
@@ -139,6 +140,7 @@ sub start {
 
 my $stop = 0;
 sub loop {
+    $stop = 0;
     AnyEvent::Loop::one_event() while not $stop;
 }
 
@@ -147,8 +149,8 @@ sub run {
     loop;
 }
 
-sub _done_cv { $done };
-
+# This is here just to allow the event loop to stop
+my $done = AnyEvent->condvar;
 sub stop {
     $stop = 1;
     $done->cb( sub {} ); # no-op event
@@ -165,7 +167,5 @@ sub _assemble_args {
         ($user ? (username => $user) : ()),
     )
 }
-
-$done->cb( sub { stop } );
 
 1;
