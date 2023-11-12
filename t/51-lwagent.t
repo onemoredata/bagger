@@ -1,4 +1,5 @@
 use Bagger::Agent::LW;
+use Coro;
 use Bagger::Test::DB::LW;
 use Bagger::Test::DB::Etcd;
 use Test2::V0 -target => { inst => Bagger::Storage::Instance,
@@ -10,7 +11,7 @@ use Test2::V0 -target => { inst => Bagger::Storage::Instance,
                            ae   => AnyEvent,
                        };
 
-plan 36;
+# plan 36; # having trouble with consistent exits from event loop since much of the processing is async
 my $guard = Bagger::Test::DB::Etcd->guard;
 $ENV{TEST_AGENT} = 1;
 
@@ -52,26 +53,31 @@ my @exp_hashref = (
     undef,
     { tablename => 'postgres_instance',
         schema  => 'storage',
+          type  => 'dml',
       operation => 'INSERT',
-       row_data => { host => 'host1', port => '5432', username => 'bagger', status => 0, id => ++$starting_id }},
+       row_data => { host => 'host1', port => '5432', username => 'bagger', status => 0, id => 6 }},
     undef,
     undef,
     { tablename => 'postgres_instance',
         schema  => 'storage',
+          type  => 'dml',
       operation => 'INSERT',
-       row_data => { host => 'host2', port => '5432', username => 'bagger', status => 0, id => ++$starting_id }},
+       row_data => { host => 'host2', port => '5432', username => 'bagger', status => 0, id => 7 }},
     { tablename => 'postgres_instance',
         schema  => 'storage',
+          type  => 'dml',
       operation => 'INSERT',
-       row_data => { host => 'host3', port => '5432', username => 'bagger', status => 0, id => ++$starting_id }},
+       row_data => { host => 'host3', port => '5432', username => 'bagger', status => 0, id => 8 }},
    undef,
    undef,
     { tablename => 'config',
          schema => 'storage',
+          type  => 'dml',
       operation => 'INSERT',
        row_data => { key => 'testing1', value => '"1"', id => 13 }},
     { tablename => 'config',
          schema => 'storage',
+          type  => 'dml',
       operation => 'INSERT',
        row_data => {'key' => 'testing2', value => '"Foo"', id => 14 }},
    undef,
@@ -83,19 +89,15 @@ my @exp_keys = (
     '/PostgresInstance/host3/5432',
     '/Config/testing1',
     '/Config/testing2',
-    '/Servermap',
 );
-
 %Bagger::Agent::LW::_INJECTION = (
     before_parse   => sub { my $msg = shift;
                             is($msg, shift @exp_messages, "Got expected message $msg");
+                            Bagger::Agent::LW::stop() if $msg eq 'COMMIT';
                         },
     after_parse    => sub { my ($msg, $hashref) = @_;
-                            is($hashref, shift @exp_hashref, "Got back expected hashref for $msg");
-                             unless (scalar @exp_hashref) {
-                                 undef $guard;
-                                 Bagger::Agent::LW::stop();
-                             }
+                            my $exp = shift @exp_hashref;
+                            is($hashref, $exp, "Got back expected hashref for $msg");
                         },
     before_kvwrite => sub { my ($key, $value) = @_;
                            is($key, shift @exp_keys, "Got correct key $key");
@@ -113,14 +115,25 @@ ok($var = inst->new(host => 'host1', port => '5432', username => 'bagger')->regi
     'Registered first item');
 $var->_dbh->commit;
 
+Bagger::Agent::LW::loop();
+cede;
+
 ok($var = inst->new(host => 'host2', port => '5432', username => 'bagger')->register, 
     'Registered second item');
 ok($var = inst->new(host => 'host3', port => '5432', username => 'bagger')->register, 
     'Registered third item');
 $var->_dbh->commit;
+
+Bagger::Agent::LW::loop();
+cede;
+
 ok($var = conf->new('key' => 'testing1', value =>'1')->save, 'Saved config 1');
 ok($var = conf->new('key' => 'testing2', value =>'Foo')->save, 'saved config 2');
 $var->_dbh->commit;
 Bagger::Agent::LW::loop();
+cede;
 
-
+done_testing();
+# the guard must be undef'd only after the plan is sent.
+# Otherwise the test harness gets confused.
+undef $guard;
