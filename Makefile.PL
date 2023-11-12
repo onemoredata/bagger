@@ -28,7 +28,6 @@ WriteMakefile(
                           'MIME::Base64'                    => 0,
                           'AnyEvent'                        => 0,
                           'Coro'                            => 0,
-                          'Parse::RecDescent'               => 0,
                           'JSON'                            => 0,
                           # Mostly core dependencies shipping with Perl
                           'Coro::AnyEvent'                  => 0,
