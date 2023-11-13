@@ -79,17 +79,6 @@ sub _new_dbh() {
 
 }
 
-around qw(call_procedure call_dbmethod) => sub {
-    my $orig = shift;
-    my $self = shift;
-    my @args = @_;
-    try {
-        $self->$orig(@args);
-    } catch {
-        die Bagger::Type::Exception::Database->new($self->_dbh);
-    };
-};
-
 =head1 Utility Functions
 
 =head2 bool(val)
