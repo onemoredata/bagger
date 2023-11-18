@@ -11,7 +11,8 @@ use Test2::V0 -target => { inst => Bagger::Storage::Instance,
                            ae   => AnyEvent,
                        };
 
-# plan 36; # having trouble with consistent exits from event loop since much of the processing is async
+ 
+                       #plan 36; 
 my $guard = Bagger::Test::DB::Etcd->guard;
 $ENV{TEST_AGENT} = 1;
 
@@ -116,6 +117,7 @@ ok($var = inst->new(host => 'host1', port => '5432', username => 'bagger')->regi
 $var->_dbh->commit;
 
 Bagger::Agent::LW::loop();
+schedule while Coro::nready;
 cede;
 
 ok($var = inst->new(host => 'host2', port => '5432', username => 'bagger')->register, 
@@ -125,13 +127,14 @@ ok($var = inst->new(host => 'host3', port => '5432', username => 'bagger')->regi
 $var->_dbh->commit;
 
 Bagger::Agent::LW::loop();
+schedule while Coro::nready;
 cede;
 
 ok($var = conf->new('key' => 'testing1', value =>'1')->save, 'Saved config 1');
 ok($var = conf->new('key' => 'testing2', value =>'Foo')->save, 'saved config 2');
 $var->_dbh->commit;
 Bagger::Agent::LW::loop();
-cede;
+schedule while Coro::nready;
 
 done_testing();
 # the guard must be undef'd only after the plan is sent.
