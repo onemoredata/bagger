@@ -22,6 +22,7 @@ use Bagger::Type::JSON;
 use Moose::Util::TypeConstraints;
 use Bagger::Agent::Storage::Mapper qw(pg_object kval_key);
 use namespace::autoclean;
+extends 'AnyEvent::KVStore';
 
 =head1 DESCRIPTION
 
@@ -56,29 +57,10 @@ to ensure that all data proper ends up in the right places.
 
 =head2 module Str  Required
 
-This is the name of the module to load.  Currently only 'etcd' is supported.
+This is the name of the module to load. Etcd is currently the only supported
+driver.
 
 =cut
-
-subtype 'kvstore_module',
-     as 'Str',
-     where { my $m = $_; scalar( grep { $m eq $_ } qw(etcd)) },
-     message { "$_ is not a valid module, must be one of (etcd)" };
-
-has module => (is =>'ro', isa => 'kvstore_module', required => 1);
-
-has _proxy => (is => 'ro', builder => '_connect', lazy => 1);
-
-sub _connect {
-    my $self = shift;
-    my $module = 'Bagger::Agent::Drivers::KVStore::' . ucfirst($self->module);
-    {
-        local $@;
-        eval "require $module";
-        die $@ if $@;
-    }
-    return $module->kvconnect($self->config);
-}
 
 =head1 config Hashref  Required
 
@@ -90,63 +72,13 @@ coerce 'HashRef'
 => from 'Bagger::Type::JSON'
 => via { return { %{$_} } };
 
-has config => (is => 'ro', isa => 'HashRef', coerce => 1, required => 1);
+has '+config' => (coerce => 1);
 
-has _proxy => (is => 'ro', isa => 'Object', builder => '_connect', lazy => 1);
 
 =head1 METHODS
 
-=head2 read($key)
-
-Reads a key, returns the string stored in the KVStore. Use get_object below
-to wrap this in an object.
+These are the same as L<AnyEvent::KVStore>.
 
 =cut
 
-sub read {
-    my ($self, $key) = @_;
-    my $value = $self->_proxy->kvread($key);
-    return $value;
-}
-
-=head2 get_object($key)
-
-Reads the key from the KV Store, determines the appropriate object type
-from the eky, and returns the key.  Returns undef if no class found.
-
-=cut
-
-sub get_object {
-    my ($self, $key) = @_;
-    my $value = $self->read($key);
-    $value = Bagger::Type::JSON->from_db($self->_proxy->kvread($key));
-    my $class = pg_object($key);
-    return defined $class ? $class->new($value) : undef;
-}
-
-=head2 write($key, $value)
-
-Writes the value to the database.  This is to be a pre-serialized JSON value.
-
-=cut
-
-sub write {
-    my ($self, $key, $value) = @_;
-    croak 'Cannot write reference!' if ref $value;
-    return $self->_proxy->kvwrite($key, $value);
-}
-
-
-=head2 watch($callback)
-
-Adds a watch event with a callback on events.  Currently only all events are
-supported.
-
-=cut
-
-sub watch {
-    my ($self, $callback) = @_;
-    return $self->_proxy->kvwatch($callback);
-}
-1;
 __PACKAGE__->meta->make_immutable;
