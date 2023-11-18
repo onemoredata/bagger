@@ -442,7 +442,12 @@ begin
     execute format(
         'INSERT INTO %s SELECT * from json_populate_record(NULL::%s, $1)',
         in_relname, in_relname) using in_value;
-
+EXCEPTION WHEN unique_violation THEN -- rare enough to take the subtrans hit
+    execute format('delete from %s WHERE id = %L', in_relname, in_value->>id::int);
+    execute format(
+        'INSERT INTO %s SELECT * from json_populate_record(NULL::%s, $1)',
+        in_relname, in_relname) using in_value;
+    -- if that fails abort.
 end;
 $$;
 
