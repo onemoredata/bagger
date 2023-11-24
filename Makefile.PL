@@ -29,6 +29,8 @@ WriteMakefile(
                           'AnyEvent'                        => 0,
                           'Coro'                            => 0,
                           'JSON'                            => 0,
+                          'Parse::RecDescent'               => 0,
+                          'Sys::Hostname'                   => 0,
                           # Mostly core dependencies shipping with Perl
                           'Coro::AnyEvent'                  => 0,
                           'AnyEvent::Loop'                  => 0,

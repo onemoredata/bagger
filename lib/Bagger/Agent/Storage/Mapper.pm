@@ -29,7 +29,7 @@ use strict;
 use warnings;
 use Exporter 'import';
 use Scalar::Util 'blessed';
-our @EXPORT_OK = qw(kval_key pg_object);
+our @EXPORT_OK = qw(kval_key pg_object key_to_relname);
 
 =head1 DESCRIPTION
 
@@ -133,7 +133,7 @@ table name or a blessed object passed in the first spot, and if not, then a hash
 
 Examples:
 
-    kval_key('postgres_instances', {host => 'host1', 
+    kval_key('postgres_instance', {host => 'host1', 
                                     port => 5432, 
                                 username => 'bagger',
                                   status => 0 })
@@ -149,6 +149,21 @@ sub kval_key {
         $class = $classmap{blessed $class};
     }
     return $keygen{$class}($val) if defined $keygen{$class};
+}
+
+=head2 key_to_relname ($key)
+
+Returns the relation name used by the key.  This allows a sort of logical
+replication to be built between the KVStore and the storage node's Postgresql
+instances.
+
+=cut
+
+sub key_to_relname {
+    my ($key) = @_;
+    my $class = pg_object($key);
+    return unless $class;
+    return $classmap{$class};
 }
 
 1;

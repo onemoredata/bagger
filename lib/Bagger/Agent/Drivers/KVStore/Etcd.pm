@@ -164,14 +164,16 @@ Watches all Bagger-related keys and executes $subroutine
 # and is portable
 
 sub _portability_wrapper {
-    my ($sub, $result) = @_;
-    &$sub() if ref $sub;
+    my $sub = shift;
+    use Data::Dumper;
+    warn Dumper(@_);
+    &$sub(@_) if ref $sub;
 }
 
 sub kvwatch {
     my ($self, $subroutine ) = @_;
     return $self->watch({key => '/Dim', range_end => "\0" }, 
-        sub { my ($result)  = @_; _portability_wrapper($subroutine, $result) });
+        sub { _portability_wrapper($subroutine, @_) });
 }
 
 __PACKAGE__->meta->make_immutable;

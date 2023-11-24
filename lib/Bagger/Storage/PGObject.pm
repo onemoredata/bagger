@@ -43,6 +43,7 @@ use PGObject;
 use Try::Tiny;
 use DBI;
 use Bagger::Storage::LenkwerkSetup;
+use Bagger::Type::Exception::Database;
 
 with 'PGObject::Simple::Role';
 
@@ -63,7 +64,7 @@ module.
 {
 my $dbh;
 sub _get_dbh() {
-   return $dbh if $dbh; # retrieve singleton if available
+   return $dbh if $dbh and ($dbh->ping); # retrieve singleton if connected
    return _new_dbh();
 }
 
@@ -86,6 +87,7 @@ around qw(call_procedure call_dbmethod) => sub {
     try {
         $self->$orig(@args);
     } catch {
+        die $_ unless $self->_dbh->state; # not db error
         die Bagger::Type::Exception::Database->new($self->_dbh);
     };
 };

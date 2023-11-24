@@ -5,10 +5,10 @@ use Test2::V0 -target => { inst => 'Bagger::Storage::Instance',
                            dim  => 'Bagger::Storage::Dimension',
                            idx  => 'Bagger::Storage::Index',
                            fld  => 'Bagger::Storage::Index::Field'};
-use Bagger::Agent::Storage::Mapper qw(kval_key pg_object);
+use Bagger::Agent::Storage::Mapper qw(kval_key pg_object key_to_relname);
 use strict;
 use warnings;
-plan 15;
+plan 20;
 
 is(pg_object('/Servermap'), smap(), 'Servermap object determined');
 is(pg_object('/PostgresInstance/host1/5432'), inst(), 'PG Instance key read');
@@ -16,6 +16,13 @@ is(pg_object('/Message'), undef, 'Non-existent key returns undef');
 is(pg_object('/Dimension/1'), dim(), 'Dimension key found');
 is(pg_object('/Index/1/1'), fld(), 'Index Field Found');
 is(pg_object('/Index/1'), idx(), 'Index found');
+
+# Relname from key
+is(key_to_relname('/PostgresInstance/host1/5432'), 'postgres_instance');
+is(key_to_relname('/Servermap'), 'servermaps');
+is(key_to_relname('/Dimension/1'), 'dimensions');
+is(key_to_relname('/Index/1/1'), 'index_fields');
+is(key_to_relname('/Index/1'), 'indexes');
 
 # Table types
 is(kval_key('postgres_instance', {host => 'host1', port => '5432'}),
