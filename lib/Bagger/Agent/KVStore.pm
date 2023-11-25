@@ -72,7 +72,7 @@ coerce 'HashRef'
 => from 'Bagger::Type::JSON'
 => via { return { %{$_} } };
 
-has '+config' => (coerce => 1);
+has '+config' => (coerce => 1, isa => 'HashRef');
 
 
 =head1 METHODS
