@@ -115,7 +115,7 @@ sub start {
              _run_injection('before_kvwrite', $key, $value) if $inject;
              my $resp = $kvstore->write($key, $value);
              undef $guard if $resp; # processing complete
-             _run_injection('after_kvwrite', $resp) if $inject;
+             _run_injection('after_kvwrite', $resp, $key) if $inject;
          } else {
              # message not of interest, can undef the guard
              undef $guard;
