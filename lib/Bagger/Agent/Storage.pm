@@ -255,6 +255,7 @@ sub start {
         #
         # Step 1:  Find our instance
         write_config() if $genconfig;
+    }
     if (!$hostname) {
         # fallback:  inifile, then Sys::Hostname::hostname
         $hostname = (defined $Bagger::CLI::ini{instance}{host}) ?
