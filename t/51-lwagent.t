@@ -2,6 +2,7 @@ use Bagger::Agent::LW;
 use Coro;
 use Bagger::Test::DB::LW;
 use Bagger::Test::DB::Etcd;
+use Capture::Tiny 'capture';
 use Test2::V0 -target => { inst => Bagger::Storage::Instance,
                            conf => Bagger::Storage::Config,
                            smap => Bagger::Storage::Servermap,
@@ -16,12 +17,19 @@ use Test2::V0 -target => { inst => Bagger::Storage::Instance,
 my $guard = Bagger::Test::DB::Etcd->guard;
 $ENV{TEST_AGENT} = 1;
 
+#plan 36;
 # Since we don't have any obvious synchronization points, we need to set up
 # the replication slot first with WAL retention.
 
 inst->call_procedure(funcname => 'pg_create_logical_replication_slot',
     funcschema => 'pg_catalog',
     args => ['lw_agent', 'test_decoding']);
+inst->call_procedure(funcname => 'setval',
+    funcschema => 'pg_catalog',
+    args => ['storage.postgres_instance_id_seq', '5']);
+inst->call_procedure(funcname => 'setval',
+    funcschema => 'pg_catalog',
+    args => ['storage.config_id_seq', '12']);
 inst->_get_dbh->commit;
 
 # This test framework is going to be a little tricky because of the fact that
@@ -91,6 +99,7 @@ my @exp_keys = (
     '/Config/testing1',
     '/Config/testing2',
 );
+
 %Bagger::Agent::LW::_INJECTION = (
     before_parse   => sub { my $msg = shift;
                             is($msg, shift @exp_messages, "Got expected message $msg");
@@ -103,10 +112,11 @@ my @exp_keys = (
     before_kvwrite => sub { my ($key, $value) = @_;
                            is($key, shift @exp_keys, "Got correct key $key");
                        },
-    after_kvwrite  => sub {  my ($resp) = @_;
-                             ok($resp, 'Write to kvstore succeeded');
+    after_kvwrite  => sub {  my ($resp, $key) = @_;
+                             ok($resp, "Write to kvstore succeeded: $key");
                          },
 );
+
 
 ok(Bagger::Agent::LW->start, 'Started Agent');
 
@@ -134,9 +144,13 @@ ok($var = conf->new('key' => 'testing1', value =>'1')->save, 'Saved config 1');
 ok($var = conf->new('key' => 'testing2', value =>'Foo')->save, 'saved config 2');
 $var->_dbh->commit;
 Bagger::Agent::LW::loop();
-schedule while Coro::nready;
+(schedule, cede) while Coro::nready;
 
-done_testing();
+Bagger::Agent::LW::loop() if @exp_keys;
+(schedule, cede) while Coro::nready;
+
+sleep 2;
+done_testing;
 # the guard must be undef'd only after the plan is sent.
 # Otherwise the test harness gets confused.
-undef $guard;
+capture { undef $guard };
