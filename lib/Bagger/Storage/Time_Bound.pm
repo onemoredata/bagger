@@ -67,7 +67,7 @@ requires '_config_hours_out';
 
 =head1 ATTRIBUTES
 
-This type has two attributes which are stored as C<Bagger::Type::DateTime> 
+This type has two attributes which are stored as C<Bagger::Type::DateTime>
 objects.  These objects are coerceable from strings and invoke the standard
 database parsing routines specified by C<Bagger::Type::DateTime> which inherits
 some or all of this functionality from C<PGObject::Type::DateTime>.
@@ -76,7 +76,7 @@ some or all of this functionality from C<PGObject::Type::DateTime>.
 
 This represents the first time the dimension is valid.
 
-In production this dimension is valid at the hour boundary 
+In production this dimension is valid at the hour boundary
 dimensions_hrs_in_future in the future.  When not in production this is valid
 for all time.
 
@@ -93,7 +93,7 @@ sub _config_dim_timing {
     my $hours_out;
     my $in_hrs = Bagger::Storage::Config->get($self->_config_hours_out);
     $hours_out = $in_hrs->value_string if defined $in_hrs;
-    die 'Production config value invalid' 
+    die 'Production config value invalid'
                                        if $production and ($production ne '1');
     die 'Invalid dimensions_hrs_in_future config variable must be positive int'
                                     if $hours_out and ($hours_out =~ /\D/);
@@ -174,7 +174,7 @@ Returns 1 if the current time is between the valid_from and valid_until times
 sub in_time_bounds {
     my $self = shift;
     my $now = Bagger::Type::DateTime->now();
-    return ($self->valid_from <= $now) 
+    return ($self->valid_from <= $now)
         && ($self->valid_until > $now);
     return 1;
 }

@@ -87,7 +87,9 @@ sub _run_injection {
 
 my $recv;
 
+## no critic qw(Subroutines::ProhibitBuiltinHomonyms)
 sub recv { $recv }
+## use critic
 
 sub start {
     my $inject = $ENV{TEST_AGENT}; # faster

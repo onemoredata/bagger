@@ -208,6 +208,7 @@ have already been added.
 
 =cut
 
+## no critic qw(BuiltinFunctions::ProhibitReverseSortBlock)
 sub next_ordinal {
     my ($self) = @_;
     return 0 unless defined $self->fields and @{$self->fields};
@@ -216,6 +217,7 @@ sub next_ordinal {
                   @{$self->fields};
     return $max_ordinal->ordinality + 1;
 }
+## use critic
 
 =head2 expire
 
@@ -227,7 +229,7 @@ the saved to-expire index entry.
 sub expire {
     my $self = shift;
     my ($retval) = $self->expire_proxy->call_dbmethod(funcname => 'expire_index');
-    return $self->new(%$retval, fields => $self->fields);
+    return $self->new(%{$retval}, fields => $self->fields);
 }
 
 =head2 $create_statement = $index->create_statement($schema_name, $table_name)

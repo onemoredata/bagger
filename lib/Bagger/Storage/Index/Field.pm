@@ -54,9 +54,10 @@ Can be set once only.
 sub _check_indexid {
     my ($self, $new_val, $old_val) = @_;
     croak "We already had an index_id" if defined $old_val;
+    return;
 }
 
-has index_id => (is => 'rw', isa => 'Int');
+has index_id => (is => 'rw', isa => 'Int', trigger => \&_check_indexid);
 
 =item ordinality -- field order number.  Required.
 
@@ -73,7 +74,7 @@ be converted into an expression automatically.
 
 =cut
 
-coerce 'Str' 
+coerce 'Str'
    => from 'Bagger::Type::JSONPointer'
    => via { __PACKAGE__->from_json_pointer($_) };
 
@@ -157,7 +158,7 @@ expression.
 
 sub from_json_pointer {
     my ($class, $jsonptr) = @_;
-    my @elems = @$jsonptr; #copy so we can shift
+    my @elems = @{$jsonptr}; #copy so we can shift
     my $exp = $class->json_field(shift @elems);
     for my $elem (@elems) {
         $exp = $class->extract_from_json_object($exp, $elem);
@@ -173,7 +174,7 @@ Returns a list of index fields for the given index id.
 
 =cut
 
-dbmethod list => (funcname => 'get_index_fields', arg_list => ['index_id'], 
+dbmethod list => (funcname => 'get_index_fields', arg_list => ['index_id'],
     returns_objects => 1);
 
 =head2 save
