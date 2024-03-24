@@ -104,11 +104,18 @@ function called.
 
 =cut
 
+## no critic qw(Variables::ProhibitPackageVars)
 our %ini;
+## use critic
 
 sub run_program {
     my ($class, $noargs) = @_;
     my @add_opts = $class->_add_opts() if UNIVERSAL::can($class, '_add_opts');
+    ## no critic qw(BuiltinFunctions::ProhibitStringyEval)
+    eval "require $class" or die $@;
+    $class->import if $class->can('import');
+    my @add_opts;
+    @add_opts = $class->_add_opts() if $class->can('_add_opts');
     my ($host, $port, $username, $dbname, $configfile);
     unless ($noargs) {
         GetOptions (
@@ -132,9 +139,6 @@ sub run_program {
     Bagger::Storage::LenkwerkSetup->set_dbport($port) if $port;
     Bagger::Storage::LenkwerkSetup->set_lenkwerkdb($dbname) if $dbname;
     Bagger::Storage::LenkwerkSetup->set_dbuser($username) if $username;
-    ## no critic qw(BuiltinFunctions::ProhibitStringyEval)
-    eval "require $class" or die $@;
-    $class->import if $class->can('import');
     $class->run;
 }
 
@@ -149,7 +153,6 @@ sub config_file {
     my ($host, $port, $username, $dbname);
     if ($configfile) {
         no autovivification;
-        my %ini;
         tie %ini, 'Config::IniFiles', ( -file => $configfile );
         $host     = $ini{lenkwerk}{host}     if exists $ini{lenkwerk}{host};
         $port     = $ini{lenkwerk}{port}     if exists $ini{lenkwerk}{port};

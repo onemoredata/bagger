@@ -111,11 +111,14 @@ sub _build_args {
     my $host_string = join ',',
                        map { join(':', $_->host, $_->port) }
                       @{$self->hosts};
+    # False positive for perl critic
+    ## no critic qw(InputOutput::ProhibitInteractiveTest)
     my @schaufel_args = (
         -l => $self->log,     -i => 'k',          -b => $self->broker,
         -g => $self->group,   -o => 'p',          -t => $self->topic,
         -p => $self->threads, -H => $host_string,
     );
+    ## use critic
     return \@schaufel_args;
 }
 
