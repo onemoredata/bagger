@@ -256,11 +256,14 @@ sub start {
         # Step 1:  Find our instance
         write_config() if $genconfig;
     }
+    # another perl critic false positive
+    ## no critic qw(Variables::ProhibitPackageVars)
     if (!$hostname) {
         # fallback:  inifile, then Sys::Hostname::hostname
         $hostname = (defined $Bagger::CLI::ini{instance}{host}) ?
              $Bagger::CLI::ini{instance}{host} : hostname;
     }
+    ## use critic
     if ($instanceport) {
         # even if we got an instance we should validate it and reload it.
         $instance = Bagger::Storage::Instance->get_by_info($hostname, $instanceport);
@@ -483,6 +486,7 @@ sub _all_copies_can_write {
 }
 
 
+## no critic qw(ControlStructures::ProhibitCascadingIfElse ValuesAndExpressions::ProhibitMixedBooleanOperators)
 sub postgres_instance{
     my ($key, $value) = @_;
     write_data($key, $value);
@@ -498,6 +502,7 @@ sub postgres_instance{
         }
     }
 }
+## use critic
 
 =head2 update_servermap
 
