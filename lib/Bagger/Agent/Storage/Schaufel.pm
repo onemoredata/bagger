@@ -8,7 +8,7 @@ package Bagger::Agent::Storage::Schaufel;
 
 =head1 SYNOPSIS
 
-    my $scaufel_handle = Bagger::Agent::Storage::Schaufel->new(
+    my $schaufel = Bagger::Agent::Storage::Schaufel->new(
         cmd     => $schaufel_cmd, log     => $schaufel_log, 
         hosts   => @instances,    broker  => $kafka_broker,
         topic   => $kafka_topic,  group   => $kafka_consumer_group,
