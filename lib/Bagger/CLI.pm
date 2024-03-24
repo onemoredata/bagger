@@ -110,7 +110,6 @@ our %ini;
 
 sub run_program {
     my ($class, $noargs) = @_;
-    my @add_opts = $class->_add_opts() if UNIVERSAL::can($class, '_add_opts');
     ## no critic qw(BuiltinFunctions::ProhibitStringyEval)
     eval "require $class" or die $@;
     $class->import if $class->can('import');
