@@ -68,8 +68,6 @@ FROM ( select in_role as role,
      ) r;
 $$;
 
-CREATE FUNCTION lenkwerk_postgres.validate_jwt....
-
 CREATE FUNCTION lenkwerk_postgres.authenticate_user
 (in_username text, in_password text)
 returns text
