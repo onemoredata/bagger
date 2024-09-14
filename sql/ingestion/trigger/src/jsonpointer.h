@@ -12,5 +12,5 @@ typedef struct jsonptr {
 } jsonptr;
 
 extern char* jsonptr_unescape(char *, char *);
-extern jsonptr* jsonptr_parse(const char *);
+extern jsonptr* jsonptr_parse(char *);
 #endif
