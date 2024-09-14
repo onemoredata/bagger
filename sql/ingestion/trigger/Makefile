@@ -10,3 +10,6 @@ REGRESS_OPTS = --inputdir=test --load-language=plpgsql
 PG_CPPFLAGS = "-std=c99"
 include $(PGXS)
 
+jsonptr_test:
+	$(CC) -I src src/jsonptr_unescape.c test/jsonpointer_test.c -o test/jsonpointer_test
+	test/jsonpointer_test
