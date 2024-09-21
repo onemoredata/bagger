@@ -22,12 +22,13 @@ int main() {
     char *buff = (char *) malloc(20);
     char *test1 = "Testing";
     char *res1 = "Testing";
-    int testcount = 6;
+    int testcount = 7;
     is(jsonptr_unescape("Testing", buff), "Testing");
     is(jsonptr_unescape("test~1~1", buff), "test//");
     is(jsonptr_unescape("test~0~0", buff), "test~~");
     is(jsonptr_unescape("test~01", buff), "test~1");
     is(jsonptr_unescape("test~0~1", buff), "test~/");
     is(jsonptr_unescape("test~0test", buff), "test~test");
+    is(jsonptr_unescape("test~4test", buff), "test~4test");
     printf("1..%i\n", testcount);
 }

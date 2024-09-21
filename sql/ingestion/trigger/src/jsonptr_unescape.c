@@ -50,9 +50,8 @@ jsonptr_unescape(char *escaped, char *buff) {
                     chr = '/';
                     ++pos;
                 }
-            } else {
-                chr = c;
             }
+            chr = c;
             *bpos = chr;
             ++bpos;
             *bpos = '\0';
