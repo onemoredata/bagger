@@ -185,7 +185,6 @@ create_cached_plan(char *tablename) {
     TriggerData *tgdata = (TriggerData *) fcinfo->context;
 
     lru_cache_plan *entry = MemoryContextAllocZero(TrigCacheCtx, sizeof(lru_cache_plan));
-    entry->plan = NULL;
 
     memcpy(entry->table, tablename, MAXTABLELEN);
 
