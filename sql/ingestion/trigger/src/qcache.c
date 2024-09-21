@@ -157,6 +157,7 @@ get_cached_plan(char *tablename) {
                 return NULL;
             }
             PG_END_TRY();
+            RollbackAndReleaseCurrentSubTransaction();
             PrependNode(cur_node);
 
             return plan;
