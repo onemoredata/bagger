@@ -30,7 +30,8 @@ jsonptr_parse(char *jsonpointer_in)
 
     save = NULL;
     tok = strtok_r(jsonpointer_in, (char *) &delim, save);
-    if (tok){
+    if (tok)
+    {
         // this happens when the delimiter is not the first character
         ereport(ERROR,
                 errcode(ERRCODE_DATA_EXCEPTION), 
@@ -40,7 +41,8 @@ jsonptr_parse(char *jsonpointer_in)
     }
     out = (jsonptr *) palloc0(sizeof(jsonptr));
     last_entry = NULL;
-    while ((tok = strtok_r(NULL, (char *) &delim, save))){
+    while ((tok = strtok_r(NULL, (char *) &delim, save)))
+    {
         char *ptr_buff;
         jptr_listentry *jptr_entry;
 
@@ -48,10 +50,12 @@ jsonptr_parse(char *jsonpointer_in)
 
         ptr_buff = (char *) palloc(strlen(tok + 1));
         jptr_entry->path_elem = jsonptr_unescape(tok, ptr_buff);
-        if (last_entry){
+        if (last_entry)
+        {
             last_entry->next = jptr_entry;
         }
-        else {
+        else
+        {
             out->path_head = jptr_entry;
         }
 

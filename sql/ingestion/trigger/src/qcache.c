@@ -92,8 +92,10 @@ SPIPlanPtr create_cached_plan(char *);
  * This must be the first stage of the initialization.
  */
 void
-initialize_ctx() {
-    if (TrigInitialized) {
+initialize_ctx()
+{
+    if (TrigInitialized)
+    {
         ereport(FATAL,
                 errcode(ERRCODE_OBJECT_NOT_IN_PREREQUISITE_STATE),
                 errmsg("Failed to initialize Memory Contexts:  Already Initialized"));
@@ -111,7 +113,8 @@ initialize_ctx() {
  * Purges all cached plans.
  */
 void
-clear_plan_cache() {
+clear_plan_cache()
+{
     plancache.head = NULL;
     MemoryContextReset(TrigCacheCtx);
 }
@@ -126,13 +129,15 @@ clear_plan_cache() {
  */
 
 SPIPlanPtr 
-get_cached_plan(char *tablename) {
+get_cached_plan(char *tablename)
+{
     /* I can see the argument to move this into a macro, but only used once
      */
     for (lru_cache_plan *cur_node = plancache.head;
             NULL != cur_node; 
             cur_node = cur_node->next
-    ){
+    )
+    {
         if (0 == strncmp(tablename, cur_node->table, MAXTABLELEN)){
             SPIPlanPtr plan = cur_node->plan;
             cur_node->last_exec = time(0);
@@ -177,7 +182,8 @@ get_cached_plan(char *tablename) {
 /* not sure if this should be static or inline or not.  
  * Considering testability first and keeping it separate. */
 SPIPlanPtr 
-create_cached_plan(char *tablename) {
+create_cached_plan(char *tablename)
+{
     RangeVar *rv;
     Oid jsontype;
     Oid relid;
