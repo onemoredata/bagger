@@ -38,7 +38,7 @@ jsonptr_unescape(char *escaped, char *buff)
         *buff = '\0';
         maxlen = strlen(escaped);
         len = 0;
-        pos = escaped; // generates warning
+        pos = escaped; 
 
         // null byte ends check
         while ((*pos != '\0') && (len <= maxlen))
@@ -48,14 +48,14 @@ jsonptr_unescape(char *escaped, char *buff)
             if (c == '~')
             {
                 /* escaping logic */
-                if (*(pos +1) == '0')
+                if (*(pos + 1) == '0')
                 {
-                    chr = '~';
+                    c = '~';
                     ++pos;
                 }
                 else if (*(pos + 1) == '1')
                 {
-                    chr = '/';
+                   c = '/';
                     ++pos;
                 }
             }
