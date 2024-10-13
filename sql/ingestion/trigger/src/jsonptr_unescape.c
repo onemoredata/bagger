@@ -19,13 +19,16 @@
 
 
 char *
-jsonptr_unescape(char *escaped, char *buff) {
+jsonptr_unescape(char *escaped, char *buff)
+{
     /* probably underbroad but good enough and safe */
-    if (NULL == strchr(escaped, '~')){
+    if (NULL == strchr(escaped, '~'))
+    {
         strncpy(buff, escaped, strlen(escaped) + 1);
         return buff;
     }
-    else {
+    else
+    {
         size_t maxlen;
         int len;
         char *pos;
@@ -38,16 +41,21 @@ jsonptr_unescape(char *escaped, char *buff) {
         pos = escaped; 
 
         // null byte ends check
-        while ((*pos != '\0') && (len <= maxlen)) {
+        while ((*pos != '\0') && (len <= maxlen))
+        {
             bpos = buff + len;
             c = *pos;
-            if (c == '~'){ /* escaping logic */
-                if (*(pos + 1) == '0') {
+            if (c == '~')
+            {
+                /* escaping logic */
+                if (*(pos + 1) == '0')
+                {
                     c = '~';
                     ++pos;
                 }
-                else if (*(pos + 1) == '1') {
-                    c = '/';
+                else if (*(pos + 1) == '1')
+                {
+                   c = '/';
                     ++pos;
                 }
             }
