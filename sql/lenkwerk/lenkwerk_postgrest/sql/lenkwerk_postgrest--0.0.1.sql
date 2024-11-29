@@ -16,9 +16,9 @@
 -- schema.
 
 CREATE SCHEMA lenkwerk_postgrest;
-CREATE ROLE IF NOT EXISTS lenkwerk_queryproxy_op INHERIT NOLOGIN;
+CREATE ROLE lenkwerk_queryproxy_op INHERIT NOLOGIN;
 -- Must set auth info outside
-CREATE ROLE IF NOT EXISTS queryproxy NOINHERIT LOGIN;
+CREATE ROLE queryproxy NOINHERIT LOGIN;
 
 CREATE TABLE lenkwerk_postgrest.user_auth (
     username TEXT PRIMARY KEY,
@@ -45,23 +45,25 @@ CREATE TABLE lenkwerk_postgrest.config (
 );
 SELECT pg_catalog.pg_extension_config_dump('lenkwerk_postgrest.config', '');
 
-CREATE FUNCTION lenkwerk_postgres.pgrest_preconfig() LANGUAGE SQL
-SECURITY DEFINER RETURNS VOID
+CREATE FUNCTION lenkwerk_postgrest.pgrest_preconfig()
+RETURNS VOID
+LANGUAGE SQL
+SECURITY DEFINER
 BEGIN ATOMIC
-  SELECT set_config('pgrst.jwt_secret', secret_value, true) FROM lenkwerk_postgres.secrets where secret_name = 'jwt_secret';
+  SELECT set_config('pgrst.jwt_secret', secret_value, true) FROM lenkwerk_postgrest.secrets where secret_name = 'jwt_secret';
   SELECT set_config('pgrst.db_schemas', 'storage', true);
 END;
 
-CREATE FUNCTION lenkwerk_postgres.set_jwt_secret(secret TEXT, base64 BOOL)
-LANGUAGE SQL SECURITY DEFINER
+CREATE FUNCTION lenkwerk_postgrest.set_jwt_secret(secret TEXT, base64 BOOL)
 RETURNS VOID
+SECURITY DEFINER LANGUAGE SQL 
 BEGIN ATOMIC
-INSERT INTO lenkwerk_postgres.secrets (secret_name, secret_value, in_base64)
+INSERT INTO lenkwerk_postgrest.secrets (secret_name, secret_value, is_base64)
 VALUES ('jwt_secret', secret, base64)
-ON CONFLICT (secret_name) update set secret_name = secret, is_base64 = base64;
+ON CONFLICT (secret_name) DO UPDATE SET secret_name = secret, is_base64 = base64;
 END;
 
-CREATE FUNCTION lenkwerk_postgres.generate_jwt(in_role TEXT) RETURNS text
+CREATE FUNCTION lenkwerk_postgrest.generate_jwt(in_role TEXT) RETURNS text
 LANGUAGE SQL AS
 $$
 SELECT jwt.sign( row_to_json(r), current_setting('pgrst.jwt_secret')) AS token
@@ -71,24 +73,24 @@ FROM ( SELECT in_role AS role,
      ) r;
 $$;
 
-CREATE FUNCTION lenkwerk_postgres.authenticate_user
+CREATE FUNCTION lenkwerk_postgrest.authenticate_user
 (in_username TEXT, in_password TEXT)
 returns TEXT
 LANGUAGE SQL AS
 $$
-SELECT ROLE FROM lenkwerk_postgres.user_auth 
+SELECT ROLE FROM lenkwerk_postgrest.user_auth 
  WHERE in_username = username AND auth = crypt(in_password, auth);
 $$ SECURITY DEFINER;
 
-CREATE FUNCTION lenkwerk_postgres.change_password(username, password)
+CREATE FUNCTION lenkwerk_postgrest.change_password(username text, password text)
 RETURNS BOOL LANGUAGE PLPGSQL SECURITY DEFINER AS
 $$
 BEGIN
-    UPDATE lenkwerk_postgres.user_auth SET auth = crypt(password, 
+    UPDATE lenkwerk_postgrest.user_auth SET auth = crypt(password, 
         gen_salt('bf', 8)); -- going with high work factor since this is not
                             -- done on every request
     RETURN FOUND;
+END;
 $$;
-
 
 
