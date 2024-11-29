@@ -15,41 +15,44 @@
 -- We will depend here on Michel Paquier's pgjwt extension installed into a jwt
 -- schema.
 
-CREATE SCHEMA lenkwerk_postgres;
+CREATE SCHEMA lenkwerk_postgrest;
 CREATE ROLE IF NOT EXISTS lenkwerk_queryproxy_op INHERIT NOLOGIN;
 -- Must set auth info outside
 CREATE ROLE IF NOT EXISTS queryproxy NOINHERIT LOGIN;
 
-CREATE TABLE lenkwerk_postgres.user_auth (
-    username text primary key,
-    auth text,
-    role text
+CREATE TABLE lenkwerk_postgrest.user_auth (
+    username TEXT PRIMARY KEY,
+    auth TEXT,
+    role TEXT
 );
+SELECT pg_catalog.pg_extension_config_dump('lenkwerk_postgrest.user_auth', '');
 
-REVOKE ALL ON lenkwerk_postgres.user_auth FROM public;
+REVOKE ALL ON lenkwerk_postgrest.user_auth FROM public;
 
 
-CREATE TABLE lenkwerk_postgres.secrets (
-    secret_name text primary key,
-    secret_value text,
-    is_base64 bool
+CREATE TABLE lenkwerk_postgrest.secrets (
+    secret_name TEXT PRIMARY KEY,
+    secret_value TEXT,
+    is_base64 BOOL
 );
+SELECT pg_catalog.pg_extension_config_dump('lenkwerk_postgrest.secrets', '');
 
-REVOKE ALL ON lenkwerk_postgres.secrets FROM public;
+REVOKE ALL ON lenkwerk_postgrest.secrets FROM public;
 
-CREATE TABLE lenkwerk_postgres.config (
-    config_name text primary key,
+CREATE TABLE lenkwerk_postgrest.config (
+    config_name TEXT PRIMARY KEY,
     config_value JSONB
 );
+SELECT pg_catalog.pg_extension_config_dump('lenkwerk_postgrest.config', '');
 
 CREATE FUNCTION lenkwerk_postgres.pgrest_preconfig() LANGUAGE SQL
 SECURITY DEFINER RETURNS VOID
 BEGIN ATOMIC
-  select set_config('pgrst.jwt_secret', secret_value, true) from lenkwerk_postgres.secrets where secret_name = 'jwt_secret';
-  select set_config('pgrst.db_schemas', 'storage', true);
+  SELECT set_config('pgrst.jwt_secret', secret_value, true) FROM lenkwerk_postgres.secrets where secret_name = 'jwt_secret';
+  SELECT set_config('pgrst.db_schemas', 'storage', true);
 END;
 
-CREATE FUNCTION lenkwerk_postgres.set_jwt_secret(secret text, base64 bool)
+CREATE FUNCTION lenkwerk_postgres.set_jwt_secret(secret TEXT, base64 BOOL)
 LANGUAGE SQL SECURITY DEFINER
 RETURNS VOID
 BEGIN ATOMIC
@@ -58,22 +61,22 @@ VALUES ('jwt_secret', secret, base64)
 ON CONFLICT (secret_name) update set secret_name = secret, is_base64 = base64;
 END;
 
-CREATE FUNCTION lenkwerk_postgres.generate_jwt(in_role text) returns text
-language sql as
+CREATE FUNCTION lenkwerk_postgres.generate_jwt(in_role TEXT) RETURNS text
+LANGUAGE SQL AS
 $$
-select jwt.sign( row_to_json(r), current_setting('pgrst.jwt_secret')) as token
-FROM ( select in_role as role, 
-              extract(epoch from now() + current_setting('pgrst.timeout') 
-                as exp
+SELECT jwt.sign( row_to_json(r), current_setting('pgrst.jwt_secret')) AS token
+FROM ( SELECT in_role AS role, 
+              extract(epoch FROM now() + current_setting('pgrst.timeout') 
+                AS exp
      ) r;
 $$;
 
 CREATE FUNCTION lenkwerk_postgres.authenticate_user
-(in_username text, in_password text)
-returns text
-language sql as
+(in_username TEXT, in_password TEXT)
+returns TEXT
+LANGUAGE SQL AS
 $$
-select role from lenkwerk_postgres.user_auth 
+SELECT ROLE FROM lenkwerk_postgres.user_auth 
  WHERE in_username = username AND auth = crypt(in_password, auth);
 $$ SECURITY DEFINER;
 
