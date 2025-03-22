@@ -7,6 +7,13 @@ typedef struct Jsonpointer {
     Jsonpointer *next;
 } Jsonpointer;
 
-Jsonpointer *jsonpointer_parse(size_t, char *);
+extern Jsonpointer *jsonpointer_parse(size_t, char *);
+
+typedef struct jptr_listentry jptr_listentry;
+typedef struct jptr_listentry {
+    Jsonpointer *entry;
+    int ord;
+    jptr_listentry *next;
+} jptr_listentry;
 
 #endif
