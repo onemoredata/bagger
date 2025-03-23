@@ -8,6 +8,7 @@ typedef struct Jsonpointer {
 } Jsonpointer;
 
 extern Jsonpointer *jsonpointer_parse(size_t, char *);
+extern int JsonpointerIsDigit(Jsonpointer* ptr);
 
 typedef struct jptr_listentry jptr_listentry;
 typedef struct jptr_listentry {
