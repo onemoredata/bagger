@@ -13,6 +13,7 @@
  *
  * This function may modify the buffer pointed to by ptr.
  */
+
 Jsonpointer *
 jsonpointer_parse(size_t size, char *ptr)
 {
@@ -58,3 +59,33 @@ jsonpointer_parse(size_t size, char *ptr)
 
 	return jphead.next;
 }
+
+/*
+ * Checks to see if the current Jsonpointer ref field is numeric (i.e. can be
+ * used as an array index)
+ *
+ * Returns 1 if true, 0 if false
+ *
+ * These are intended to be short strings so the full length is checked.
+ *
+ */
+
+int
+JsonpointerIsDigit(Jsonpointer* ptr)
+{
+    int ret = 1;
+    int it;
+    for (it = 0; it < strlen(ptr->ref); ++it)
+    {
+          if (isdigit(ptr->ref[it]))
+          {
+              ret = 1;
+          }
+          else
+          {
+              ret = 0;
+          }
+    }
+    return ret;
+}
+
