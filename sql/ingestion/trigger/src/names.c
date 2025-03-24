@@ -40,12 +40,17 @@ char** extract_names(Datum json_doc);
 char* append_names(char** strings_from_json);
 name_slist_entry* find_next_in_doc(Jsonb* jsondoc, JsonbIterator* iter, Jsonpointer* jptr);
 
+char* partition_name(name_slist_entry* head);
+
+
 
 jptr_listentry* dimension_ptr_head = NULL;
 
 void initialize_dimensions( void );
 
 name_slist_entry* dimensions_from_doc(Jsonb *jsondoc);
+
+static inline void sort_name_slist(name_slist_entry* head);
 
 // char* name_from_json(Datum json_doc);
 
@@ -250,10 +255,61 @@ append_to_name(char *name, const char *value)
 {
     /* 1 for the null terminator and one for the separator, so 2 */
     if (strlen(name) + strlen(value) == NAMEDATALEN - 2)
-    {
-        /* throw error */
-        // ereport(...)
-    }
+        elog(ERROR, "NAMEDATALEN exceeded for partition name");
+
     strcpy(name, "_");
     strcpy(name, value);
+}
+
+static inline void 
+sort_name_slist(name_slist_entry* head)
+{
+    int ord = 1;
+    int found;
+    name_slist_entry* curr;
+    name_slist_entry* search;
+    namenode* temp;
+    
+
+    /* we will just do a bubble sort and swap name nodes */
+    for (curr = head; curr != NULL; curr = curr->next)
+    {
+        if (curr->node->ord == ord)
+        {
+            continue;
+        } 
+        else
+        {
+            for (found = 0, search = curr; search != NULL || found; search = search->next)
+            {
+                if (search->node->ord == ord)
+                {
+                    temp = search->node;
+                    search->node = curr->node;
+                    curr->node = temp;
+
+                    found = 1;
+                }
+            }
+        }
+    }
+}
+
+char *
+partition_name(name_slist_entry* head)
+{
+    char* name = (char*) palloc0(NAMEDATALEN + 1);
+    name_slist_entry* curr = head;
+
+    strcpy(name, "data");
+    sort_name_slist(head);
+
+
+    while (NULL != curr)
+    {
+        append_to_name(name, curr->node->label);
+        curr = curr->next;
+    }
+    return name;
+    
 }
