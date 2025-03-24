@@ -9,6 +9,7 @@ REGRESS      = $(patsubst test/sql/%.sql,%,$(TESTS))
 REGRESS_OPTS = --inputdir=test --load-language=plpgsql
 PG_CPPFLAGS = -std=c17
 include $(PGXS)
+CFLAGS = $(CFLAGS) -I src
 
 PG_INC := $(shell $(PG_CONFIG) --includedir-server)
 LIBJSONPTR := $(shell pkg-config libjsonptr --cflags --libs)
