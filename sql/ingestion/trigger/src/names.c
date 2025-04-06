@@ -19,22 +19,20 @@
  * order as our search order.
  *
  * We then store this with the ordinal, and sort the labels by ordinal before
- * generating the table name.  We can generally assume that there are fewer
+  generating the table name.  We can generally assume that there are fewer
  * dimensions than JSON keys so this should be a performance win.
  */
 
 Name_slist_entry* find_next_in_doc(Jsonb* jsondoc, JsonbIterator* iter, Jsonpointer* jptr);
 
 
-Partition_dimension *dimension_ptr_head = NULL;
+Partition_dimension *dimension_ptr_head;
 
 void initialize_dimensions( void );
 
 Name_slist_entry* dimensions_from_doc(Jsonb *jsondoc);
 
-static inline void sort_name_slist(Name_slist_entry* head);
-
-// char* name_from_json(Datum json_doc);
+static void sort_name_slist(Name_slist_entry* head);
 
 Partition_dimension *paths;
 /* initialize loads the paths we will need to follow and parses them.
@@ -153,10 +151,11 @@ find_next_in_doc(Jsonb* jsondoc, JsonbIterator* iter, Jsonpointer* jptr)
 {
     JsonbValue val;
     JsonbIteratorToken typ;
+    JsonbIterator last;
 
+    Name_slist_entry *ret = palloc0(sizeof(Name_slist_entry));
     if (NULL == jsondoc)
     {
-        Name_slist_entry *ret = palloc0(sizeof(Name_slist_entry));
         elog(WARNING, "JSONPointer did not reach deep enough.");
         ret->node->label = empty_str;
     }
@@ -187,16 +186,14 @@ find_next_in_doc(Jsonb* jsondoc, JsonbIterator* iter, Jsonpointer* jptr)
                 }
                 if (val.type == jbvString)
                 {
-                    Name_slist_entry *ret = palloc0(sizeof(Name_slist_entry));
                     ret->node->label = val.val.string.val;
                 }
 
             }
             else
             {
-                Name_slist_entry *ret = palloc0(sizeof(Name_slist_entry));
-                ret->node->label = empty_str;
                 elog(WARNING, "Could not find index in document");
+                ret->node->label = empty_str;
                 return ret;
             }
         }
@@ -209,7 +206,9 @@ find_next_in_doc(Jsonb* jsondoc, JsonbIterator* iter, Jsonpointer* jptr)
             {
                if (typ == WJB_KEY)
                {
+                  last = *iter; /* copy for restore if we need it */
                   if (val.type == jbvString)
+                  {
                       if (strcmp(val.val.string.val, jptr->ref) == 0)
                       {
                           typ = JsonbIteratorNext(&iter, &val, false);
@@ -217,7 +216,6 @@ find_next_in_doc(Jsonb* jsondoc, JsonbIterator* iter, Jsonpointer* jptr)
                               elog(WARNING, "Malformed JSON object, no value");
                           if (val.type == jbvString)
                           {
-                              Name_slist_entry *ret = palloc0(sizeof(Name_slist_entry));
                               ret->node->label = val.val.string.val;
                           }
                           else if ((val.type == jbvArray) || (val.type == jbvObject))
@@ -225,15 +223,33 @@ find_next_in_doc(Jsonb* jsondoc, JsonbIterator* iter, Jsonpointer* jptr)
                               Jsonb* doc = JsonbValueToJsonb(&val);
                               return find_next_in_doc(doc, JsonbIteratorInit(&doc->root), jptr->next);
                           }
+                      } else if (strcmp(val.val.string.val, jptr->ref) > 0)
+                      {
+                          /* we went too far, return empty string
+                           * I am concerned about corner cases
+                           */
+                          iter = &last;
+                          ret->node->label = empty_str;
+                          return ret;
+
                       }
+                  }
                }
             }
+            /* if we get here and haven't returned, something went wrong.
+             * Most likely the document did not have the field in question.
+             * Warn and return empty string
+             */
+            elog(WARNING, "JSONB key not found in document");
+            ret->node->label = empty_str;
+            return ret;
+
         }
     }
     return NULL;
 }
 
-static inline void
+static void
 append_to_name(char *name, const char *value)
 {
     /* 1 for the null terminator and one for the separator, so 2 */
@@ -244,7 +260,7 @@ append_to_name(char *name, const char *value)
     strcpy(name, value);
 }
 
-static inline void 
+static void 
 sort_name_slist(Name_slist_entry *head)
 {
     int ord = 1;
