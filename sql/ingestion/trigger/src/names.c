@@ -1,11 +1,11 @@
 #include "bagger.h"
 #include "jsonpointer.h"
-#include <utils/jsonb.h>
 #include <string.h>
+#include "names.h"
 
 /* Bagger name munger module
  *
- * Copyright (C) 2024 One More Data
+ * Copyright (C) 2024-2025 One More Data
  *
  * This module generates table names looking at json paths stored in our
  * config.
@@ -23,38 +23,20 @@
  * dimensions than JSON keys so this should be a performance win.
  */
 
-typedef struct namenode namenode;
-typedef struct namenode {
-    char* label;
-    int ord;
-} namenode;
-
-typedef struct name_slist_entry name_slist_entry;
-typedef struct name_slist_entry {
-    namenode* node;
-    name_slist_entry* next;
-} name_slist_entry;
-
-char** extract_names(Datum json_doc);
-
-char* append_names(char** strings_from_json);
-name_slist_entry* find_next_in_doc(Jsonb* jsondoc, JsonbIterator* iter, Jsonpointer* jptr);
-
-char* partition_name(name_slist_entry* head);
+Name_slist_entry* find_next_in_doc(Jsonb* jsondoc, JsonbIterator* iter, Jsonpointer* jptr);
 
 
-
-jptr_listentry* dimension_ptr_head = NULL;
+Partition_dimension *dimension_ptr_head = NULL;
 
 void initialize_dimensions( void );
 
-name_slist_entry* dimensions_from_doc(Jsonb *jsondoc);
+Name_slist_entry* dimensions_from_doc(Jsonb *jsondoc);
 
-static inline void sort_name_slist(name_slist_entry* head);
+static inline void sort_name_slist(Name_slist_entry* head);
 
 // char* name_from_json(Datum json_doc);
 
-jptr_listentry *paths;
+Partition_dimension *paths;
 /* initialize loads the paths we will need to follow and parses them.
  * Each path becomes an array of strings and this allows us to loop through
  * them.
@@ -62,7 +44,7 @@ jptr_listentry *paths;
 void
 initialize_dimensions()
 {
-   jptr_listentry *curr;
+   Partition_dimension *curr;
    int ret;
    int r;
    SPITupleTable *tuptable = SPI_tuptable;
@@ -71,9 +53,7 @@ initialize_dimensions()
    /* This perhaps could be a warning but better safe than sorry */
    if (NULL != dimension_ptr_head)
        elog(ERROR, "Dimension list already initialized");
-   if ((ret = SPI_connect()) < 0)
-        elog(ERROR, "SPI_connect returned %d", ret);
-   
+
    paths = NULL;
 
    /* still need to bring the date/time in for partitioning */
@@ -86,7 +66,7 @@ initialize_dimensions()
    if (NULL == SPI_tuptable)
        elog(ERROR, "Dimensions query returned no results!");
 
-   dimension_ptr_head = (jptr_listentry*) palloc0(sizeof(jptr_listentry));
+   dimension_ptr_head = (Partition_dimension *) palloc0(sizeof(Partition_dimension ));
    curr = dimension_ptr_head;
    tupdesc = tuptable->tupdesc;
    if (tuptable->numvals == 0)
@@ -108,7 +88,7 @@ initialize_dimensions()
 
        if (r + 1 < tuptable->numvals)
        {
-           curr->next = (jptr_listentry*) palloc0(sizeof(jptr_listentry));
+           curr->next = (Partition_dimension *) palloc0(sizeof(Partition_dimension ));
            curr = curr->next;
        }
        else
@@ -126,16 +106,19 @@ initialize_dimensions()
  *
  * Returns the head entry in the single linked list of name entries
  */
-name_slist_entry*
+Name_slist_entry*
 dimensions_from_doc(Jsonb *jsondoc)
 {
-    name_slist_entry* head;
-    name_slist_entry* curr;
-    name_slist_entry* next;
+    Name_slist_entry* head;
+    Name_slist_entry* curr;
+    Name_slist_entry* next;
 
-    jptr_listentry* jsonptr;
+    Partition_dimension * jsonptr;
 
-    head = (name_slist_entry*) palloc0(sizeof(name_slist_entry));
+    if (NULL == dimension_ptr_head)
+        initialize_dimensions();
+
+    head = (Name_slist_entry*) palloc0(sizeof(Name_slist_entry));
     curr = head;
     for (jsonptr = dimension_ptr_head; NULL != jsonptr; jsonptr = jsonptr->next)
     {
@@ -145,7 +128,7 @@ dimensions_from_doc(Jsonb *jsondoc)
         jsonptr = jsonptr->next;
         if (NULL != jsonptr->next)
         {
-            curr->next = (name_slist_entry*) palloc0(sizeof(name_slist_entry));
+            curr->next = (Name_slist_entry*) palloc0(sizeof(Name_slist_entry));
             curr = curr->next;
         }
     }
@@ -165,7 +148,7 @@ dimensions_from_doc(Jsonb *jsondoc)
 
 char *empty_str = "";
 
-name_slist_entry*
+Name_slist_entry*
 find_next_in_doc(Jsonb* jsondoc, JsonbIterator* iter, Jsonpointer* jptr)
 {
     JsonbValue val;
@@ -173,7 +156,7 @@ find_next_in_doc(Jsonb* jsondoc, JsonbIterator* iter, Jsonpointer* jptr)
 
     if (NULL == jsondoc)
     {
-        name_slist_entry* ret = palloc0(sizeof(name_slist_entry));
+        Name_slist_entry *ret = palloc0(sizeof(Name_slist_entry));
         elog(WARNING, "JSONPointer did not reach deep enough.");
         ret->node->label = empty_str;
     }
@@ -187,7 +170,7 @@ find_next_in_doc(Jsonb* jsondoc, JsonbIterator* iter, Jsonpointer* jptr)
             /* ok we have an array.  We had better make sure our next search
              * is numeric
              */
-            if (0 == JsonpointerIsDigit(jptr))
+            if (0 == Jsonpointer_isdigit(jptr))
                 elog(ERROR, "Trying to get non-int index of a JSON array");
 
             index = atoi(jptr->ref);
@@ -204,14 +187,14 @@ find_next_in_doc(Jsonb* jsondoc, JsonbIterator* iter, Jsonpointer* jptr)
                 }
                 if (val.type == jbvString)
                 {
-                    name_slist_entry* ret = palloc0(sizeof(name_slist_entry));
+                    Name_slist_entry *ret = palloc0(sizeof(Name_slist_entry));
                     ret->node->label = val.val.string.val;
                 }
 
             }
             else
             {
-                name_slist_entry* ret = palloc0(sizeof(name_slist_entry));
+                Name_slist_entry *ret = palloc0(sizeof(Name_slist_entry));
                 ret->node->label = empty_str;
                 elog(WARNING, "Could not find index in document");
                 return ret;
@@ -234,7 +217,7 @@ find_next_in_doc(Jsonb* jsondoc, JsonbIterator* iter, Jsonpointer* jptr)
                               elog(WARNING, "Malformed JSON object, no value");
                           if (val.type == jbvString)
                           {
-                              name_slist_entry* ret = palloc0(sizeof(name_slist_entry));
+                              Name_slist_entry *ret = palloc0(sizeof(Name_slist_entry));
                               ret->node->label = val.val.string.val;
                           }
                           else if ((val.type == jbvArray) || (val.type == jbvObject))
@@ -262,13 +245,13 @@ append_to_name(char *name, const char *value)
 }
 
 static inline void 
-sort_name_slist(name_slist_entry* head)
+sort_name_slist(Name_slist_entry *head)
 {
     int ord = 1;
     int found;
-    name_slist_entry* curr;
-    name_slist_entry* search;
-    namenode* temp;
+    Name_slist_entry *curr;
+    Name_slist_entry *search;
+    Namenode* temp;
     
 
     /* we will just do a bubble sort and swap name nodes */
@@ -296,10 +279,10 @@ sort_name_slist(name_slist_entry* head)
 }
 
 char *
-partition_name(name_slist_entry* head)
+partition_name(Name_slist_entry *head)
 {
     char* name = (char*) palloc0(NAMEDATALEN + 1);
-    name_slist_entry* curr = head;
+    Name_slist_entry *curr = head;
 
     strcpy(name, "data");
     sort_name_slist(head);
@@ -311,5 +294,4 @@ partition_name(name_slist_entry* head)
         curr = curr->next;
     }
     return name;
-    
 }
