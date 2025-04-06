@@ -64,7 +64,7 @@ initialize_dimensions()
    if (NULL == SPI_tuptable)
        elog(ERROR, "Dimensions query returned no results!");
 
-   dimension_ptr_head = (Partition_dimension *) palloc0(sizeof(Partition_dimension ));
+   dimension_ptr_head = palloc0(sizeof(Partition_dimension ));
    curr = dimension_ptr_head;
    tupdesc = tuptable->tupdesc;
    if (tuptable->numvals == 0)
@@ -81,12 +81,12 @@ initialize_dimensions()
        HeapTuple tuple = tuptable->vals[r];
        char *jptr = SPI_getvalue(tuple, tupdesc, 1);
        int ord = atoi(SPI_getvalue(tuple,tupdesc,2));
-       curr->entry = jsonpointer_parse(strlen(jptr), jptr);
+       curr->entry = jsonpointer_parse(strlen(jptr) + 1, jptr);
        curr->ord = ord;
 
        if (r + 1 < tuptable->numvals)
        {
-           curr->next = (Partition_dimension *) palloc0(sizeof(Partition_dimension ));
+           curr->next = palloc0(sizeof(Partition_dimension ));
            curr = curr->next;
        }
        else
@@ -107,16 +107,16 @@ initialize_dimensions()
 Name_slist_entry*
 dimensions_from_doc(Jsonb *jsondoc)
 {
-    Name_slist_entry* head;
-    Name_slist_entry* curr;
-    Name_slist_entry* next;
+    Name_slist_entry *head;
+    Name_slist_entry *curr;
+    Name_slist_entry *next;
 
-    Partition_dimension * jsonptr;
+    Partition_dimension *jsonptr;
 
     if (NULL == dimension_ptr_head)
         initialize_dimensions();
 
-    head = (Name_slist_entry*) palloc0(sizeof(Name_slist_entry));
+    head = palloc0(sizeof(Name_slist_entry));
     curr = head;
     for (jsonptr = dimension_ptr_head; NULL != jsonptr; jsonptr = jsonptr->next)
     {
@@ -126,7 +126,7 @@ dimensions_from_doc(Jsonb *jsondoc)
         jsonptr = jsonptr->next;
         if (NULL != jsonptr->next)
         {
-            curr->next = (Name_slist_entry*) palloc0(sizeof(Name_slist_entry));
+            curr->next = palloc0(sizeof(Name_slist_entry));
             curr = curr->next;
         }
     }
@@ -144,7 +144,6 @@ dimensions_from_doc(Jsonb *jsondoc)
  *
  */
 
-char *empty_str = "";
 
 Name_slist_entry*
 find_next_in_doc(Jsonb* jsondoc, JsonbIterator* iter, Jsonpointer* jptr)
@@ -157,7 +156,7 @@ find_next_in_doc(Jsonb* jsondoc, JsonbIterator* iter, Jsonpointer* jptr)
     if (NULL == jsondoc)
     {
         elog(WARNING, "JSONPointer did not reach deep enough.");
-        ret->node->label = empty_str;
+        ret->node->label = "";
     }
 
     while ((typ = JsonbIteratorNext(&iter, &val, false)))
@@ -173,7 +172,7 @@ find_next_in_doc(Jsonb* jsondoc, JsonbIterator* iter, Jsonpointer* jptr)
                 elog(ERROR, "Trying to get non-int index of a JSON array");
 
             index = atoi(jptr->ref);
-            for (itcount = 0; itcount <= index; ++itcount)
+            for (itcount = 0; itcount < index; ++itcount)
             {
                 typ = JsonbIteratorNext(&iter, &val, false);
             }
@@ -181,7 +180,7 @@ find_next_in_doc(Jsonb* jsondoc, JsonbIterator* iter, Jsonpointer* jptr)
             {
                 if ((val.type == jbvArray) || (val.type == jbvObject))
                 {
-                    Jsonb* doc = JsonbValueToJsonb(&val);
+                    Jsonb *doc = JsonbValueToJsonb(&val);
                     return find_next_in_doc(doc, JsonbIteratorInit(&doc->root), jptr->next);
                 }
                 if (val.type == jbvString)
@@ -193,7 +192,7 @@ find_next_in_doc(Jsonb* jsondoc, JsonbIterator* iter, Jsonpointer* jptr)
             else
             {
                 elog(WARNING, "Could not find index in document");
-                ret->node->label = empty_str;
+                ret->node->label = "";
                 return ret;
             }
         }
@@ -220,7 +219,7 @@ find_next_in_doc(Jsonb* jsondoc, JsonbIterator* iter, Jsonpointer* jptr)
                           }
                           else if ((val.type == jbvArray) || (val.type == jbvObject))
                           {
-                              Jsonb* doc = JsonbValueToJsonb(&val);
+                              Jsonb *doc = JsonbValueToJsonb(&val);
                               return find_next_in_doc(doc, JsonbIteratorInit(&doc->root), jptr->next);
                           }
                       } else if (strcmp(val.val.string.val, jptr->ref) > 0)
@@ -229,7 +228,7 @@ find_next_in_doc(Jsonb* jsondoc, JsonbIterator* iter, Jsonpointer* jptr)
                            * I am concerned about corner cases
                            */
                           iter = &last;
-                          ret->node->label = empty_str;
+                          ret->node->label = "";
                           return ret;
 
                       }
@@ -241,7 +240,7 @@ find_next_in_doc(Jsonb* jsondoc, JsonbIterator* iter, Jsonpointer* jptr)
              * Warn and return empty string
              */
             elog(WARNING, "JSONB key not found in document");
-            ret->node->label = empty_str;
+            ret->node->label = "";
             return ret;
 
         }
@@ -256,8 +255,8 @@ append_to_name(char *name, const char *value)
     if (strlen(name) + strlen(value) == NAMEDATALEN - 2)
         elog(ERROR, "NAMEDATALEN exceeded for partition name");
 
-    strcpy(name, "_");
-    strcpy(name, value);
+    strcat(name, "_");
+    strcat(name, value);
 }
 
 static void 
@@ -297,7 +296,7 @@ sort_name_slist(Name_slist_entry *head)
 char *
 partition_name(Name_slist_entry *head)
 {
-    char* name = (char*) palloc0(NAMEDATALEN + 1);
+    char* name = palloc0(NAMEDATALEN + 1);
     Name_slist_entry *curr = head;
 
     strcpy(name, "data");

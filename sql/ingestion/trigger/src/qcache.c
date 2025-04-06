@@ -54,8 +54,8 @@
 /* a little over here but keeping things generally aligned */
 #define INSERT_SIZE 32 + MAXTABLELEN
 
-MemoryContext TrigCacheCtx = NULL;
-MemoryContext TrigStateCtx = NULL;
+MemoryContext TrigCacheCtx;
+MemoryContext TrigStateCtx;
 int TrigInitialized = 0;
 const char *insertfmt = "INSERT INTO %s VALUES ($1)";
 
