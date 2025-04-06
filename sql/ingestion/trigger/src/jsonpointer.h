@@ -7,14 +7,14 @@ typedef struct Jsonpointer {
     Jsonpointer *next;
 } Jsonpointer;
 
-extern Jsonpointer *jsonpointer_parse(size_t, char *);
-extern int JsonpointerIsDigit(Jsonpointer* ptr);
+Jsonpointer *jsonpointer_parse(size_t, char *);
+int Jsonpointer_isdigit(Jsonpointer* ptr);
 
-typedef struct jptr_listentry jptr_listentry;
-typedef struct jptr_listentry {
+typedef struct Partition_dimension Partition_dimension;
+typedef struct Partition_dimension {
     Jsonpointer *entry;
     int ord;
-    jptr_listentry *next;
-} jptr_listentry;
+    Partition_dimension *next;
+} Partition_dimension;
 
 #endif

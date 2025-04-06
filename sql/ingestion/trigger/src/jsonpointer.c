@@ -71,21 +71,13 @@ jsonpointer_parse(size_t size, char *ptr)
  */
 
 int
-JsonpointerIsDigit(Jsonpointer* ptr)
+Jsonpointer_isdigit(Jsonpointer *ptr)
 {
-    int ret = 1;
-    int it;
-    for (it = 0; it < strlen(ptr->ref); ++it)
+    for (; ptr->ref; ptr->ref++)
     {
-          if (isdigit(ptr->ref[it]))
-          {
-              ret = 1;
-          }
-          else
-          {
-              ret = 0;
-          }
+        if (!isdigit(ptr->ref))
+            return 0;
     }
-    return ret;
+    return 1;
 }
 
