@@ -71,8 +71,12 @@ CREATE TABLE storage.dimension (
    id serial NOT NULL UNIQUE,
    ordinality INT NOT NULL UNIQUE DEFERRABLE INITIALLY DEFERRED,
    default_val varchar null default 'notexist',
-   fieldname varchar PRIMARY KEY
+   ts_dimension bool default false,
+   fieldname varchar PRIMARY KEY,
 ) inherits (storage.time_bound);
+
+-- there can be only one
+CREATE UNIQUE INDEX ON storage.dimension(ts_dimension) where ts_dimension; 
 
 SELECT pg_catalog.pg_extension_config_dump('storage.dimension', '');
 SELECT pg_catalog.pg_extension_config_dump('storage.dimension_id_seq', '');
