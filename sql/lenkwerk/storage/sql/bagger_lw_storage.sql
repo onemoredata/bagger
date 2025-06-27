@@ -270,7 +270,7 @@ $$;
 
 CREATE FUNCTION storage.insert_dimension
 (in_ordinality int, in_fieldname varchar, in_default_val varchar,
- in_valid_from timestamp, in_valid_until timestamp)
+ in_valid_from timestamp, in_valid_until timestamp in_ts_dimension bool)
 returns storage.dimension language sql BEGIN ATOMIC
 -- This is why the ordinality unique constraint is 
 -- initially deferred.
@@ -279,11 +279,13 @@ UPDATE storage.dimension
  WHERE ordinality >= in_ordinality;
 
 INSERT INTO storage.dimension
-            (ordinality, fieldname, default_val, valid_from, valid_until)
+            (ordinality, fieldname, default_val, valid_from, valid_until,
+            ts_dimension)
      VALUES (in_ordinality, in_fieldname,
             coalesce(in_default_val, 'notexist'),
              coalesce(in_valid_from, '-infinity'), 
-             coalesce(in_valid_until, 'infinity'))
+             coalesce(in_valid_until, 'infinity')
+            coalesce(ts_dimension, false))
   RETURNING *;
 END;
 
