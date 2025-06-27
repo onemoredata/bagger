@@ -10,8 +10,9 @@
 #include <utils/builtins.h>
 
 /* Shared prototypes */
-extern void initialize_ctx(void);
-extern void clear_plan_cache(void);
-extern SPIPlanPtr get_cached_plan(char *tablename);
+void initialize_ctx(void);
+void clear_plan_cache(void);
+SPIPlanPtr get_cached_plan(char *tablename);
 extern FunctionCallInfo fcinfo;
+extern int TrigInitialized;
 #endif
