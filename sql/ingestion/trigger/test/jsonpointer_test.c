@@ -13,7 +13,7 @@ We then use longjmp to throw the exception (just like postgres does).
 The exceptions are caught and tested with a setjmp embedded in the CATCH macro.
 */
 
-jmp_buf exenv;
+jmp_buf		exenv;
 
 #define BEGIN do{ fputs(__func__,stderr); fputs(": ",stderr); }while(0)
 #define OK do{ fputs("ok\n", stderr); return; }while(0)
@@ -33,7 +33,8 @@ jmp_buf exenv;
 void *
 palloc(size_t size)
 {
-	void *p = malloc(size);
+	void	   *p = malloc(size);
+
 	assert(p);
 	return p;
 }
@@ -41,7 +42,8 @@ palloc(size_t size)
 void *
 palloc0(size_t size)
 {
-	void *p = calloc(1, size);
+	void	   *p = calloc(1, size);
+
 	assert(p);
 	return p;
 }
@@ -64,7 +66,7 @@ static void
 success(void)
 {
 	Jsonpointer *jp;
-	char test[] = "/a/json/pointer";
+	char		test[] = "/a/json/pointer";
 
 	BEGIN;
 	NOCATCH;
@@ -93,7 +95,7 @@ invalid_buffer(void)
 static void
 rootless(void)
 {
-	char test[] = "a/json/pointer";
+	char		test[] = "a/json/pointer";
 
 	BEGIN;
 	CATCH(ERRCODE_DATA_EXCEPTION);
@@ -105,7 +107,7 @@ rootless(void)
 static void
 embedded_null(void)
 {
-	char test[] = "/a/js\0on/pointer";
+	char		test[] = "/a/js\0on/pointer";
 
 	BEGIN;
 	CATCH(ERRCODE_INVALID_ESCAPE_SEQUENCE);
@@ -116,7 +118,7 @@ embedded_null(void)
 static void
 ends_with_null(void)
 {
-	char test[] = "/a/json/pointer\0";
+	char		test[] = "/a/json/pointer\0";
 
 	BEGIN;
 	CATCH(ERRCODE_INVALID_ESCAPE_SEQUENCE);
@@ -127,7 +129,7 @@ ends_with_null(void)
 static void
 ptr_starts_with_null(void)
 {
-	char test[] = "\0/a/json/pointer";
+	char		test[] = "\0/a/json/pointer";
 
 	BEGIN;
 	CATCH(ERRCODE_DATA_EXCEPTION);
@@ -138,7 +140,7 @@ ptr_starts_with_null(void)
 static void
 key_ends_with_null(void)
 {
-	char test[] = "/a\0/json/pointer";
+	char		test[] = "/a\0/json/pointer";
 
 	BEGIN;
 	CATCH(ERRCODE_INVALID_ESCAPE_SEQUENCE);
@@ -149,7 +151,7 @@ key_ends_with_null(void)
 static void
 key_starts_with_null(void)
 {
-	char test[] = "/\0a/json/pointer";
+	char		test[] = "/\0a/json/pointer";
 
 	BEGIN;
 	CATCH(ERRCODE_INVALID_ESCAPE_SEQUENCE);

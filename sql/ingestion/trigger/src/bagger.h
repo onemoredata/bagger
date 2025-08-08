@@ -1,7 +1,7 @@
 #ifndef BAGGER_H
 #define BAGGER_H
 /* c.h is PostgreSQL's optional C features abstraction header. */
-//#include <c.h>
+/* #include <c.h> */
 #include <postgres.h>
 #include <fmgr.h>
 #include <executor/spi.h>
@@ -10,9 +10,9 @@
 #include <utils/builtins.h>
 
 /* Shared prototypes */
-void initialize_ctx(void);
-void clear_plan_cache(void);
-SPIPlanPtr get_cached_plan(char *tablename);
+void		initialize_ctx(void);
+void		clear_plan_cache(void);
+SPIPlanPtr	get_cached_plan(char *tablename);
 extern FunctionCallInfo fcinfo;
-extern int TrigInitialized;
+extern int	TrigInitialized;
 #endif

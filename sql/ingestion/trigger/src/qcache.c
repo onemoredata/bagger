@@ -11,7 +11,7 @@
  *
  *  The general logic to putting these together is that clearing
  *  the plan cache and resetting the memory context need to be done
- *  together and hte state memory context is not major enough to justify its 
+ *  together and hte state memory context is not major enough to justify its
  *  own file.
  *
  *  Error handling here is done with under the principle that where there is
@@ -46,7 +46,7 @@
     node->next = plancache.head; \
     node->next->prev = node;
 
-#define MAXTABLELEN NAMEDATALEN * 2 + 1 
+#define MAXTABLELEN NAMEDATALEN * 2 + 1
 
 /* Type oid for jsonb */
 #define JSON_TYPE 3802
@@ -56,36 +56,37 @@
 
 MemoryContext TrigCacheCtx;
 MemoryContext TrigStateCtx;
-int TrigInitialized = 0;
+int			TrigInitialized = 0;
 const char *insertfmt = "INSERT INTO %s VALUES ($1)";
 
 /* private type for this file */
-    
+
 struct lru_cache_plan
 {
-    char table[MAXTABLELEN];
-    SPIPlanPtr plan;
-    Oid reloid;
-    struct lru_cache_plan *next;
-    struct lru_cache_plan *prev;
-    time_t last_exec;
+	char		table[MAXTABLELEN];
+	SPIPlanPtr	plan;
+	Oid			reloid;
+	struct lru_cache_plan *next;
+	struct lru_cache_plan *prev;
+	time_t		last_exec;
 };
 typedef struct lru_cache_plan lru_cache_plan;
 
 typedef struct dlist_h plancache_t;
 struct dlist_h
 {
-    lru_cache_plan *head;
+	lru_cache_plan *head;
 };
 
 plancache_t plancache;
-/* prototypes */
-void initialize_ctx(void);
-void clear_cache(void);
-SPIPlanPtr get_cached_plan(char *);
-SPIPlanPtr create_cached_plan(char *);
 
-/* void initialize_ctx() 
+/* prototypes */
+void		initialize_ctx(void);
+void		clear_cache(void);
+SPIPlanPtr	get_cached_plan(char *);
+SPIPlanPtr	create_cached_plan(char *);
+
+/* void initialize_ctx()
  * Initializes the memory contexts we need to use and key state for the query
  * cache.  It does notinitialize other state data as that will be done after.
  *
@@ -94,17 +95,17 @@ SPIPlanPtr create_cached_plan(char *);
 void
 initialize_ctx()
 {
-    if (TrigInitialized)
-    {
-        ereport(FATAL,
-                errcode(ERRCODE_OBJECT_NOT_IN_PREREQUISITE_STATE),
-                errmsg("Failed to initialize Memory Contexts:  Already Initialized"));
-    }
-    TrigStateCtx = AllocSetContextCreate(TopMemoryContext, "TrigStateCtx",
-                          1024 * 1024, 1024 * 1024, 1024 * 1024);
-    TrigCacheCtx = AllocSetContextCreate(TopMemoryContext, "TrigCacheCtx",
-                          1024 * 1024, 1024 * 1024, 1024 * 1024 * 1024);
-    TrigInitialized = 1;
+	if (TrigInitialized)
+	{
+		ereport(FATAL,
+				errcode(ERRCODE_OBJECT_NOT_IN_PREREQUISITE_STATE),
+				errmsg("Failed to initialize Memory Contexts:  Already Initialized"));
+	}
+	TrigStateCtx = AllocSetContextCreate(TopMemoryContext, "TrigStateCtx",
+										 1024 * 1024, 1024 * 1024, 1024 * 1024);
+	TrigCacheCtx = AllocSetContextCreate(TopMemoryContext, "TrigCacheCtx",
+										 1024 * 1024, 1024 * 1024, 1024 * 1024 * 1024);
+	TrigInitialized = 1;
 }
 
 /*
@@ -115,8 +116,8 @@ initialize_ctx()
 void
 clear_plan_cache()
 {
-    plancache.head = NULL;
-    MemoryContextReset(TrigCacheCtx);
+	plancache.head = NULL;
+	MemoryContextReset(TrigCacheCtx);
 }
 
 /*
@@ -128,47 +129,50 @@ clear_plan_cache()
  * Returns NULL if the table does not exist.
  */
 
-SPIPlanPtr 
+SPIPlanPtr
 get_cached_plan(char *tablename)
 {
-    /* I can see the argument to move this into a macro, but only used once
-     */
-    for (lru_cache_plan *cur_node = plancache.head;
-            NULL != cur_node; 
-            cur_node = cur_node->next
-    )
-    {
-        if (0 == strncmp(tablename, cur_node->table, MAXTABLELEN)){
-            SPIPlanPtr plan = cur_node->plan;
-            cur_node->last_exec = time(0);
-            DisconnectNode(cur_node);
+	/*
+	 * I can see the argument to move this into a macro, but only used once
+	 */
+	for (lru_cache_plan *cur_node = plancache.head;
+		 NULL != cur_node;
+		 cur_node = cur_node->next
+		)
+	{
+		if (0 == strncmp(tablename, cur_node->table, MAXTABLELEN))
+		{
+			SPIPlanPtr	plan = cur_node->plan;
 
-            // This does do subtransactions but does not use XIDs
-            // This avoids writing to tables which have been dropped.
-            //
-            BeginInternalSubTransaction(NULL);
-            PG_TRY();
-            {
-                relation_open(cur_node->reloid, AccessShareLock);
-                ReleaseCurrentSubTransaction();
-            }
-            PG_CATCH();
-            { 
-                //roll back subtransaction and return null
-                DisconnectNode(cur_node);
-                pfree(cur_node);
-                RollbackAndReleaseCurrentSubTransaction();
-                FlushErrorState();
-                return NULL;
-            }
-            PG_END_TRY();
-            RollbackAndReleaseCurrentSubTransaction();
-            PrependNode(cur_node);
+			cur_node->last_exec = time(0);
+			DisconnectNode(cur_node);
 
-            return plan;
-        }
-    }
-    return create_cached_plan(tablename);
+			/* This does do subtransactions but does not use XIDs */
+			/* This avoids writing to tables which have been dropped. */
+			/* */
+			BeginInternalSubTransaction(NULL);
+			PG_TRY();
+			{
+				relation_open(cur_node->reloid, AccessShareLock);
+				ReleaseCurrentSubTransaction();
+			}
+			PG_CATCH();
+			{
+				/* roll back subtransaction and return null */
+				DisconnectNode(cur_node);
+				pfree(cur_node);
+				RollbackAndReleaseCurrentSubTransaction();
+				FlushErrorState();
+				return NULL;
+			}
+			PG_END_TRY();
+			RollbackAndReleaseCurrentSubTransaction();
+			PrependNode(cur_node);
+
+			return plan;
+		}
+	}
+	return create_cached_plan(tablename);
 }
 
 /*
@@ -179,32 +183,32 @@ get_cached_plan(char *tablename)
  *  Returns NULL if table does not exist.
  */
 
-/* not sure if this should be static or inline or not.  
+/* not sure if this should be static or inline or not.
  * Considering testability first and keeping it separate. */
-SPIPlanPtr 
+SPIPlanPtr
 create_cached_plan(char *tablename)
 {
-    RangeVar *rv;
-    Oid jsontype;
-    Oid relid;
-    char *stmt_buff;
-    TriggerData *tgdata = (TriggerData *) fcinfo->context;
+	RangeVar   *rv;
+	Oid			jsontype;
+	Oid			relid;
+	char	   *stmt_buff;
+	TriggerData *tgdata = (TriggerData *) fcinfo->context;
 
-    lru_cache_plan *entry = MemoryContextAllocZero(TrigCacheCtx, sizeof(lru_cache_plan));
+	lru_cache_plan *entry = MemoryContextAllocZero(TrigCacheCtx, sizeof(lru_cache_plan));
 
-    memcpy(entry->table, tablename, MAXTABLELEN);
+	memcpy(entry->table, tablename, MAXTABLELEN);
 
-    /* we are only doing this when we create a cached plan so probably ok. */
-    rv = makeRangeVarFromNameList(textToQualifiedNameList(cstring_to_text(entry->table)));
-    relid = RangeVarGetRelid(rv, NoLock, false);
+	/* we are only doing this when we create a cached plan so probably ok. */
+	rv = makeRangeVarFromNameList(textToQualifiedNameList(cstring_to_text(entry->table)));
+	relid = RangeVarGetRelid(rv, NoLock, false);
 
-    if (InvalidOid == relid)
-        return NULL;
-    jsontype = SPI_gettypeid(tgdata->tg_relation->rd_att, 1);
-    stmt_buff = MemoryContextAllocZero(TrigCacheCtx, INSERT_SIZE);
-    snprintf(stmt_buff, sizeof(stmt_buff), insertfmt, tablename);
-    entry->plan = SPI_prepare(stmt_buff, 1, &jsontype);
-    PrependNode(entry);
-    SPI_keepplan(entry->plan);
-    return entry->plan;
+	if (InvalidOid == relid)
+		return NULL;
+	jsontype = SPI_gettypeid(tgdata->tg_relation->rd_att, 1);
+	stmt_buff = MemoryContextAllocZero(TrigCacheCtx, INSERT_SIZE);
+	snprintf(stmt_buff, sizeof(stmt_buff), insertfmt, tablename);
+	entry->plan = SPI_prepare(stmt_buff, 1, &jsontype);
+	PrependNode(entry);
+	SPI_keepplan(entry->plan);
+	return entry->plan;
 }

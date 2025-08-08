@@ -24,19 +24,20 @@
  * dimensions than JSON keys so this should be a performance win.
  */
 
-Name_slist_entry* find_next_in_doc(Jsonb* jsondoc, JsonbIterator* iter, 
-        Jsonpointer* jptr, int is_timestamp);
+Name_slist_entry *find_next_in_doc(Jsonb *jsondoc, JsonbIterator *iter,
+								   Jsonpointer *jptr, int is_timestamp);
 
 
 Partition_dimension *dimension_ptr_head;
 
 
-Name_slist_entry* dimensions_from_doc(Jsonb *jsondoc);
+Name_slist_entry *dimensions_from_doc(Jsonb *jsondoc);
 
-static void sort_name_slist(Name_slist_entry* head);
+static void sort_name_slist(Name_slist_entry *head);
 
 Partition_dimension *paths;
 Partition_dimension *timestamp;
+
 /* initialize loads the paths we will need to follow and parses them.
  * Each path becomes an array of strings and this allows us to loop through
  * them.
@@ -44,66 +45,68 @@ Partition_dimension *timestamp;
 void
 initialize_dimensions()
 {
-   Partition_dimension *curr;
-   int ret;
-   int r;
-   SPITupleTable *tuptable = SPI_tuptable;
-   TupleDesc tupdesc;
+	Partition_dimension *curr;
+	int			ret;
+	int			r;
+	SPITupleTable *tuptable = SPI_tuptable;
+	TupleDesc	tupdesc;
 
-   /* This perhaps could be a warning but better safe than sorry */
-   if (NULL != dimension_ptr_head)
-       elog(ERROR, "Dimension list already initialized");
+	/* This perhaps could be a warning but better safe than sorry */
+	if (NULL != dimension_ptr_head)
+		elog(ERROR, "Dimension list already initialized");
 
-   paths = NULL;
+	paths = NULL;
 
-   /* still need to bring the date/time in for partitioning */
-   if (SPI_OK_SELECT != (ret = SPI_execute("SELECT fieldname, row_number() "
-                                          "     over(order by ordinality asc) "
-                                          "     as ordinality, "
-                                          "     ts_dimension::int "
-                                          "FROM storage.dimension "
-                                          "ORDER BY fieldname ASC", true, 0)))
-       elog(ERROR, "SPI_execute returned %d", ret);
-   if (NULL == SPI_tuptable)
-       elog(ERROR, "Dimensions query returned no results!");
+	/* still need to bring the date/time in for partitioning */
+	if (SPI_OK_SELECT != (ret = SPI_execute("SELECT fieldname, row_number() "
+											"     over(order by ordinality asc) "
+											"     as ordinality, "
+											"     ts_dimension::int "
+											"FROM storage.dimension "
+											"ORDER BY fieldname ASC", true, 0)))
+		elog(ERROR, "SPI_execute returned %d", ret);
+	if (NULL == SPI_tuptable)
+		elog(ERROR, "Dimensions query returned no results!");
 
-   dimension_ptr_head = palloc0(sizeof(Partition_dimension ));
-   curr = dimension_ptr_head;
-   tupdesc = tuptable->tupdesc;
-   if (tuptable->numvals == 0)
-       elog(ERROR, "0 Dimensions Returned");
+	dimension_ptr_head = palloc0(sizeof(Partition_dimension));
+	curr = dimension_ptr_head;
+	tupdesc = tuptable->tupdesc;
+	if (tuptable->numvals == 0)
+		elog(ERROR, "0 Dimensions Returned");
 
-   for (r = 0; r < tuptable->numvals; r++)
-   {
-       /* yes we are leaving some spare allocations around but this is not
-        * intended to be very many or have much of an effect.
-        *
-        * Prioritizing readability over memory efficiency especially for a
-        * small amount of memory.
-        */
-       HeapTuple tuple = tuptable->vals[r];
-       char *jptr = SPI_getvalue(tuple, tupdesc, 1);
-       int ord = atoi(SPI_getvalue(tuple,tupdesc,2));
-       if (atoi(SPI_getvalue(tuple,tupdesc,3)))
-       {
-           timestamp = curr;
-       }
-       curr->entry = jsonpointer_parse(strlen(jptr) + 1, jptr);
-       curr->ord = ord;
+	for (r = 0; r < tuptable->numvals; r++)
+	{
+		/*
+		 * yes we are leaving some spare allocations around but this is not
+		 * intended to be very many or have much of an effect.
+		 *
+		 * Prioritizing readability over memory efficiency especially for a
+		 * small amount of memory.
+		 */
+		HeapTuple	tuple = tuptable->vals[r];
+		char	   *jptr = SPI_getvalue(tuple, tupdesc, 1);
+		int			ord = atoi(SPI_getvalue(tuple, tupdesc, 2));
 
-       if (r + 1 < tuptable->numvals)
-       {
-           curr->next = palloc0(sizeof(Partition_dimension ));
-           curr = curr->next;
-       }
-       else
-       {
-           /* just making this explicit */
-           curr->next = NULL;
-       }
+		if (atoi(SPI_getvalue(tuple, tupdesc, 3)))
+		{
+			timestamp = curr;
+		}
+		curr->entry = jsonpointer_parse(strlen(jptr) + 1, jptr);
+		curr->ord = ord;
+
+		if (r + 1 < tuptable->numvals)
+		{
+			curr->next = palloc0(sizeof(Partition_dimension));
+			curr = curr->next;
+		}
+		else
+		{
+			/* just making this explicit */
+			curr->next = NULL;
+		}
 
 
-   }
+	}
 }
 
 /* Takes a jsonb document and returns the dimensions from the jsonb document
@@ -111,33 +114,33 @@ initialize_dimensions()
  *
  * Returns the head entry in the single linked list of name entries
  */
-Name_slist_entry*
+Name_slist_entry *
 dimensions_from_doc(Jsonb *jsondoc)
 {
-    Name_slist_entry *head;
-    Name_slist_entry *curr;
-    Name_slist_entry *next;
+	Name_slist_entry *head;
+	Name_slist_entry *curr;
+	Name_slist_entry *next;
 
-    Partition_dimension *jsonptr;
+	Partition_dimension *jsonptr;
 
-    if (NULL == dimension_ptr_head)
-        initialize_dimensions();
+	if (NULL == dimension_ptr_head)
+		initialize_dimensions();
 
-    head = palloc0(sizeof(Name_slist_entry));
-    curr = head;
-    for (jsonptr = dimension_ptr_head; NULL != jsonptr; jsonptr = jsonptr->next)
-    {
-        next = find_next_in_doc(jsondoc, JsonbIteratorInit (&jsondoc->root), jsonptr->entry, (timestamp == jsonptr));
-        curr->next = next;
-        next->node->ord = jsonptr->ord;
-        jsonptr = jsonptr->next;
-        if (NULL != jsonptr->next)
-        {
-            curr->next = palloc0(sizeof(Name_slist_entry));
-            curr = curr->next;
-        }
-    }
-    return head;
+	head = palloc0(sizeof(Name_slist_entry));
+	curr = head;
+	for (jsonptr = dimension_ptr_head; NULL != jsonptr; jsonptr = jsonptr->next)
+	{
+		next = find_next_in_doc(jsondoc, JsonbIteratorInit(&jsondoc->root), jsonptr->entry, (timestamp == jsonptr));
+		curr->next = next;
+		next->node->ord = jsonptr->ord;
+		jsonptr = jsonptr->next;
+		if (NULL != jsonptr->next)
+		{
+			curr->next = palloc0(sizeof(Name_slist_entry));
+			curr = curr->next;
+		}
+	}
+	return head;
 }
 
 /* Most of the work is done here.
@@ -152,186 +155,196 @@ dimensions_from_doc(Jsonb *jsondoc)
  */
 
 
-Name_slist_entry*
-find_next_in_doc(Jsonb* jsondoc, JsonbIterator* iter, Jsonpointer* jptr, int is_timestamp)
+Name_slist_entry *
+find_next_in_doc(Jsonb *jsondoc, JsonbIterator *iter, Jsonpointer *jptr, int is_timestamp)
 {
-    JsonbValue val;
-    JsonbIteratorToken typ;
-    JsonbIterator last;
+	JsonbValue	val;
+	JsonbIteratorToken typ;
+	JsonbIterator last;
 
-    Name_slist_entry *ret = palloc0(sizeof(Name_slist_entry));
-    if (NULL == jsondoc)
-    {
-        elog(WARNING, "JSONPointer did not reach deep enough.");
-        ret->node->label = "";
-    }
+	Name_slist_entry *ret = palloc0(sizeof(Name_slist_entry));
 
-    while ((typ = JsonbIteratorNext(&iter, &val, false)))
-    {
-        if (typ == WJB_BEGIN_ARRAY)
-        {
-            int itcount;
-            int index;
-            /* ok we have an array.  We had better make sure our next search
-             * is numeric
-             */
-            if (0 == Jsonpointer_isdigit(jptr))
-                elog(ERROR, "Trying to get non-int index of a JSON array");
+	if (NULL == jsondoc)
+	{
+		elog(WARNING, "JSONPointer did not reach deep enough.");
+		ret->node->label = "";
+	}
 
-            index = atoi(jptr->ref);
-            for (itcount = 0; itcount < index; ++itcount)
-            {
-                typ = JsonbIteratorNext(&iter, &val, false);
-            }
-            if (typ == WJB_VALUE)
-            {
-                if ((val.type == jbvArray) || (val.type == jbvObject))
-                {
-                    Jsonb *doc = JsonbValueToJsonb(&val);
-                    return find_next_in_doc(doc, JsonbIteratorInit(&doc->root), jptr->next, is_timestamp);
-                }
-                if (val.type == jbvString)
-                {
-                    if (is_timestamp)
-                    {
-                        char* timestamp_part = palloc0(13);
-                        memcpy(timestamp_part, val.val.string.val, 12);
-                        timestamp_part[4]    = '_';
-                        timestamp_part[7]    = '_';
-                        timestamp_part[10]   = '_';
-                        ret->node->label = timestamp_part;
-                    }
-                    else
-                    {
-                        ret->node->label = val.val.string.val;
-                    }
+	while ((typ = JsonbIteratorNext(&iter, &val, false)))
+	{
+		if (typ == WJB_BEGIN_ARRAY)
+		{
+			int			itcount;
+			int			index;
 
-                }
+			/*
+			 * ok we have an array.  We had better make sure our next search
+			 * is numeric
+			 */
+			if (0 == Jsonpointer_isdigit(jptr))
+				elog(ERROR, "Trying to get non-int index of a JSON array");
 
-            }
-            else
-            {
-                elog(WARNING, "Could not find index in document");
-                ret->node->label = "";
-                return ret;
-            }
-        }
-        else
-        {
-            /* Here we assume it is an object.  We may want to eventually
-             * test for it explicitly though.
-             */
-            while ((typ = JsonbIteratorNext(&iter, &val, false)))
-            {
-               if (typ == WJB_KEY)
-               {
-                  last = *iter; /* copy for restore if we need it */
-                  if (val.type == jbvString)
-                  {
-                      if (strcmp(val.val.string.val, jptr->ref) == 0)
-                      {
-                          typ = JsonbIteratorNext(&iter, &val, false);
-                          if (typ != WJB_VALUE)
-                              elog(WARNING, "Malformed JSON object, no value");
-                          if (val.type == jbvString)
-                          {
-                              ret->node->label = val.val.string.val;
-                          }
-                          else if ((val.type == jbvArray) || (val.type == jbvObject))
-                          {
-                              Jsonb *doc = JsonbValueToJsonb(&val);
-                              return find_next_in_doc(doc, JsonbIteratorInit(&doc->root), jptr->next, is_timestamp);
-                          }
-                      } else if (strcmp(val.val.string.val, jptr->ref) > 0)
-                      {
-                          /* we went too far, return empty string
-                           * I am concerned about corner cases
-                           */
-                          iter = &last;
-                          ret->node->label = "";
-                          return ret;
+			index = atoi(jptr->ref);
+			for (itcount = 0; itcount < index; ++itcount)
+			{
+				typ = JsonbIteratorNext(&iter, &val, false);
+			}
+			if (typ == WJB_VALUE)
+			{
+				if ((val.type == jbvArray) || (val.type == jbvObject))
+				{
+					Jsonb	   *doc = JsonbValueToJsonb(&val);
 
-                      }
-                  }
-               }
-            }
-            /* if we get here and haven't returned, something went wrong.
-             * Most likely the document did not have the field in question.
-             * Warn and return empty string
-             */
-            elog(WARNING, "JSONB key not found in document");
-            ret->node->label = "";
-            return ret;
+					return find_next_in_doc(doc, JsonbIteratorInit(&doc->root), jptr->next, is_timestamp);
+				}
+				if (val.type == jbvString)
+				{
+					if (is_timestamp)
+					{
+						char	   *timestamp_part = palloc0(13);
 
-        }
-    }
-    return NULL;
+						memcpy(timestamp_part, val.val.string.val, 12);
+						timestamp_part[4] = '_';
+						timestamp_part[7] = '_';
+						timestamp_part[10] = '_';
+						ret->node->label = timestamp_part;
+					}
+					else
+					{
+						ret->node->label = val.val.string.val;
+					}
+
+				}
+
+			}
+			else
+			{
+				elog(WARNING, "Could not find index in document");
+				ret->node->label = "";
+				return ret;
+			}
+		}
+		else
+		{
+			/*
+			 * Here we assume it is an object.  We may want to eventually test
+			 * for it explicitly though.
+			 */
+			while ((typ = JsonbIteratorNext(&iter, &val, false)))
+			{
+				if (typ == WJB_KEY)
+				{
+					last = *iter;	/* copy for restore if we need it */
+					if (val.type == jbvString)
+					{
+						if (strcmp(val.val.string.val, jptr->ref) == 0)
+						{
+							typ = JsonbIteratorNext(&iter, &val, false);
+							if (typ != WJB_VALUE)
+								elog(WARNING, "Malformed JSON object, no value");
+							if (val.type == jbvString)
+							{
+								ret->node->label = val.val.string.val;
+							}
+							else if ((val.type == jbvArray) || (val.type == jbvObject))
+							{
+								Jsonb	   *doc = JsonbValueToJsonb(&val);
+
+								return find_next_in_doc(doc, JsonbIteratorInit(&doc->root), jptr->next, is_timestamp);
+							}
+						}
+						else if (strcmp(val.val.string.val, jptr->ref) > 0)
+						{
+							/*
+							 * we went too far, return empty string I am
+							 * concerned about corner cases
+							 */
+							iter = &last;
+							ret->node->label = "";
+							return ret;
+
+						}
+					}
+				}
+			}
+
+			/*
+			 * if we get here and haven't returned, something went wrong. Most
+			 * likely the document did not have the field in question. Warn
+			 * and return empty string
+			 */
+			elog(WARNING, "JSONB key not found in document");
+			ret->node->label = "";
+			return ret;
+
+		}
+	}
+	return NULL;
 }
 
 static void
 append_to_name(char *name, const char *value)
 {
-    /* 1 for the null terminator and one for the separator, so 2 */
-    if (strlen(name) + strlen(value) == NAMEDATALEN - 2)
-        elog(ERROR, "NAMEDATALEN exceeded for partition name");
+	/* 1 for the null terminator and one for the separator, so 2 */
+	if (strlen(name) + strlen(value) == NAMEDATALEN - 2)
+		elog(ERROR, "NAMEDATALEN exceeded for partition name");
 
-    strcat(name, "_");
-    strcat(name, value);
+	strcat(name, "_");
+	strcat(name, value);
 }
 
-static void 
+static void
 sort_name_slist(Name_slist_entry *head)
 {
-    int ord = 1;
-    int found;
-    Name_slist_entry *curr;
-    Name_slist_entry *search;
-    Namenode* temp;
-    
+	int			ord = 1;
+	int			found;
+	Name_slist_entry *curr;
+	Name_slist_entry *search;
+	Namenode   *temp;
 
-    /* we will just do a bubble sort and swap name nodes */
-    for (curr = head; curr != NULL; curr = curr->next)
-    {
-        if (curr->node->ord == ord)
-        {
-            continue;
-        } 
-        else
-        {
-            for (found = 0, search = curr; search != NULL || found; search = search->next)
-            {
-                if (search->node->ord == ord)
-                {
-                    temp = search->node;
-                    search->node = curr->node;
-                    curr->node = temp;
 
-                    found = 1;
-                }
-            }
-        }
-    }
+	/* we will just do a bubble sort and swap name nodes */
+	for (curr = head; curr != NULL; curr = curr->next)
+	{
+		if (curr->node->ord == ord)
+		{
+			continue;
+		}
+		else
+		{
+			for (found = 0, search = curr; search != NULL || found; search = search->next)
+			{
+				if (search->node->ord == ord)
+				{
+					temp = search->node;
+					search->node = curr->node;
+					curr->node = temp;
+
+					found = 1;
+				}
+			}
+		}
+	}
 }
 
 char *
 partition_name(Datum jsonvalue)
 {
-    char *name = palloc0(NAMEDATALEN + 1);
-    Name_slist_entry *curr;
-    Name_slist_entry *head;
-    
-    head = dimensions_from_doc(DatumGetJsonbP(jsonvalue));
-    curr = head;
+	char	   *name = palloc0(NAMEDATALEN + 1);
+	Name_slist_entry *curr;
+	Name_slist_entry *head;
 
-    strcpy(name, "data");
-    sort_name_slist(head);
+	head = dimensions_from_doc(DatumGetJsonbP(jsonvalue));
+	curr = head;
+
+	strcpy(name, "data");
+	sort_name_slist(head);
 
 
-    while (NULL != curr)
-    {
-        append_to_name(name, curr->node->label);
-        curr = curr->next;
-    }
-    return name;
+	while (NULL != curr)
+	{
+		append_to_name(name, curr->node->label);
+		curr = curr->next;
+	}
+	return name;
 }
-
