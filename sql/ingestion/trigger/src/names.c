@@ -4,7 +4,8 @@
 #include "names.h"
 #include <utils/jsonb.h>
 
-/* Bagger name munger module
+/*
+ * Bagger name munger module
  *
  * Copyright (C) 2024-2025 One More Data
  *
@@ -15,12 +16,13 @@
  */
 
 
-/* The overall approach we take is to retrieve and store the jsonpointers
+/*
+ * The overall approach we take is to retrieve and store the jsonpointers
  * in alphabetical order (which in c locale corresponds to the same collation
  * order as our search order.
  *
  * We then store this with the ordinal, and sort the labels by ordinal before
-  generating the table name.  We can generally assume that there are fewer
+ * generating the table name.  We can generally assume that there are fewer
  * dimensions than JSON keys so this should be a performance win.
  */
 
@@ -38,7 +40,8 @@ static void sort_name_slist(Name_slist_entry *head);
 Partition_dimension *paths;
 Partition_dimension *timestamp;
 
-/* initialize loads the paths we will need to follow and parses them.
+/*
+ * Initialize loads the paths we will need to follow and parses them.
  * Each path becomes an array of strings and this allows us to loop through
  * them.
  */
@@ -109,11 +112,13 @@ initialize_dimensions()
 	}
 }
 
-/* Takes a jsonb document and returns the dimensions from the jsonb document
+/*
+ * Takes a jsonb document and returns the dimensions from the jsonb document
  * based on the jsonpointers for the dimensions.
  *
  * Returns the head entry in the single linked list of name entries
  */
+
 Name_slist_entry *
 dimensions_from_doc(Jsonb *jsondoc)
 {
@@ -143,7 +148,8 @@ dimensions_from_doc(Jsonb *jsondoc)
 	return head;
 }
 
-/* Most of the work is done here.
+/*
+ * Most of the work is done here.
  *
  * Takes in a jsonb document, an iterator, and the jsonptr to find.
  * Calls recursively on deeper sub-documents when we need to search pieces
@@ -153,7 +159,6 @@ dimensions_from_doc(Jsonb *jsondoc)
  * JSONB key order (alphabetical, C locale collation).
  *
  */
-
 
 Name_slist_entry *
 find_next_in_doc(Jsonb *jsondoc, JsonbIterator *iter, Jsonpointer *jptr, int is_timestamp)
@@ -195,7 +200,8 @@ find_next_in_doc(Jsonb *jsondoc, JsonbIterator *iter, Jsonpointer *jptr, int is_
 				{
 					Jsonb	   *doc = JsonbValueToJsonb(&val);
 
-					return find_next_in_doc(doc, JsonbIteratorInit(&doc->root), jptr->next, is_timestamp);
+					return find_next_in_doc(doc, JsonbIteratorInit(&doc->root),
+											jptr->next, is_timestamp);
 				}
 				if (val.type == jbvString)
 				{
@@ -303,7 +309,7 @@ sort_name_slist(Name_slist_entry *head)
 	Namenode   *temp;
 
 
-	/* we will just do a bubble sort and swap name nodes */
+	/* We will just do a bubble sort and swap name nodes */
 	for (curr = head; curr != NULL; curr = curr->next)
 	{
 		if (curr->node->ord == ord)

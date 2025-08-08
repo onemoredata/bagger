@@ -6,9 +6,9 @@
 #include "jsonpointer.h"
 
 /*
- * Given a buffer with a JSON Pointer string, returns the parsed Jsonpointer linked list.
- * All items are palloced to the current memory context.
- * This is due to the fact that the functions may be used at some point other than
+ * Given a buffer with a JSON Pointer string, returns the parsed Jsonpointer
+ * linked list. All items are palloced to the current memory context. This is
+ * due to the fact that the functions may be used at some point other than
  * initializing cached structures.
  *
  * This function may modify the buffer pointed to by ptr.

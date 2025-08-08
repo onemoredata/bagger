@@ -7,11 +7,12 @@
 #include "jsonpointer.h"
 
 /*
-The dummy palloc, palloc0, errstart_cold, and errcode
-build enough of a test harness to catch exceptions raised with ereport.
-We then use longjmp to throw the exception (just like postgres does).
-The exceptions are caught and tested with a setjmp embedded in the CATCH macro.
-*/
+ * The dummy palloc, palloc0, errstart_cold, and errcode
+ * build enough of a test harness to catch exceptions raised with ereport.
+ * We then use longjmp to throw the exception (just like postgres does).
+ * The exceptions are caught and tested with a setjmp embedded in the CATCH
+ * macro.
+ */
 
 jmp_buf		exenv;
 

@@ -6,7 +6,7 @@
 #include <catalog/namespace.h>
 #include <utils/varlena.h>
 
-/********************************************************************
+/*
  *  This file handles the memory context globals and the plan cache
  *
  *  The general logic to putting these together is that clearing
@@ -51,7 +51,8 @@
 /* Type oid for jsonb */
 #define JSON_TYPE 3802
 
-/* a little over here but keeping things generally aligned */
+/* A little over here but keeping things generally aligned */
+/* TODO: NAMEDATALEN * 2 + 1 (see above) is for sure NOT aligned */
 #define INSERT_SIZE 32 + MAXTABLELEN
 
 MemoryContext TrigCacheCtx;
@@ -59,7 +60,9 @@ MemoryContext TrigStateCtx;
 int			TrigInitialized = 0;
 const char *insertfmt = "INSERT INTO %s VALUES ($1)";
 
-/* private type for this file */
+/*
+ * Private type for this file
+ */
 
 struct lru_cache_plan
 {
@@ -86,7 +89,8 @@ void		clear_cache(void);
 SPIPlanPtr	get_cached_plan(char *);
 SPIPlanPtr	create_cached_plan(char *);
 
-/* void initialize_ctx()
+/*
+ * void initialize_ctx()
  * Initializes the memory contexts we need to use and key state for the query
  * cache.  It does notinitialize other state data as that will be done after.
  *
@@ -147,9 +151,10 @@ get_cached_plan(char *tablename)
 			cur_node->last_exec = time(0);
 			DisconnectNode(cur_node);
 
-			/* This does do subtransactions but does not use XIDs */
-			/* This avoids writing to tables which have been dropped. */
-			/* */
+			/*
+			 * This does do subtransactions but does not use XIDs.
+			 * This avoids writing to tables which have been dropped.
+			 */
 			BeginInternalSubTransaction(NULL);
 			PG_TRY();
 			{
@@ -158,7 +163,7 @@ get_cached_plan(char *tablename)
 			}
 			PG_CATCH();
 			{
-				/* roll back subtransaction and return null */
+				/* Roll back subtransaction and return null */
 				DisconnectNode(cur_node);
 				pfree(cur_node);
 				RollbackAndReleaseCurrentSubTransaction();
@@ -183,7 +188,7 @@ get_cached_plan(char *tablename)
  *  Returns NULL if table does not exist.
  */
 
-/* not sure if this should be static or inline or not.
+/* TODO: not sure if this should be static or inline or not.
  * Considering testability first and keeping it separate. */
 SPIPlanPtr
 create_cached_plan(char *tablename)
@@ -194,11 +199,12 @@ create_cached_plan(char *tablename)
 	char	   *stmt_buff;
 	TriggerData *tgdata = (TriggerData *) fcinfo->context;
 
-	lru_cache_plan *entry = MemoryContextAllocZero(TrigCacheCtx, sizeof(lru_cache_plan));
+	lru_cache_plan *entry = MemoryContextAllocZero(TrigCacheCtx,
+												   sizeof(lru_cache_plan));
 
 	memcpy(entry->table, tablename, MAXTABLELEN);
 
-	/* we are only doing this when we create a cached plan so probably ok. */
+	/* We are only doing this when we create a cached plan so probably ok. */
 	rv = makeRangeVarFromNameList(textToQualifiedNameList(cstring_to_text(entry->table)));
 	relid = RangeVarGetRelid(rv, NoLock, false);
 
