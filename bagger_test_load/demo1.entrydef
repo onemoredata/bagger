@@ -1,0 +1,48 @@
+{
+  "endpoint":	{
+	  "desc": "Dimension endpoint",
+	  "type": "str",
+	  "values": {
+	  	"installs": 0.333,
+		"clicks": 0.333,
+		"impressions": 1.0
+	  }
+  	},
+  "stage":	{
+      "desc": "Dimension stage",
+	  "type": "str",
+	  "values": {
+	    "request": 0.5995,
+		"callback": 0.4
+	  }
+    },
+  "word_doc":	{
+	  "desc": "Just some payload",
+	  "type": "words",
+	  "min": 3,
+	  "max": 10,
+	  "linelen": 78
+    },
+  "subobject1":	{
+	  "desc": "Example of a nested object",
+	  "type": "object",
+	  "elements":	{
+		  "foo":	{
+			  "desc": "A foo string",
+			  "type": "str",
+			  "values": {
+			  	"foo1": 0.5,
+				"foo2": 1.0
+			  }
+		    },
+		  "bar":	{
+			  "desc": "A bar string",
+			  "type": "str",
+			  "values": {
+			  	"bar1": 0.5,
+				"bar2": 1.0
+			  }
+		    }
+	    }
+    }
+}
