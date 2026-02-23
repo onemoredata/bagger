@@ -498,7 +498,7 @@ BEGIN
 		query = 'CREATE TABLE IF NOT EXISTS '
 				|| quote_ident(nspname) || '.'
 				|| quote_ident(partname)
-				|| ' (id bigserial primary key, entry jsonb NOT NULL);';
+				|| ' (entry jsonb NOT NULL);';
 		EXECUTE query;
 		INSERT INTO data_partition_name (partition_name, set_id, valid_at)
 			VALUES (partname,
@@ -510,7 +510,7 @@ BEGIN
 	query = 'CREATE TABLE IF NOT EXISTS '
 			|| quote_ident(nspname) || '.'
 			|| quote_ident(relname || ts_suffix)
-			|| ' (id bigserial primary key, entry jsonb NOT NULL,'
+			|| ' (entry jsonb NOT NULL,'
 			|| ' ingestion_ts timestamptz, error_msg text);';
 	EXECUTE query;
 	INSERT INTO data_partition_name (partition_name, set_id, valid_at)
@@ -522,7 +522,7 @@ BEGIN
 	query = 'CREATE TABLE IF NOT EXISTS '
 			|| quote_ident(nspname) || '.'
 			|| quote_ident(relname || ts_suffix)
-			|| ' (id bigserial primary key, entry text NOT NULL,'
+			|| ' (entry text NOT NULL,'
 			|| ' ingestion_ts timestamptz, error_msg text);';
 	EXECUTE query;
 	INSERT INTO data_partition_name (partition_name, set_id, valid_at)
