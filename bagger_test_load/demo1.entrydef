@@ -19,8 +19,8 @@
   "word_doc":	{
 	  "desc": "Just some payload",
 	  "type": "words",
-	  "min": 3,
-	  "max": 10,
+	  "min": 4,
+	  "max": 13,
 	  "linelen": 78
     },
   "subobject1":	{

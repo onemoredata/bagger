@@ -124,6 +124,7 @@ class TestLoadReader:
 
         if self.timing > 0.0:
             wait = due - time.time()
+            #print("now", time.time(), "ts", ts, "due", due, "wait", wait)
             if wait > 0.0:
                 time.sleep(wait)
 

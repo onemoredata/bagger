@@ -28,7 +28,7 @@ def main():
     with open(opts.input, 'r') as fd:
         definition = json.loads(fd.read())
 
-    step = 1.0 / (opts.rpm * 60.0)
+    step = 1.0 / (opts.rpm / 60.0)
     rows = int(opts.minutes * opts.rpm)
 
     tlgen = TestLoadGenerator(definition, seed = opts.seed)
