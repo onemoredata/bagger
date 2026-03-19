@@ -39,12 +39,38 @@ CREATE TABLE routing_config (
 CREATE INDEX routing_config_valid_idx ON routing_config(valid_from);
 
 
+-- ----
+-- index_config
+--
+--	Configuration of what indexes are created on data partitions. This
+--	is kept separate from the routing configuration so that indexing
+--	can be changed independent of that.
+-- ----
+CREATE TABLE index_config (
+	id				serial PRIMARY KEY,
+	config			jsonb NOT NULL,
+	valid_from		timestamptz NOT NULL
+);
+CREATE INDEX index_config_valid_idx ON index_config(valid_from);
+
+
+-- ----
+-- data_partition_set
+--
+--	Tracking of valid_at timestamps for which a set of data partitions
+--	currently exists.
+-- ----
 CREATE TABLE data_partition_set (
 	id				bigserial PRIMARY KEY,
 	valid_at		timestamptz NOT NULL UNIQUE
 );
 
 
+-- ----
+-- data_partition_name
+--
+--	Tracking of which individual partitions in a partition_set
+--	currently exist.
 CREATE TABLE data_partition_name (
 	partition_name	text PRIMARY KEY,
 	set_id			bigint NOT NULL REFERENCES data_partition_set (id)
@@ -59,7 +85,8 @@ CREATE INDEX data_partition_name_valid_idx
 -- schute
 --
 --	Ingestion table. No data actually ever ends up in this table. 
---	The ingestion trigger BEFORE INSERT is distributing 
+--	The ingestion trigger BEFORE INSERT is distributing the new
+--	entry into the data partitions and returns NULL.
 -- ----
 CREATE TABLE bagger_data.schute (
 	entry	text NOT NULL
@@ -79,6 +106,7 @@ AS $$
 -- ----
 DECLARE
 	result		jsonb;
+	idxresult	jsonb;
 	key			text;
 	value		jsonb;
 	svalue		text[];
@@ -99,6 +127,23 @@ BEGIN
 		RAISE EXCEPTION 'no valid partition routing entry found at %', ts;
 	END IF;
 
+	-- ----
+	-- Add the active index_config info
+	-- ----
+	SELECT config INTO idxresult
+		FROM index_config
+		WHERE valid_from <= ts
+		ORDER BY valid_from DESC
+		LIMIT 1;
+	IF NOT FOUND
+	THEN
+		RAISE EXCEPTION 'no valid index config entry found at %', ts;
+	END IF;
+	result = result || jsonb_build_object('indexes', idxresult);
+
+	-- ----
+	-- Add the base_config entries to the result
+	-- ----
 	FOR base_row IN SELECT B.key, B.value FROM base_config B
 	LOOP
 		result = result || jsonb_build_object(base_row.key, base_row.value);
@@ -414,6 +459,16 @@ $$ LANGUAGE plpgsql;
 CREATE FUNCTION data_partition_maintenance()
 RETURNS void
 AS $$
+-- ----
+-- data_partition_maintenance()
+--
+--	Function that is supposed to be called in a cron(8) job at an interval
+--	suitable for the configured partition rotation interval. It creates
+--	all data partitions needed for the configured intervals, both into
+--	the past (expiration) and future (precreate).
+--
+--	It also drops all data partitions that are past expiration date.
+-- ----
 DECLARE
 	rotation_intvl	text;
 	handle_from		timestamptz;
@@ -424,6 +479,9 @@ BEGIN
 
 	raise notice 'current_timestamp %', current_timestamp;
 
+	-- ----
+	-- Calculate the time frame that we are handling.
+	-- ----
 	rotation_intvl = get_base_config('rotation_interval');
 	handle_from  = ts_trunc_to_interval(CURRENT_TIMESTAMP -
 					get_base_config('expiration_interval')::interval,
@@ -434,12 +492,32 @@ BEGIN
 
 	raise notice 'maint from % until %', handle_from, handle_until;
 
+	-- ----
+	-- Drop all expired data partitions. The tracking table
+	-- data_partition_name has a cascading foreign key on
+	-- data_partition_set and a trigger that will actually
+	-- drop the partition table. So simply deleting all the
+	-- expired sets here will do it all.
+	-- ----
 	DELETE FROM data_partition_set
 		WHERE valid_at < handle_from;
 
+	-- ----
+	-- We now loop over all valid_at timestamp within the maintenance
+	-- window and check if a partition set for that timestamp exists.
+	-- If it doesn't we create all the partitions needed for that
+	-- valid_at moment.
+	-- ----
 	handle_now = handle_from;
 	WHILE handle_now <= handle_until
 	LOOP
+		-- TODO: we might need to create data partitions retro-actively
+		-- at some point if the routing config gets changed with a
+		-- valid_at timestamp that is less in the future than the
+		-- current precreate_interval. But that opens a big can of
+		-- worms since there could already be data in the system that
+		-- had been routed according to the previous configuration and
+		-- therefore may need to migrate into the new data partitions.
 		IF NOT EXISTS (SELECT true FROM data_partition_set
 						   WHERE valid_at = handle_now)
 		THEN
@@ -460,6 +538,12 @@ $$ LANGUAGE plpgsql;
 CREATE FUNCTION create_data_partitions_at(ts timestamptz)
 RETURNS void
 AS $$
+-- ----
+-- create_data_partitions_at(ts timestamp)
+--
+--	Function that creates all necessary data partitions for a specific
+--	valid_at rotation interval timestamp.
+-- ----
 DECLARE
 	config		jsonb;
 	partmap		jsonb;
@@ -473,6 +557,10 @@ DECLARE
 BEGIN
 	SET LOCAL search_path TO 'bagger_schute';
 
+	-- ----
+	-- Since the routing config can change at any rotation_interval we
+	-- need to look it up separately for every one.
+	-- ----
 	config = routing_config_at(ts);
 	partmap = routing_map_at(ts);
 	nspname = 'bagger_data';
@@ -492,6 +580,12 @@ BEGIN
 			VALUES (ts_trunc);
 	END IF;
 
+	-- ----
+	-- Create the actual data partitions based on the short values of
+	-- the dimension values. Also create the configured indexes for
+	-- the data partitions and record the new partition in the tracking
+	-- table data_partition_name.
+	-- ----
 	FOR relname IN SELECT * FROM partition_basenames(partmap)
 	LOOP
 		partname = relname || ts_suffix;
@@ -500,12 +594,19 @@ BEGIN
 				|| quote_ident(partname)
 				|| ' (entry jsonb NOT NULL);';
 		EXECUTE query;
+
+		PERFORM create_partition_indexes(nspname, partname, config);
+
 		INSERT INTO data_partition_name (partition_name, set_id, valid_at)
 			VALUES (partname,
 					currval('bagger_schute.data_partition_set_id_seq'),
 					ts_trunc);
 	END LOOP;
 
+	-- ----
+	-- Create the exception table (dead letter queue) for not routable
+	-- entries.
+	-- ----
 	relname = config ->> 'exc_not_routable';
 	query = 'CREATE TABLE IF NOT EXISTS '
 			|| quote_ident(nspname) || '.'
@@ -513,11 +614,17 @@ BEGIN
 			|| ' (entry jsonb NOT NULL,'
 			|| ' ingestion_ts timestamptz, error_msg text);';
 	EXECUTE query;
+
+	PERFORM create_partition_indexes(nspname, relname || ts_suffix, config);
+
 	INSERT INTO data_partition_name (partition_name, set_id, valid_at)
 		VALUES (relname || ts_suffix,
 				currval('bagger_schute.data_partition_set_id_seq'),
 				ts_trunc);
 
+	-- ----
+	-- Create the exception table for invalid jsonb entries.
+	-- ----
 	relname = config ->> 'exc_invalid_json';
 	query = 'CREATE TABLE IF NOT EXISTS '
 			|| quote_ident(nspname) || '.'
@@ -525,6 +632,7 @@ BEGIN
 			|| ' (entry text NOT NULL,'
 			|| ' ingestion_ts timestamptz, error_msg text);';
 	EXECUTE query;
+
 	INSERT INTO data_partition_name (partition_name, set_id, valid_at)
 		VALUES (relname || ts_suffix,
 				currval('bagger_schute.data_partition_set_id_seq'),
@@ -533,6 +641,96 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+CREATE FUNCTION create_partition_indexes(nspname name, partname name,
+										 config jsonb)
+RETURNS void
+AS $$
+-- ----
+-- create_partition_indexes(nspname name, partname name, config jsonb)
+--
+--	Function that creates all configured indexes for a given data
+--	partition.
+--
+--	TODO: This is a function where we may need some more guardrails
+--	against possible SQL injection attacks.
+-- ----
+DECLARE
+	suffix		text;
+	def			jsonb;
+	indexes		jsonb;
+	columns		jsonb;
+	coldef		jsonb;
+	query		text;
+	sep			text;
+BEGIN
+	-- ----
+	-- Loop over all the configured indexes for this valid_at timestamp.
+	-- ----
+	indexes = jsonpointer_get_jsonb(config, '/indexes');
+	FOR suffix, def IN SELECT * FROM jsonb_each(indexes) LOOP
+		-- ----
+		-- Start assembling the CREATE INDEX query
+		-- ----
+		query = 'CREATE INDEX IF NOT EXISTS '
+				|| quote_ident(partname || '_' || suffix)
+				|| ' ON '
+				|| quote_ident(nspname) || '.'
+				|| quote_ident(partname)
+				|| ' USING '
+				|| jsonpointer_get_text(def, '/method')
+				|| ' (';
+
+		-- ----
+		-- Loop over all the column definitions for this index
+		-- ----
+		columns = jsonpointer_get_jsonb(def, '/columns');
+		sep = '';
+		FOR coldef IN SELECT * FROM jsonb_array_elements(columns) LOOP
+			IF jsonpointer_get_text(coldef, '/colname') IS NOT NULL THEN
+				-- ----
+				-- Plain column name
+				-- ----
+				query = query || sep
+						|| jsonpointer_get_text(coldef, '/colname');
+			ELSIF jsonpointer_get_text(coldef, '/jsonpointer') IS NOT NULL THEN
+				-- ----
+				-- Type specific jsonpointer
+				-- ----
+				query = query || sep
+						|| quote_ident('jsonpointer_get_'
+									   || jsonpointer_get_text(coldef, '/type'))
+						|| '(entry, '
+						|| quote_literal(jsonpointer_get_text(coldef, '/jsonpointer'))
+						|| ')';
+			ELSE
+				-- ----
+				-- Invalid index definition
+				-- ----
+				RAISE EXCEPTION 'unrecognized index column definition %',
+								coldef;
+			END IF;
+			-- TODO: Add opclass here
+			sep = ', ';
+		END LOOP;
+
+		-- ----
+		-- Finalize the CREATE INDEX query and execute it.
+		-- ----
+		query = query || ')';
+		EXECUTE query;
+	END LOOP;
+	RETURN;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- ----
+-- ts_trunc_to_interval(ts timestamptz, step text)
+--
+--	Internal support function to truncate any given timestamp to the
+--	closest rotation interval (in the past or exactly now) specified
+--	by step.
+-- ----
 CREATE FUNCTION ts_trunc_to_interval(ts timestamptz, step text)
 RETURNS timestamptz
 AS $$
@@ -542,6 +740,12 @@ AS $$
 $$ LANGUAGE sql;
 
 
+-- ----
+-- get_base_config(p_key text)
+--
+--	Internal support function to lookup a single base config value
+--	by key.
+-- ----
 CREATE FUNCTION get_base_config(p_key text)
 RETURNS text
 AS $$
@@ -553,6 +757,11 @@ $$ LANGUAGE sql;
 CREATE FUNCTION schute_routing_trigger()
 RETURNS trigger
 AS $$
+-- ----
+-- schute_routing_trigger()
+--
+--	TODO: rewrite this in C
+-- ----
 DECLARE
 	config		jsonb;
 	partmap		jsonb;
@@ -635,10 +844,20 @@ CREATE TRIGGER schute_routing_trigger
 	BEFORE INSERT ON bagger_data.schute
 	FOR EACH ROW EXECUTE PROCEDURE schute_routing_trigger();
 
+
 CREATE FUNCTION schute_save_exception(entry jsonb, rts timestamptz,
 									  message text, config jsonb)
 RETURNS void
 AS $$
+-- ----
+-- schute_save_exception(entry jsonb, rts timestamptz, message text,
+--						 config jsonb)
+--
+--	Internal support function to save an exception into the corresponding
+--	dead letter queue.
+--
+--	TODO: This will be replaced when the routing trigger is rewritten in C.
+-- ----
 DECLARE
 	partts		timestamptz;
 	partname	text;
@@ -646,6 +865,11 @@ DECLARE
 BEGIN
 	SET LOCAL search_path TO 'bagger_schute';
 
+	-- ----
+	-- If we don't have a routing timestamp (entry_ts) we use the current
+	-- timestamp. Otherwise the error goes into the dead letter queue for
+	-- entry_ts.
+	-- ----
 	IF rts IS NULL
 	THEN
 		partts = ts_trunc_to_interval(now(), config->>'rotation_interval');
@@ -664,9 +888,16 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+
 CREATE FUNCTION schute_drop_data_partition()
 RETURNS trigger
 AS $$
+-- ----
+-- schute_drop_data_partition()
+--
+--	Trigger that drops the data partition when an entry in the
+--	tracking table data_partition_name is deleted.
+-- ----
 DECLARE
 	query	text;
 BEGIN
