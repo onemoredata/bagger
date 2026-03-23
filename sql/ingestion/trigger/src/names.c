@@ -2,6 +2,7 @@
 #include "jsonpointer.h"
 #include <string.h>
 #include "names.h"
+#include <utils/jsonb.h>
 
 /* Bagger name munger module
  *
@@ -23,18 +24,19 @@
  * dimensions than JSON keys so this should be a performance win.
  */
 
-Name_slist_entry* find_next_in_doc(Jsonb* jsondoc, JsonbIterator* iter, Jsonpointer* jptr);
+Name_slist_entry* find_next_in_doc(Jsonb* jsondoc, JsonbIterator* iter, 
+        Jsonpointer* jptr, int is_timestamp);
 
 
 Partition_dimension *dimension_ptr_head;
 
-void initialize_dimensions( void );
 
 Name_slist_entry* dimensions_from_doc(Jsonb *jsondoc);
 
 static void sort_name_slist(Name_slist_entry* head);
 
 Partition_dimension *paths;
+Partition_dimension *timestamp;
 /* initialize loads the paths we will need to follow and parses them.
  * Each path becomes an array of strings and this allows us to loop through
  * them.
@@ -57,7 +59,8 @@ initialize_dimensions()
    /* still need to bring the date/time in for partitioning */
    if (SPI_OK_SELECT != (ret = SPI_execute("SELECT fieldname, row_number() "
                                           "     over(order by ordinality asc) "
-                                          "     as ordinality "
+                                          "     as ordinality, "
+                                          "     ts_dimension::int "
                                           "FROM storage.dimension "
                                           "ORDER BY fieldname ASC", true, 0)))
        elog(ERROR, "SPI_execute returned %d", ret);
@@ -81,6 +84,10 @@ initialize_dimensions()
        HeapTuple tuple = tuptable->vals[r];
        char *jptr = SPI_getvalue(tuple, tupdesc, 1);
        int ord = atoi(SPI_getvalue(tuple,tupdesc,2));
+       if (atoi(SPI_getvalue(tuple,tupdesc,3)))
+       {
+           timestamp = curr;
+       }
        curr->entry = jsonpointer_parse(strlen(jptr) + 1, jptr);
        curr->ord = ord;
 
@@ -120,7 +127,7 @@ dimensions_from_doc(Jsonb *jsondoc)
     curr = head;
     for (jsonptr = dimension_ptr_head; NULL != jsonptr; jsonptr = jsonptr->next)
     {
-        next = find_next_in_doc(jsondoc, JsonbIteratorInit (&jsondoc->root), jsonptr->entry);
+        next = find_next_in_doc(jsondoc, JsonbIteratorInit (&jsondoc->root), jsonptr->entry, (timestamp == jsonptr));
         curr->next = next;
         next->node->ord = jsonptr->ord;
         jsonptr = jsonptr->next;
@@ -146,7 +153,7 @@ dimensions_from_doc(Jsonb *jsondoc)
 
 
 Name_slist_entry*
-find_next_in_doc(Jsonb* jsondoc, JsonbIterator* iter, Jsonpointer* jptr)
+find_next_in_doc(Jsonb* jsondoc, JsonbIterator* iter, Jsonpointer* jptr, int is_timestamp)
 {
     JsonbValue val;
     JsonbIteratorToken typ;
@@ -181,11 +188,24 @@ find_next_in_doc(Jsonb* jsondoc, JsonbIterator* iter, Jsonpointer* jptr)
                 if ((val.type == jbvArray) || (val.type == jbvObject))
                 {
                     Jsonb *doc = JsonbValueToJsonb(&val);
-                    return find_next_in_doc(doc, JsonbIteratorInit(&doc->root), jptr->next);
+                    return find_next_in_doc(doc, JsonbIteratorInit(&doc->root), jptr->next, is_timestamp);
                 }
                 if (val.type == jbvString)
                 {
-                    ret->node->label = val.val.string.val;
+                    if (is_timestamp)
+                    {
+                        char* timestamp_part = palloc0(13);
+                        memcpy(timestamp_part, val.val.string.val, 12);
+                        timestamp_part[4]    = '_';
+                        timestamp_part[7]    = '_';
+                        timestamp_part[10]   = '_';
+                        ret->node->label = timestamp_part;
+                    }
+                    else
+                    {
+                        ret->node->label = val.val.string.val;
+                    }
+
                 }
 
             }
@@ -220,7 +240,7 @@ find_next_in_doc(Jsonb* jsondoc, JsonbIterator* iter, Jsonpointer* jptr)
                           else if ((val.type == jbvArray) || (val.type == jbvObject))
                           {
                               Jsonb *doc = JsonbValueToJsonb(&val);
-                              return find_next_in_doc(doc, JsonbIteratorInit(&doc->root), jptr->next);
+                              return find_next_in_doc(doc, JsonbIteratorInit(&doc->root), jptr->next, is_timestamp);
                           }
                       } else if (strcmp(val.val.string.val, jptr->ref) > 0)
                       {
@@ -294,10 +314,14 @@ sort_name_slist(Name_slist_entry *head)
 }
 
 char *
-partition_name(Name_slist_entry *head)
+partition_name(Datum jsonvalue)
 {
-    char* name = palloc0(NAMEDATALEN + 1);
-    Name_slist_entry *curr = head;
+    char *name = palloc0(NAMEDATALEN + 1);
+    Name_slist_entry *curr;
+    Name_slist_entry *head;
+    
+    head = dimensions_from_doc(DatumGetJsonbP(jsonvalue));
+    curr = head;
 
     strcpy(name, "data");
     sort_name_slist(head);
@@ -310,3 +334,4 @@ partition_name(Name_slist_entry *head)
     }
     return name;
 }
+

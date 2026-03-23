@@ -82,6 +82,17 @@ circumstances but this is not yet supported.
 
 has ordinality => (is => 'ro', isa => 'Int');
 
+=head2 ts_dimension bool
+
+Only one dimension can be a timestamp, and this is it.
+
+Currently we only truncate to hours as a hardwired limit.
+
+=cut
+
+has ts_dimension => (is => 'ro', isa => 'Bool');
+
+
 =head2 valid_from
 
 This represents the first time the dimension is valid.
