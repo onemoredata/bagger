@@ -32,7 +32,7 @@ def main():
     parser.add_option('-i', '--input')
     parser.add_option('-s', '--schute', default = 'bagger_data.schute')
     parser.add_option('-e', '--entry_ts', default = 'logged')
-    parser.add_option('-c', '--conninfo')
+    parser.add_option('-c', '--conninfo', action = 'append')
     parser.add_option('-b', '--batchsize', type = "int", default = 100)
     parser.add_option('-t', '--timing', type = "float", default = 1.0)
     parser.add_option('-P', '--progress_secs', type = "float", default = 10.0)
@@ -49,9 +49,12 @@ def main():
         infd = open(opts.input, 'r')
 
     if opts.conninfo is not None:
-        db = psycopg.connect(opts.conninfo)
-        db.add_notice_handler(log_notice)
-        print("connected to DB")
+        db = []
+        for cinfo in opts.conninfo:
+            conn = psycopg.connect(cinfo)
+            db.append(conn)
+            conn.add_notice_handler(log_notice)
+            print("connected to '{0}'".format(cinfo))
     else:
         db = None
 
@@ -81,7 +84,8 @@ def main():
         send_batch(db, batch, bsize)
         
     if opts.conninfo is not None:
-        db.close()
+        for conn in db:
+            conn.close()
 
     if opts.input is not None and opts.input != '-':
         infd.close()
@@ -95,13 +99,14 @@ def send_batch(db, batch, bsize):
         for entry in batch:
             print(entry)
     else:
-        cur = db.cursor()
-        with cur.copy("COPY {} (entry) FROM STDIN".format(opts.schute)) as copy:
-            for entry in batch:
-                copy.write_row([json.dumps(entry)])
+        for conn in db:
+            cur = conn.cursor()
+            with cur.copy("COPY {} (entry) FROM STDIN".format(opts.schute)) as copy:
+                for entry in batch:
+                    copy.write_row([json.dumps(entry)])
 
-        cur.close()
-        db.commit()
+            cur.close()
+            conn.commit()
 
     progress_stats['num_batches'] += 1
     progress_stats['num_rows'] += bsize
