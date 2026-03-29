@@ -23,6 +23,20 @@
 	  "max": 13,
 	  "linelen": 78
     },
+  "filler1":	{
+	  "desc": "more payload",
+	  "type": "words",
+	  "min": 400,
+	  "max": 700,
+	  "linelen": 78
+    },
+  "filler2":	{
+	  "desc": "even more payload",
+	  "type": "words",
+	  "min": 400,
+	  "max": 700,
+	  "linelen": 78
+    },
   "subobject1":	{
 	  "desc": "Example of a nested object",
 	  "type": "object",
@@ -31,17 +45,29 @@
 			  "desc": "A foo string",
 			  "type": "str",
 			  "values": {
-			  	"foo1": 0.5,
-				"foo2": 1.0
+				"foo0": 0.05,
+				"foo1": 0.05,
+				"foo2": 0.05,
+				"foo3": 0.05,
+				"foo4": 0.05,
+				"foo5": 0.05,
+				"foo6": 0.05,
+				"foo7": 0.05,
+				"foo8": 0.05,
+				"foo9": 0.05,
+				"fooA": 0.05,
+				"fooB": 0.05,
+				"fooC": 0.05,
+				"fooD": 0.05,
+				"fooE": 0.05,
+				"fooF": 1.0
 			  }
 		    },
 		  "bar":	{
-			  "desc": "A bar string",
-			  "type": "str",
-			  "values": {
-			  	"bar1": 0.5,
-				"bar2": 1.0
-			  }
+			  "desc": "A bar random_int",
+			  "type": "random_int",
+			  "min": 1,
+			  "max": 5000
 		    }
 	    }
     }
